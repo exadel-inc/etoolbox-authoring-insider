@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.exadel.etoolbox</groupId>
+        <artifactId>etoolbox-authoring-insider</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>etoolbox-authoring-insider.ui.config</artifactId>
+    <packaging>content-package</packaging>
+    <name>EToolbox Authoring Insider - UI config</name>
+    <description>UI config package for EToolbox Authoring Insider</description>
+
+    <build>
+        <sourceDirectory>src/main/content/jcr_root</sourceDirectory>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.jackrabbit</groupId>
+                <artifactId>filevault-package-maven-plugin</artifactId>
+                <configuration>
+                    <packageType>container</packageType>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.day.jcr.vault</groupId>
+                <artifactId>content-package-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+</project>
