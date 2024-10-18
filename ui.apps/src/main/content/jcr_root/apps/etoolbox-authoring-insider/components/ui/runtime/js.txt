@@ -1,0 +1,10 @@
+#base=js
+
+settings.js
+controls.js
+main.js
+
+rte/command-clear.js
+rte/field-facade.js
+rte/button.js
+rte/plugin.js

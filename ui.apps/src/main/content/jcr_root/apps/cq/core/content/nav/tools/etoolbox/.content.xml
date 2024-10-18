@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jcr:root xmlns:jcr="http://www.jcp.org/jcr/1.0"
+          xmlns:nt="http://www.jcp.org/jcr/nt/1.0"
+          jcr:primaryType="nt:unstructured"
+          jcr:title="EToolbox">
+    <authoring-insider
+            jcr:primaryType="nt:unstructured"
+            jcr:title="EToolbox Authoring Insider"
+            jcr:description="Service tools and integrations for authoring dialogs"
+            href="/etoolbox/authoring-insider.html"
+            consoleId="etoolbox-authoring-insider"
+            icon="etoolbox-authoring-insider"
+            order="{Long}100"/>
+</jcr:root>
