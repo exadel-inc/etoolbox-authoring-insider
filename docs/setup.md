@@ -47,7 +47,7 @@ We process the following keys:
 Between the key and the value in a key-value pair, the following operators can be used:
 - _=_ - exact match;
 - _^=_ - starts with;
-- _$_ - ends with;
+- _$=_ - ends with;
 - _*= - contains (performs case-insensitive search).
 
 If a rule entry starts with `!`, it is considered an inverted rule. That is, the tool will be attached to all fields except those that match the rule.
