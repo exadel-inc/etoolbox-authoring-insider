@@ -18,17 +18,17 @@
     const DEFAULT_PROPS = ['enabled', 'icon', 'title', 'type'];
 
     const DEBOUNCE_DELAY = 750;
-    const debouncedSubmit = Utils.debounce(doAutoSubmit, DEBOUNCE_DELAY);
+    const debouncedSubmit = Utils.debounce(onAutoSubmit, DEBOUNCE_DELAY);
 
     let lastAddedItemId = false;
 
     $(document)
         .on('ready', onDocumentReady)
         .on('change', '.autosubmit', debouncedSubmit)
-        .on('click', '#item-properties [variant="primary"]', onManualSubmit)
+        .on('click', '#item-properties [variant="primary"]', onPropertiesSave)
         .on('click', '[data-adds-to]', onAddEntryClick)
         .on('click', '.delete', onDeleteEntryClick)
-        .on('click', '.properties', onPropertiesClick)
+        .on('click', '.properties', onPropertiesOpen)
         .on('coral-tablist:change', onActiveTabChange)
         .on('keydown', '.foundation-toggleable', onKeyDownInDialog);
 
@@ -46,7 +46,7 @@
             }
         }
         if (anyChangeEventFired) {
-            await doAutoSubmit();
+            await submitAllData();
         }
         // This hook is added apart from the rest to avoid "autosubmit" handler running unconditionally upon a page load
         $(document).on('change', '.autosubmit-defer', debouncedSubmit);
@@ -56,14 +56,7 @@
 
     async function onAutoSubmit(e) {
         e.preventDefault();
-        await doAutoSubmit();
-    }
-
-    async function onManualSubmit(e) {
-        e.preventDefault();
-        const dialog = e.target.closest('coral-dialog');
-        const form = e.target.closest('form') || dialog.querySelector('form');
-        await doManualSubmit(dialog, form);
+        await submitAllData();
     }
 
     async function onAddEntryClick(e){
@@ -81,10 +74,17 @@
         await deleteMultifieldItem(item);
     }
 
-    async function onPropertiesClick(e) {
+    async function onPropertiesOpen(e) {
         const item = e.target.closest('coral-multifield-item');
         const namespace = e.target.closest('coral-multifield').id;
         await openPropertiesDialog(item, namespace);
+    }
+
+    async function onPropertiesSave(e) {
+        e.preventDefault();
+        const dialog = e.target.closest('coral-dialog');
+        const form = e.target.closest('form') || dialog.querySelector('form');
+        await submitItemData(dialog, form);
     }
 
     function onActiveTabChange(e) {
@@ -113,40 +113,7 @@
        Window/document logic
        --------------------- */
 
-    async function doAutoSubmit() {
-        const form = document.getElementById('settings');
-        try {
-            await ns.http.post(form.action, {body: new FormData(form)});
-            ns.ui.notify(null, 'Settings saved', 'success');
-            await doQuietReload();
-
-            if (lastAddedItemId) {
-                const multifield = document.getElementById(lastAddedItemId);
-                lastAddedItemId = null;
-                multifield.items.getAll().slice(-1)[0].querySelector('.properties').click();
-            }
-        } catch (error) {
-            ns.ui.alert('Failed to save settings', error.message, 'error');
-        }
-    }
-
-    async function doManualSubmit(dialog, form) {
-        const cancelled  = !form.dispatchEvent(new Event('submit', { cancelable: true }));
-        if (cancelled) {
-            return;
-        }
-        dialog.open = false;
-        const body = packDetails(new FormData(form));
-        try {
-            await ns.http.post(form.action, { body });
-            ns.ui.notify(null, 'Settings saved', 'success');
-            await doQuietReload();
-        } catch (error) {
-            ns.ui.alert('Failed to save settings', error.message, 'error');
-        }
-    }
-
-    async function doQuietReload() {
+    async function quietReload() {
         let newContent;
         try {
             newContent = await ns.http.getText(window.location.href);
@@ -168,6 +135,39 @@
                 // This is needed to assign proper names to the multifield's inner fields
                 newMultifield.trigger('coral-multifield:itemorder');
             }
+        }
+    }
+
+    async function submitAllData() {
+        const form = document.getElementById('settings');
+        try {
+            await ns.http.post(form.action, {body: new FormData(form)});
+            ns.ui.notify(null, 'Settings saved', 'success');
+            await quietReload();
+
+            if (lastAddedItemId) {
+                const multifield = document.getElementById(lastAddedItemId);
+                lastAddedItemId = null;
+                multifield.items.getAll().slice(-1)[0].querySelector('.properties').click();
+            }
+        } catch (error) {
+            ns.ui.alert('Failed to save settings', error.message, 'error');
+        }
+    }
+
+    async function submitItemData(dialog, dialogForm) {
+        const cancelled  = !dialogForm.dispatchEvent(new Event('submit', { cancelable: true }));
+        if (cancelled) {
+            return;
+        }
+        dialog.open = false;
+        const body = packDetails(new FormData(dialogForm));
+        try {
+            await ns.http.post(dialogForm.action, { body });
+            ns.ui.notify(null, 'Settings saved', 'success');
+            await quietReload();
+        } catch (error) {
+            ns.ui.alert('Failed to save settings', error.message, 'error');
         }
     }
 
@@ -206,7 +206,10 @@
     async function deleteMultifieldItem(item) {
         const multifield = item.closest('coral-multifield');
         item.remove();
-        await updateMultifieldContent(multifield);
+        const changeEventFired = await updateMultifieldContent(multifield);
+        if (!changeEventFired) {
+            await submitAllData();
+        }
     }
 
     async function updateMultifieldContent(multifield) {
@@ -249,14 +252,8 @@
     }
 
     function updateMultifieldItemContent(item, model) {
-        const typeField = item.querySelector('[name$="type"]');
-        if (typeField) {
-            typeField.value = model.id;
-        }
-        const titleField = item.querySelector('[name$="title"]');
-        if (titleField) {
-            titleField.value = model.title;
-        }
+        item.querySelector('[name$="type"]').value = model.id;
+        item.querySelector('[name$="title"]').value = model.title;
         updateMultifieldItemActions(item, model);
         updateMultifieldItemIcon(item, model);
     }
@@ -265,8 +262,7 @@
         let isDeletable = model.isTemplate;
         if (isDeletable) {
             const typeField = item.querySelector('.type');
-            isDeletable = typeField
-                && typeField.value
+            isDeletable = typeField.value
                 && item.closest('coral-multifield').querySelectorAll(`.type[value="${typeField.value}"]`).length > 1;
         }
         if (!isDeletable) {
@@ -279,11 +275,9 @@
 
     function updateMultifieldItemIcon(item, model) {
         const iconField = item.querySelector('[name$="icon"]');
-        const icon = item.querySelector('.icon');
-        if (iconField && icon) {
-            icon.classList.remove('default');
-            icon.innerHTML = ns.icons.getHtml(iconField.value || model.icon, model.title);
-        }
+        const iconHolder = item.querySelector('.icon-holder');
+        iconHolder.innerHTML = ns.icons.getHtml(iconField.value || model.icon, model.title);
+        iconHolder.classList.remove('default');
     }
 
     /* ----------
@@ -347,9 +341,6 @@
             dialog.on('coral-overlay:close', () => dialog.remove());
             dialog.show();
         });
-    }
-
-    async function loadPropertiesDialog(src, data) {
     }
 
     function packDetails(formData) {

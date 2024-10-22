@@ -73,10 +73,10 @@
                                                                     jcr:primaryType="nt:unstructured"
                                                                     sling:resourceType="granite/ui/components/coral/foundation/form/hidden"
                                                                     name="icon"/>
-                                                            <icon
+                                                            <iconHolder
                                                                     jcr:primaryType="nt:unstructured"
                                                                     sling:resourceType="granite/ui/components/coral/foundation/text"
-                                                                    granite:class="icon default"/>
+                                                                    granite:class="icon-holder default"/>
                                                             <titleAndType
                                                                     jcr:primaryType="nt:unstructured"
                                                                     sling:resourceType="granite/ui/components/coral/foundation/container"
@@ -169,10 +169,10 @@
                                                                     jcr:primaryType="nt:unstructured"
                                                                     sling:resourceType="granite/ui/components/coral/foundation/form/hidden"
                                                                     name="icon"/>
-                                                            <icon
+                                                            <iconHolder
                                                                     jcr:primaryType="nt:unstructured"
                                                                     sling:resourceType="granite/ui/components/coral/foundation/text"
-                                                                    granite:class="icon default"/>
+                                                                    granite:class="icon-holder default"/>
                                                             <titleAndType
                                                                     jcr:primaryType="nt:unstructured"
                                                                     sling:resourceType="granite/ui/components/coral/foundation/container"
@@ -187,7 +187,7 @@
                                                                     <type
                                                                             jcr:primaryType="nt:unstructured"
                                                                             sling:resourceType="granite/ui/components/coral/foundation/form/textfield"
-                                                                            granite:class="quiet minimal"
+                                                                            granite:class="quiet minimal type"
                                                                             name="type"
                                                                             readOnly="{Boolean}true"/>
                                                                 </items>
