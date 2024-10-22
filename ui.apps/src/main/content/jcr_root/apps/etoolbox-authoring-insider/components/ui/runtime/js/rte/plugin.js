@@ -43,7 +43,7 @@
          */
         initializeUI: function (tbGenerator, context) {
             // Find matching tools; early return if none found
-            this._tools = ns.tools.forField(context.$editable.parent()[0]);
+            this._tools = ns.tools.forField(context.$editable.closest('.coral-Form-field')[0]);
             if (!this._tools.length) {
                 return;
             }

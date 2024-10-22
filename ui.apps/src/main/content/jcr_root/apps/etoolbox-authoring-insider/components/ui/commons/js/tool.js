@@ -97,8 +97,17 @@
             }
             if (ns.utils.isString(selectors)) {
                 selectors = [selectors];
+            } else if (!Array.isArray(selectors) || selectors.length === 0) {
+                return true;
             }
-            return selectors.some((selector) => field.matches(selector));
+            if (isStringArray(selectors)) {
+                selectors = selectors.map((selector) => new ns.fields.Matcher(selector));
+                this['selectors'] = selectors;
+            }
+            const straightSelectors = selectors.filter((selector) => !selector.inverted);
+            const invertedSelectors = selectors.filter((selector) => selector.inverted);
+            return (straightSelectors.length === 0 || straightSelectors.some((selector) => selector.matches(field)))
+                && (invertedSelectors.every((selector) => selector.matches(field)));
         }
     }
 
@@ -154,5 +163,9 @@
             instances.splice(0, instances.length, ...instances.filter((item) => item._model.id !== id));
         }
     };
+
+    function isStringArray(value) {
+        return Array.isArray(value) && value.every((item) => ns.utils.isString(item));
+    }
 
 })(window.eai = window.eai || {});

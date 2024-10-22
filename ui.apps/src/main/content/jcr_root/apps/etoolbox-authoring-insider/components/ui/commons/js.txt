@@ -1,6 +1,7 @@
 #base=js
 
 fields.js
+fields-matcher.js
 http.js
 icons.js
 utils.js
