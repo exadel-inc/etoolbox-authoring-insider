@@ -134,16 +134,24 @@
 }
 
 /* This is to make sure that the in-RTE popover is not cut off when the Insider button is positioned at the right edge */
-:not(#InlineEditingUI) {
+coral-popover[data-id="insider"] {
+  background-clip: padding-box;
+  border: none;
+  border-right: 2.5rem solid transparent;
+  &:has(.has-providers) {
+    border-right-width: 7.5rem;
+  }
+  .coral3-Popover-content {
+    border: .125rem solid #c8c8c8;
+    border-radius: .25rem;
+  }
+}
+/* ...And this restores some of the overridden styles to match the in-place editor style */
+#InlineEditingUI {
   coral-popover[data-id="insider"] {
-    background-clip: padding-box;
-    border: none;
-    border-right: 2.5rem solid transparent;
-    &:has(.has-providers) {
-      border-right-width: 7.5rem;
-    }
+    border-right: unset;
     .coral3-Popover-content {
-      border: .125rem solid #c8c8c8;
+      border-color: #414141;
       border-radius: .25rem;
     }
   }

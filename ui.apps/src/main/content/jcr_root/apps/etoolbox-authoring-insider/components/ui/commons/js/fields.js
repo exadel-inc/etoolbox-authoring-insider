@@ -27,6 +27,13 @@
             }
         },
 
+        lock: function (field) {
+            if (!field || !ns.utils.isFunction(field.lock)) {
+                return;
+            }
+            field.lock();
+        },
+
         getSelectedContent: function(field) {
             if (!field) {
                 return '';
@@ -109,6 +116,13 @@
                 $(field).adaptTo('foundation-field').setValue(selectorOrValue);
             }
         },
+
+        unlock: function (field) {
+            if (!field || !ns.utils.isFunction(field.unlock)) {
+                return;
+            }
+            field.unlock();
+        }
     }
 
 })(window, Granite.$, window.eai = window.eai || {});

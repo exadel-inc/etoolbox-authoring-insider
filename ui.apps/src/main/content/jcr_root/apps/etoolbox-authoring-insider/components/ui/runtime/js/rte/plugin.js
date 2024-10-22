@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-(function (window, RTE, ns) {
+(function (window, document, RTE, ns) {
     'use strict';
 
     const FEATURE = 'insider';
@@ -43,7 +43,14 @@
          */
         initializeUI: function (tbGenerator, context) {
             // Find matching tools; early return if none found
-            this._tools = ns.tools.forField(context.$editable.closest('.coral-Form-field')[0]);
+            let targetField = context.$editable.closest('.coral-Form-field')[0];
+            if (!targetField) {
+                const inplaceConfig = context.$editable.data('config');
+                if (ns.utils.isObject(inplaceConfig)) {
+                    targetField = createInplaceFieldSubstitution(inplaceConfig);
+                }
+            }
+            this._tools = ns.tools.forField(targetField);
             if (!this._tools.length) {
                 return;
             }
@@ -114,6 +121,30 @@
     RTE.plugins.PluginRegistry.register(GROUP, Plugin);
 
     /**
+     * Generates a makeshift DOM field used to detect available tools for the current in-place editor
+     * @param config In-place editor configuration
+     * @returns {HTMLDivElement}
+     */
+    function createInplaceFieldSubstitution(config) {
+        const field = document.createElement('div');
+        field.classList.add('cq-RichText', 'richtext-container', 'coral-Form-field');
+        const editElementQuery = config['editElementQuery'];
+        if (editElementQuery) {
+            if (editElementQuery.startsWith('.')) {
+                field.classList.add(...editElementQuery.substring(1).split('.'));
+            } else if (editElementQuery.startsWith('#')) {
+                field.id = editElementQuery.substring(1);
+            }
+        }
+        if (config['propertyName']) {
+            const input = document.createElement('input');
+            input.name = config['propertyName'];
+            field.appendChild(input);
+        }
+        return field;
+    }
+
+    /**
      * Creates a dropdown template for the RTE toolbar
      * @param tools {Array} List of valid tools to display in the dropdown
      * @returns {DocumentFragment}
@@ -158,4 +189,4 @@
         }
     }
 
-})(window, window.CUI.rte, window.eai = window.eai || {});
+})(window, document, window.CUI.rte, window.eai = window.eai || {});

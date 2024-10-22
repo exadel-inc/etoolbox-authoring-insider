@@ -36,7 +36,7 @@
                 let windowSelection = this._plugin.editorKernel.editContext.win.getSelection().toString();
                 if (!windowSelection && this._storedRange) {
                     this._renewSelection();
-                    windowSelection = window.getSelection().toString();
+                    windowSelection = this._plugin.editorKernel.editContext.win.getSelection().toString();
                 }
                 return windowSelection;
             }
@@ -61,6 +61,12 @@
             return ns.utils.isNumber(range.startOffset)
                 && ns.utils.isNumber(range.endOffset)
                 && (range.startOffset < range.endOffset);
+        }
+
+        lock() {
+            if (!this._plugin.editorKernel.isLocked()) {
+                this._plugin.editorKernel.lock();
+            }
         }
 
         preserveSelectionRange() {
@@ -95,6 +101,12 @@
             }
             this._plugin.editorKernel.relayCmd('inserthtml', RTE.Utils.htmlEncode(value));
             delete this._storedRange;
+        }
+
+        unlock() {
+            while (this._plugin.editorKernel.isLocked()) {
+                this._plugin.editorKernel.unlock();
+            }
         }
 
         _renewSelection() {

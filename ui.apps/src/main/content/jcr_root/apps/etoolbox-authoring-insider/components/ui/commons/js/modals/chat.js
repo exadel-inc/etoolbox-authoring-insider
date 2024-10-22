@@ -85,6 +85,7 @@
             if (ns.utils.isFunction(options.onStart)) {
                 runAndRenderResponse(dialog, options.onStart);
             }
+            ns.fields.lock(dialog.source);
             dialog.show();
         })
     }
@@ -348,6 +349,7 @@
         dialog.abortController.abort();
         dialog.onCancel && dialog.onCancel();
         ns.fields.focus(dialog.source);
+        ns.fields.unlock(dialog.source);
     }
 
     function onFieldClick(event) {
