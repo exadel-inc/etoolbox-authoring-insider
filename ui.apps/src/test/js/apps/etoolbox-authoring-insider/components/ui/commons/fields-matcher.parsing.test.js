@@ -41,37 +41,48 @@ test('Should parse condition + selector', () => {
     expect(matcher).toHaveProperty('component', 'AnchorNav');
 });
 
-test('Should parse page flag', () => {
-    let matcher = new ns.fields.Matcher(' PageProperties field= jcr:title :has(.name)');
-    expect(matcher).toHaveProperty('flags', ['pageproperties']);
+test('Should parse alternating conditions', () => {
+    let matcher = new ns.fields.Matcher('ui = dialog|properties');
+    expect(matcher).toHaveProperty('ui', ['dialog', 'pageProperties']);
+
+    matcher = new ns.fields.Matcher('component *= "Text Box" | "Description Box" field="jcr:title" ');
+    expect(matcher).toHaveProperty('component', ['Text Box', 'Description Box']);
     expect(matcher).toHaveProperty('field', 'jcr:title');
-    expect(matcher).toHaveProperty('selector', ':has(.name)');
 });
 
-test('Should extract matching condition', () => {
+test('Should extract matching operator', () => {
     let matcher = new ns.fields.Matcher('component *= "AnchorNav"');
     expect(matcher).toHaveProperty('component', 'AnchorNav');
-    expect(matcher).toHaveProperty('componentMatching', 'contains');
+    expect(matcher).toHaveProperty('componentMatching', '*=');
 
-    matcher = new ns.fields.Matcher('component ^= "AnchorNav"');
-    expect(matcher).toHaveProperty('componentMatching', 'startsWith');
+    matcher = new ns.fields.Matcher('component^= AnchorNav');
+    expect(matcher).toHaveProperty('componentMatching', '^=');
 
     matcher = new ns.fields.Matcher('component $= "AnchorNav"');
-    expect(matcher).toHaveProperty('componentMatching', 'endsWith');
+    expect(matcher).toHaveProperty('componentMatching', '$=');
+
+    matcher = new ns.fields.Matcher('component!=AnchorNav');
+    expect(matcher).toHaveProperty('componentMatching', '!=');
 
     matcher = new ns.fields.Matcher('component = "AnchorNav"');
-    expect(matcher).not.toHaveProperty('componentMatching');
+    expect(matcher).toHaveProperty('componentMatching', '=');
 });
 
-test('Should detect inverted condition', () => {
-    let matcher = new ns.fields.Matcher(' !component = AnchorNav');
+test('Should detect required conditions', () => {
+    let matcher = new ns.fields.Matcher(' @component = AnchorNav');
     expect(matcher).toHaveProperty('component', 'AnchorNav');
-    expect(matcher).toHaveProperty('inverted', true);
+    expect(matcher).toHaveProperty('isRequirement', true);
 
     matcher = new ns.fields.Matcher('component = "AnchorNav"');
-    expect(matcher).not.toHaveProperty('inverted');
+    expect(matcher).toHaveProperty('isRequirement', false);
 
-    matcher = new ns.fields.Matcher('! coral-multifield');
+    matcher = new ns.fields.Matcher('@ coral-multifield');
     expect(matcher).toHaveProperty('selector', 'coral-multifield');
-    expect(matcher).toHaveProperty('inverted', true);
+    expect(matcher).toHaveProperty('isRequirement', true);
+
+    matcher = new ns.fields.Matcher('name != "my-name"');
+    expect(matcher).toHaveProperty('isRequirement', true);
+
+    matcher = new ns.fields.Matcher('component*=Anchor name!="my-name"');
+    expect(matcher).toHaveProperty('isRequirement', false);
 });

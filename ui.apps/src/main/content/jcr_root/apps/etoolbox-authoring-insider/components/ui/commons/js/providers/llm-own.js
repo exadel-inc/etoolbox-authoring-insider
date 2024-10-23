@@ -26,7 +26,7 @@
             { name: 'url', title: 'Endpoint (URL)', required: true },
             { name: 'llm', title: 'Model', required: true },
             { name: 'systemPrompt', type: 'text', title: 'System Prompt' },
-            { name: 'supports', title: 'Supported constraints', multi: true }
+            { name: 'supports', title: 'Support constraints', multi: true }
         ],
 
         imageToText,

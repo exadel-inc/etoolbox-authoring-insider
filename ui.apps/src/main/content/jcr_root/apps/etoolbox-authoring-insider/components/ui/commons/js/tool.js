@@ -104,10 +104,10 @@
                 selectors = selectors.map((selector) => new ns.fields.Matcher(selector));
                 this['selectors'] = selectors;
             }
-            const straightSelectors = selectors.filter((selector) => !selector.inverted);
-            const invertedSelectors = selectors.filter((selector) => selector.inverted);
-            return (straightSelectors.length === 0 || straightSelectors.some((selector) => selector.matches(field)))
-                && (invertedSelectors.every((selector) => selector.matches(field)));
+            const requirements = selectors.filter((selector) => selector.isRequirement);
+            const options = selectors.filter((selector) => !selector.isRequirement);
+            return requirements.every((requirement) => requirement.matches(field))
+                && (options.length === 0 || options.some((option) => option.matches(field)));
         }
     }
 

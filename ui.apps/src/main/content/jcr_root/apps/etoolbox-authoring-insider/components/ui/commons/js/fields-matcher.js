@@ -14,14 +14,6 @@
 (function (ns) {
     'use strict';
 
-    const DIALOG_FLAGS = ['dialog'];
-    const PAGE_PROPS_FLAGS = ['page properties', 'pageproperties', 'properties'];
-
-    const ALL_FLAGS = [
-        DIALOG_FLAGS,
-        PAGE_PROPS_FLAGS
-    ].flat();
-
     ns.fields = ns.fields || {};
 
     /**
@@ -41,8 +33,8 @@
             if (source.length === 0) {
                 return;
             }
-            if (source[0] === '!') {
-                this.inverted = true;
+            if (source[0] === '@') {
+                this._requirement = true;
                 source = source.substring(1).trim();
             }
             if (!/^[A-Za-z]/.test(source)) {
@@ -50,22 +42,13 @@
                 return;
             }
             while (source.length) {
-                const flag = extractFlag(source);
-                if (flag) {
-                    this.flags = this.flags || [];
-                    this.flags.push(flag);
-                    source = source.substring(flag.length).trim();
-                    continue;
-                }
                 const nameValue = extractNameValuePair(source);
                 if (!nameValue) {
                     this.selector = appendIfNeeded(this.selector, source.trim());
                     return;
                 }
-                this[nameValue.key] = `${nameValue.value}`;
-                if (nameValue.matchingMode !== 'equals') {
-                    this[nameValue.key + 'Matching'] = nameValue.matchingMode;
-                }
+                this[nameValue.key] = nameValue.value;
+                this[nameValue.key + 'Matching'] = nameValue.operator;
                 source = source.substring(nameValue.length).trim();
             }
             if (source.length) {
@@ -74,43 +57,23 @@
         }
 
         /**
+         * Gets whether the criteria stored in the current instance is a requirement (i.e., it combines with other
+         * matchers in a set using the AND operator)
+         */
+        get isRequirement() {
+            if (this._requirement) {
+                return true;
+            }
+            const operators = Object.keys(this).filter((key) => key.endsWith('Matching'));
+            return operators.length > 0 && operators.every((key) => this[key] === '!=');
+        }
+
+        /**
          * Checks if the field matches the criteria
          * @param field - A DOM element
          * @returns {boolean} - Match result
          */
         matches(field) {
-            const result = this.isMatch(field);
-            return this.inverted ? !result : result;
-        }
-
-        /**
-         * @private
-         */
-        getMatchingMode(key) {
-            return this[key + 'Matching'] || 'equals';
-        }
-
-        /**
-         * @private
-         */
-        getMatchingOperator(key) {
-            const mode = this.getMatchingMode(key);
-            if (mode === 'contains') {
-                return '*=';
-            }
-            if (mode === 'startsWith') {
-                return '^=';
-            }
-            if (mode === 'endsWith') {
-                return '$=';
-            }
-            return '=';
-        }
-
-        /**
-         * @private
-         */
-        isMatch(field) {
             if (!field) {
                 return true;
             }
@@ -127,20 +90,13 @@
             if (this['href'] && !this.isMatchByHref()) {
                 return false;
             }
-            if (this.flags && this.flags.some((flag) => DIALOG_FLAGS.includes(flag))) {
-                if (!field.closest('coral-dialog')) {
-                    return false;
-                }
-            }
-            if (this.flags && this.flags.some((flag) => PAGE_PROPS_FLAGS.includes(flag))) {
-                if (!field.closest('.cq-siteadmin-admin-properties')) {
-                    return false;
-                }
+            if (this['ui'] && !this.isMatchByUi(field)) {
+                return false;
             }
             if (this['parentSelector'] && !this.isMatchByParentSelector(field)) {
                 return false;
             }
-            if (this['field'] && !this.isMatchByFieldName(field)) {
+            if (this['fieldName'] && !this.isMatchByFieldName(field)) {
                 return false;
             }
             if (this['fieldAttribute'] && !this.isMatchByFieldAttribute(field)) {
@@ -158,21 +114,28 @@
         /**
          * @private
          */
+        getOperator(key) {
+            return this[key + 'Matching'] || '=';
+        }
+
+        /**
+         * @private
+         */
         isMatchByComponent(field) {
+            const operator = this.getOperator('component');
             const dialog = field.closest('.cq-dialog');
             const header = dialog ? dialog.querySelector('.cq-dialog-header') : null;
             if (!header) {
-                return false;
+                return operator === '!=';
             }
-            const operator = this.getMatchingOperator('component');
-            return isMatch(header.textContent.trim().toLowerCase(), this['component'].toLowerCase(), operator);
+            return isMatch(header.textContent.trim(), this['component'], operator);
         }
 
         /**
          * @private
          */
         isMatchByFieldAttribute(field) {
-            const operator = this.getMatchingOperator('field');
+            const operator = this.getOperator('fieldAttribute');
             if (operator !== '=') {
                 console.error('Unsupported operator for the "fieldAttribute" property');
                 return false;
@@ -200,18 +163,19 @@
          * @private
          */
         isMatchByFieldName(field) {
+            const operator = this.getOperator('fieldName');
             const coralFormField = field.closest('.coral-Form-field');
             if (!coralFormField) {
-                return false;
+                return operator === '!=';
             }
-            const operator = this.getMatchingOperator('field');
-            let nameValue = this['field'];
-            const variants = [nameValue];
-            if ((operator === '=' || operator === '^=') && !nameValue.startsWith('./')) {
-                variants.push(`./${nameValue}`);
+            const name = this['fieldName'];
+            const variants = Array.isArray(name) ? [].concat(...name) : [name];
+            if ((operator === '=' || operator === '^=') ) {
+                // Supplement provided filed name(-s) with the variants that start with "./"
+                variants.filter((v) => !v.startsWith('./')).forEach((v) => variants.push(`./${v}`));
             }
             for (const variant of variants) {
-                const selector = `[name${operator}"${variant}"]`;
+                const selector = operator !== '!=' ? `[name${operator}"${variant}"]` : `:not([name*="${variant}"])`;
                 if (coralFormField.matches(selector) || coralFormField.querySelector(selector)) {
                     return true;
                 }
@@ -223,21 +187,21 @@
          * @private
          */
         isMatchByFieldLabel(field) {
+            const operator = this.getOperator('fieldLabel');
             const coralFormFieldWrapper = field.closest('.coral-Form-fieldwrapper');
             const label = coralFormFieldWrapper ? coralFormFieldWrapper.querySelector('label') : null;
             if (!label) {
-                return false;
+                return operator === '!=';
             }
-            const operator = this.getMatchingOperator('fieldLabel');
             const labelValue = this['fieldLabel'];
-            return isMatch(label.textContent.trim().toLowerCase(), labelValue.toLowerCase(), operator);
+            return isMatch(label.textContent.trim(), labelValue, operator);
         }
 
         /**
          * @private
          */
         isMatchByHref() {
-            const operator = this.getMatchingOperator('href');
+            const operator = this.getOperator('href');
             return isMatch(window.location.href, this['href'], operator);
         }
 
@@ -245,6 +209,11 @@
          * @private
          */
         isMatchByParentSelector(field) {
+            const operator = this.getOperator('parentSelector');
+            if (operator !== '=') {
+                console.error('Unsupported operator for the "parentSelector" property');
+                return false;
+            }
             try {
                 return !!field.closest(this['parentSelector']);
             } catch (e) {
@@ -257,9 +226,10 @@
          * @private
          */
         isMatchByTab(field) {
+            const operator = this.getOperator('tab');
             const panel = field.closest('coral-panel');
             if (!panel || !panel.parentElement) {
-                return false;
+                return operator === '!=';
             }
             const panelOrdinal = Array.from(panel.parentElement.children).indexOf(panel);
             const tabView = panel.closest('coral-tabview');
@@ -268,8 +238,40 @@
             if (!tab) {
                 return false;
             }
-            const operator = this.getMatchingOperator('tab');
-            return isMatch(tab.textContent.trim().toLowerCase(), this['tab'].toLowerCase(), operator);
+            return isMatch(tab.textContent.trim(), this['tab'], operator);
+        }
+
+        /**
+         * @private
+         */
+        isMatchByUi(field) {
+            const operator = this.getOperator('ui');
+            if (operator !== '=' && operator !== '!=') {
+                console.error('Unsupported operator for the "ui" property');
+                return false;
+            }
+            let uiValue = this['ui'];
+            uiValue = Array.isArray(uiValue) ? uiValue : [uiValue];
+            let result = false;
+            for (const ui of uiValue) {
+                if (ui === 'dialog') {
+                    if (field.closest('coral-dialog')) {
+                        result = true;
+                        break;
+                    }
+                } else if (ui === 'pageProperties') {
+                    if (field.closest('.cq-siteadmin-admin-properties')) {
+                        result = true;
+                        break;
+                    }
+                } else if (ui === 'inPlace') {
+                    if (field.closest('inplace-editor')) {
+                        result = true;
+                        break;
+                    }
+                }
+            }
+            return operator === '=' ? result : !result;
         }
     }
 
@@ -281,15 +283,6 @@
             return first;
         }
         return `${first},${second}`;
-    }
-
-    function extractFlag(source) {
-        for (const item of ALL_FLAGS) {
-            if (source.toLowerCase().startsWith(item)) {
-                return item;
-            }
-        }
-        return null;
     }
 
     function extractLiteral(source, extraChars) {
@@ -324,32 +317,42 @@
             return;
         }
         buffer = buffer.substring(key.length).trim();
-        key = toCanonicalKey(key);
+        key = normalizeKey(key);
 
         const operator = extractOperator(buffer);
         if (!operator) {
             return;
         }
         buffer = buffer.substring(operator.length).trim();
-        let value = extractLiteral(buffer, '-_:/?&');
-        if (value.length === 0) {
-            return;
+        let value;
+        let nextLiteral;
+        while (buffer.length > 0) {
+            nextLiteral = extractLiteral(buffer, '-_:/?&');
+            if (nextLiteral.length === 0) {
+                break;
+            }
+            buffer = buffer.substring(nextLiteral.length).trim();
+            nextLiteral = nextLiteral.replace(/^['"`]+|['"`]+$/g, '').trim();
+            nextLiteral = normalizeValue(nextLiteral, key);
+            if (!value) {
+                value = nextLiteral;
+            } else {
+                if (!Array.isArray(value)) {
+                    value = [value];
+                }
+                value.push(nextLiteral);
+            }
+            if (buffer.length === 0 || buffer[0] !== '|') {
+                break;
+            }
+            buffer = buffer.substring(1).trim();
         }
-        buffer = buffer.substring(value.length).replace(/^[\s,]*|\s*$/g, '');
-        value = value.replace(/^['"`]+|['"`]+$/g, '').trim();
-        let matchingMode = 'equals';
-        if (operator === '*=') {
-            matchingMode = 'contains';
-        } else if (operator === '^=') {
-            matchingMode = 'startsWith';
-        } else if (operator === '$=') {
-            matchingMode = 'endsWith';
-        }
-        return { key, value, matchingMode, length: source.length - buffer.length };
+        buffer = buffer.replace(/^[\s,]*/, '');
+        return { key, value, operator, length: source.length - buffer.length };
     }
 
     function extractOperator(source) {
-        if (source.length >= 2 && ['*=', '^=', '$='].includes(source.substring(0, 2))) {
+        if (source.length >= 2 && ['*=', '^=', '$=', '!='].includes(source.substring(0, 2))) {
             return source.substring(0, 2);
         }
         if (source.startsWith('=')) {
@@ -362,13 +365,25 @@
         if (!haystack || !needle) {
             return false;
         }
+        const needles = Array.isArray(needle) ? needle : [needle];
+        for (const n of needles) {
+            if (isMatchSingle(haystack, n, operator)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function isMatchSingle(haystack, needle, operator, ci) {
         switch (operator) {
             case '*=':
-                return haystack.includes(needle);
+                return haystack.toLowerCase().includes(needle.toLowerCase());
             case '^=':
                 return haystack.startsWith(needle);
             case '$=':
-                return haystack.endsWith(needle);
+                return haystack.endsWith(needle, ci);
+            case '!=':
+                return !haystack.includes(needle, ci);
             default:
                 return haystack === needle;
         }
@@ -381,8 +396,8 @@
             || extraChars.includes(chr);
     }
 
-    function toCanonicalKey(key) {
-        const lowercase = key.toLowerCase();
+    function normalizeKey(value) {
+        const lowercase = value.toLowerCase();
         if (lowercase === 'label' || lowercase === 'fieldlabel') {
             return 'fieldLabel';
         }
@@ -392,10 +407,26 @@
         if (['href', 'location', 'path', 'url'].includes(lowercase)) {
             return 'href';
         }
-        if (['container', 'parent', 'parentselector', 'within'].includes(lowercase)) {
+        if (['name', 'fieldname'].includes(lowercase)) {
+            return 'fieldName';
+        }
+        if (['container', 'parent', 'parentselector'].includes(lowercase)) {
             return 'parentSelector';
         }
         return lowercase;
+    }
+
+    function normalizeValue(value, key) {
+        if (key !== 'ui') {
+            return value;
+        }
+        if (['page', 'page properties', 'properties'].includes(value.toLowerCase())) {
+            return 'pageProperties';
+        }
+        if (['inplace', 'in-place'].includes(value.toLowerCase())) {
+            return 'inPlace';
+        }
+        return value.toLowerCase();
     }
 
 }(window.eai = window.eai || {}));

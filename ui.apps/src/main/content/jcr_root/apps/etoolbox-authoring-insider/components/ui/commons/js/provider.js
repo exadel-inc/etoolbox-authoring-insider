@@ -83,13 +83,12 @@
                     if (support.length === 0) {
                         return true;
                     }
-                    let allowByDefault = true;
+                    let allowByDefault = false;
                     for (const item of support) {
-                        if (item === '*') {
+                        if (item.startsWith('!')) {
                             allowByDefault = true;
-                        } else if (!item.startsWith('!')) {
-                            allowByDefault = false;
-                        } else if (item === req) {
+                        }
+                        if (item === req) {
                             return true;
                         } else if (item === '!' + req) {
                             return false;

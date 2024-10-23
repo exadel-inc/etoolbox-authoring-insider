@@ -126,7 +126,7 @@
      * @returns {HTMLDivElement}
      */
     function createInplaceFieldSubstitution(config) {
-        const field = document.createElement('div');
+        const field = document.createElement('inplace-editor');
         field.classList.add('cq-RichText', 'richtext-container', 'coral-Form-field');
         const editElementQuery = config['editElementQuery'];
         if (editElementQuery) {

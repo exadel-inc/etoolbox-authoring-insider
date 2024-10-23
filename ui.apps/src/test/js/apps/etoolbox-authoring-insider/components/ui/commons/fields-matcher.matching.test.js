@@ -21,13 +21,9 @@ test('Should match a field by selector', () => {
 
     let matcher = new ns.fields.Matcher('.my-class');
     expect(matcher.matches(dom)).toBeTruthy();
-    matcher.inverted = true;
-    expect(matcher.matches(dom)).toBeFalsy();
 
     matcher = new ns.fields.Matcher(':not(.my-class)');
     expect(matcher.matches(dom)).toBeFalsy();
-    matcher.inverted = true;
-    expect(matcher.matches(dom)).toBeTruthy();
 });
 
 test('Should match a field in a window by a href', () => {
@@ -38,7 +34,7 @@ test('Should match a field in a window by a href', () => {
     let matcher = new ns.fields.Matcher('url *= "/we-retail/" .my-class');
     expect(matcher.matches(dom)).toBeTruthy();
 
-    matcher = new ns.fields.Matcher('url $= "en.html"');
+    matcher = new ns.fields.Matcher('url $= "en.html"|"de.html"');
     expect(matcher.matches(dom)).toBeTruthy();
 
     matcher = new ns.fields.Matcher('url ^= "http://localhost:4502/content/wknd/" .my-class');
@@ -58,10 +54,10 @@ test('Should match a field by parent selector', () => {
           </div>
         </section>
     `);
-    let matcher = new ns.fields.Matcher('field = title, within=".coral-Form-fieldset"');
+    let matcher = new ns.fields.Matcher('name = title, container=".coral-Form-fieldset"');
     expect(matcher.matches(dom.querySelector('[name="./title"]'))).toBeTruthy();
 
-    matcher = new ns.fields.Matcher('field = title, within=".coral-Form-fieldwrapper-1"');
+    matcher = new ns.fields.Matcher('name = title, container=".coral-Form-fieldwrapper-1"');
     expect(matcher.matches(dom.querySelector('[name="./title"]'))).toBeTruthy();
     expect(matcher.matches(dom.querySelector('[name="./description"]'))).toBeFalsy();
 });
@@ -82,10 +78,10 @@ test('Should match a field by being inside dialog', () => {
           </div>
         </coral-dialog>    
     `);
-    let matcher = new ns.fields.Matcher('dialog .coral-Form-field');
+    let matcher = new ns.fields.Matcher('ui=dialog .coral-Form-field');
     expect(matcher.matches(dom.querySelector('input'))).toBeTruthy();
 
-    matcher = new ns.fields.Matcher('dialog field=title');
+    matcher = new ns.fields.Matcher('ui=`dialog` name=title');
     expect(matcher.matches(dom.querySelector('input'))).toBeTruthy();
 
     dom = createDom(`
@@ -104,32 +100,51 @@ test('Should match a field by being inside page properties', () => {
           <input class="coral-Form-field" name="./pageTitle">      
         </form>
     `);
-    let matcher = new ns.fields.Matcher('Page Properties [name="./pageTitle"]');
+    let matcher = new ns.fields.Matcher('ui="Page Properties" [name="./pageTitle"]');
     expect(matcher.matches(dom.querySelector('input'))).toBeTruthy();
 
-    matcher = new ns.fields.Matcher('Page Properties [name="./pageDescription"]');
+    matcher = new ns.fields.Matcher('ui="Page Properties" [name="./pageDescription"]');
     expect(matcher.matches(dom.querySelector('input'))).toBeFalsy();
 
     dom.removeAttribute('class');
     expect(matcher.matches(dom.querySelector('input'))).toBeFalsy();
 });
 
+test('Should match a field being an in-place editor', () => {
+    const dom = createDom(`
+      <inplace-editor class="cq-RichText richtext-container coral-Form-field txto-description">
+        <input name="./description">
+      </inplace-editor>'
+    `);
+    let matcher = new ns.fields.Matcher('ui=in-place name=description');
+    expect(matcher.matches(dom)).toBeTruthy();
+
+    matcher = new ns.fields.Matcher('ui != in-place|properties name=description');
+    expect(matcher.matches(dom)).toBeFalsy();
+
+    matcher = new ns.fields.Matcher('ui != dialog|properties name=description');
+    expect(matcher.matches(dom)).toBeTruthy();
+});
+
 test('Should match a field by name', () => {
     let dom = createDom('<input class="coral-Form-field coral-TextField" name="./title" placeholder="Enter the title">');
-    let matcher = new ns.fields.Matcher('field= title');
+    let matcher = new ns.fields.Matcher('name= title');
     expect(matcher.matches(dom)).toBeTruthy();
 
-    matcher = new ns.fields.Matcher('field= title [placeholder]');
+    matcher = new ns.fields.Matcher('name= title | description [placeholder]');
     expect(matcher.matches(dom)).toBeTruthy();
 
-    matcher = new ns.fields.Matcher('field $= title');
+    matcher = new ns.fields.Matcher('name $= title');
     expect(matcher.matches(dom)).toBeTruthy();
 
-    matcher = new ns.fields.Matcher('field^=title');
+    matcher = new ns.fields.Matcher('name^=title');
     expect(matcher.matches(dom)).toBeTruthy();
 
-    matcher = new ns.fields.Matcher('field = description');
+    matcher = new ns.fields.Matcher('name = description');
     expect(matcher.matches(dom)).toBeFalsy();
+
+    matcher = new ns.fields.Matcher('name != description|heading');
+    expect(matcher.matches(dom)).toBeTruthy();
 
     dom = createDom(`
         <div class="cq-RichText coral-Form-field">
@@ -140,13 +155,13 @@ test('Should match a field by name', () => {
     `);
     expect(matcher.matches(dom)).toBeTruthy();
 
-    matcher = new ns.fields.Matcher('field= title');
+    matcher = new ns.fields.Matcher('name= title');
     expect(matcher.matches(dom)).toBeFalsy();
 });
 
 test('Should match a field by attribute', () => {
     let dom = createDom('<input class="coral-Form-field coral-TextField" name="./title" placeholder="Enter the title" data-my-attribute>');
-    let matcher = new ns.fields.Matcher('attribute= placeholder, field= title');
+    let matcher = new ns.fields.Matcher('attribute= placeholder, name= title');
     expect(matcher.matches(dom)).toBeTruthy();
 
     matcher = new ns.fields.Matcher('attr=my-attribute');
@@ -172,7 +187,7 @@ test('Should match a field by label', () => {
     let matcher = new ns.fields.Matcher('label= "Enter Title"');
     expect(matcher.matches(dom.querySelector('input'))).toBeTruthy();
 
-    matcher = new ns.fields.Matcher('label *= Title');
+    matcher = new ns.fields.Matcher('label *= "Heading"|Title');
     expect(matcher.matches(dom.querySelector('input'))).toBeTruthy();
 
     matcher = new ns.fields.Matcher('label $= Enter');
@@ -188,7 +203,7 @@ test('Should match a field by label', () => {
             </div>
         </form>
     `);
-    matcher = new ns.fields.Matcher('properties fieldLabel *= description');
+    matcher = new ns.fields.Matcher('ui=properties fieldLabel *= description');
     expect(matcher.matches(dom.querySelector('textarea'))).toBeTruthy();
 });
 
