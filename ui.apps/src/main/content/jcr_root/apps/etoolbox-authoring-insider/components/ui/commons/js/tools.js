@@ -31,7 +31,7 @@
         }
 
         get valid() {
-            return this.id && ns.utils.isFunction(this.handle);
+            return !!this.id && ns.utils.isFunction(this.handle);
         }
     }
 
@@ -128,7 +128,7 @@
                     console.error('Invalid tool', options);
                     return;
                 }
-                instances.push(new Tool(model), { ordinal: Number.MAX_SAFE_INTEGER });
+                instances.push(new Tool(model));
             }
             instances.sort((a, b) => a.ordinal - b.ordinal);
         },

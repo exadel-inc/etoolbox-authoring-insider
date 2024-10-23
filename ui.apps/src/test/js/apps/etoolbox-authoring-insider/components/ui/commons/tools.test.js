@@ -51,12 +51,6 @@ test('Should not register an invalid tool model', () => {
 });
 
 test('Should unregister a tool model', () => {
-    ns.tools.register({
-        icon: 'tool',
-        id: 'my-tool',
-        title: 'My Tool',
-        handle: () => {}
-    });
     expect(ns.tools.getModels()).toHaveLength(1);
     ns.tools.unregister('my-tool');
     expect(ns.tools.getModels()).toHaveLength(0);
@@ -94,6 +88,23 @@ test('Should create a tool instance without settings', () => {
         ordinal: Number.MAX_SAFE_INTEGER,
         title: 'Another Tool Instance',
     });
+});
+
+test('Should select tools for a field (function-based)', () => {
+    ns.tools.addInstance({
+        type: 'my-tool',
+        isMatch: (field) => field.name.includes('title')
+    });
+
+    const dom = createDom('dialog.html');
+    const titleField = dom.querySelector('[name="./title"]');
+    const descriptionField = dom.querySelector('[name="./description"]');
+
+    let tools = ns.tools.forField(titleField);
+    expect(tools).toHaveLength(1);
+
+    tools = ns.tools.forField(descriptionField);
+    expect(tools).toHaveLength(0);
 });
 
 test('Should select tools for a field', () => {
@@ -229,7 +240,5 @@ function expectToolsForFieldToContain(field, expected, notExpected) {
     const titles = ns.tools.forField(field).map((tool) => tool.title);
     expect(titles.length).toBeGreaterThanOrEqual(expected.length);
     expected.forEach((title) => expect(titles).toContain(title));
-    if (notExpected) {
-        notExpected.forEach((title) => expect(titles).not.toContain(title));
-    }
+    notExpected.forEach((title) => expect(titles).not.toContain(title));
 }

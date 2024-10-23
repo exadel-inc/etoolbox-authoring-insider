@@ -18,7 +18,7 @@
     const instances = [];
     const idCounter = new ns.utils.IdCounter();
 
-    class Provider {
+    class ProviderModel {
         constructor(options = {}) {
             this.icon = options.icon;
             this.id = options.id;
@@ -31,15 +31,15 @@
         }
 
         get valid() {
-            return this.id && this.title;
+            return !!this.id;
         }
     }
 
-    class ProviderInstance {
+    class Provider {
         constructor(model, options = {}) {
             this._model = model;
             this.id = idCounter.nextIndexedId(model.id);
-            ns.utils.intern(options, this, { exclude: ['id'], prefix: ['icon', 'ordinal', 'title'] });
+            ns.utils.intern(options, this, { exclude: ['id'], addPrefixTo: ['icon', 'ordinal', 'title'] });
             Object.keys(model)
                 .filter((key) => ns.utils.isFunction(model[key]))
                 .forEach((key) => this[key] = model[key].bind(this));
@@ -88,9 +88,9 @@
                         if (item.startsWith('!')) {
                             allowByDefault = true;
                         }
-                        if (item === req) {
+                        if (item === req || item.startsWith(req.replace(/\.+?/, '') + '.')) {
                             return true;
-                        } else if (item === '!' + req) {
+                        } else if (item === '!' + req || item.startsWith('!' + req.replace(/\.+$/,'') + '.')) {
                             return false;
                         }
                     }
@@ -110,12 +110,16 @@
                     console.error('Provider model not found', options.id);
                     return;
                 }
-                instances.push(new ProviderInstance(model, options));
+                instances.push(new Provider(model, options));
             } else {
                 // This is a settings-less model
-                instances.push(new ProviderInstance(options));
+                instances.push(new Provider(options));
             }
             instances.sort((a, b) => a.ordinal - b.ordinal);
+        },
+
+        clearAll: function () {
+            instances.splice(0, instances.length);
         },
 
         getInstance: function (id) {
@@ -141,7 +145,7 @@
         },
 
         register: function (value) {
-            const model = new Provider(value);
+            const model = new ProviderModel(value);
             if (!model.valid) {
                 console.error('Invalid provider', value);
                 return;

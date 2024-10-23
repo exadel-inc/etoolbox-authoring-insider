@@ -21,7 +21,7 @@ tools/text-translate.js
 tools/page-command.js
 tools/sample/add-link.js
 
-provider.js
+providers.js
 providers/llm-external.js
 providers/llm-own.js
 providers/sample/repeater.js
