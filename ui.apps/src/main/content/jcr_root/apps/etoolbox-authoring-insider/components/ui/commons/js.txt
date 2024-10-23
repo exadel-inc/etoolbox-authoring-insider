@@ -12,7 +12,7 @@ modals/chat.js
 modals/chat-context.js
 modals/notification.js
 
-tool.js
+tools.js
 tools/image-caption.js
 tools/text-command.js
 tools/text-modify-free.js

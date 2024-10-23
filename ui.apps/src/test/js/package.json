@@ -13,6 +13,9 @@
     "#commons/*": "../../main/content/jcr_root/apps/etoolbox-authoring-insider/components/ui/commons/js/*"
   },
   "jest": {
-    "testEnvironment": "jsdom"
+    "testEnvironment": "jsdom",
+    "globals": {
+      "Granite": {}
+    }
   }
 }

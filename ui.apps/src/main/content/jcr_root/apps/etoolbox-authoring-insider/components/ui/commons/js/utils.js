@@ -39,7 +39,7 @@
                 if (options.exclude && options.exclude.includes(key)) {
                     return;
                 }
-                if (options.prefix && options.prefix.includes(key)) {
+                if (options.addPrefixTo && options.addPrefixTo.includes(key)) {
                     target['_' + key] = source[key];
                 } else {
                     target[key] = source[key];

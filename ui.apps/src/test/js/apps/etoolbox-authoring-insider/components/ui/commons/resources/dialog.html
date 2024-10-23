@@ -1,0 +1,68 @@
+<coral-dialog class="cq-Dialog coral3-Dialog">
+  <div class="coral3-Dialog-wrapper">
+    <form class="cq-dialog foundation-form foundation-layout-form"
+          action="/content/base/blueprint/test-page/_jcr_content"
+          method="post">
+      <div class="coral3-Dialog-header">
+        <div class="coral3-Dialog-title coral-Heading">
+          <coral-dialog-header class="cq-dialog-header">
+            Test Component
+          </coral-dialog-header>
+        </div>
+      </div>
+      <coral-dialog-content class="coral3-Dialog-content">
+        <div class="cq-dialog-content">
+          <coral-tabview class="coral3-TabView">
+            <coral-tablist>
+              <coral-tab id="tab0">
+                <coral-tab-label>Tab 0</coral-tab-label>
+              </coral-tab>
+              <coral-tab id="tab1">
+                <coral-tab-label>Tab 1</coral-tab-label>
+              </coral-tab>
+            </coral-tablist>
+            <coral-panelstack>
+              <coral-panel class="coral3-Panel" aria-labelledby="tab0">
+                <coral-panel-content>
+                  <div>
+                    <section class="coral-Form-fieldset">
+                      <div class="coral-Form-fieldwrapper">
+                        <label>Title</label>
+                        <input class="coral-Form-field coral3-Textfield" type="text" name="./title">
+                      </div>
+                      <div class="coral-Form-fieldwrapper">
+                        <label>Description</label>
+                        <div class="cq-RichText richtext-container coral-Form-field coral-DecoratedTextfield">
+                          <input type="hidden" name="./description">
+                          <div class="cq-RichText-editable" name="./description">
+                            <textarea class="rte-sourceEditor u-coral-noBorder"></textarea>
+                          </div>
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </coral-panel-content>
+              </coral-panel>
+              <coral-panel class="coral3-Panel" aria-labelledby="tab1">
+                <coral-panel-content>
+                  <div>
+                    <section class="coral-Form-fieldset">
+                      <div class="coral-Form-fieldwrapper">
+                        <label>Left Margin</label>
+                        <input class="coral-Form-field coral3-Textfield" name="./leftMargin" placeholder="0|0|0|0|0">
+                      </div>
+                      <div class="coral-Form-fieldwrapper">
+                        <label>Right Margin</label>
+                        <input class="coral-Form-field coral3-Textfield" name="./rightMargin">
+                      </div>
+                    </section>
+                  </div>
+                </coral-panel-content>
+              </coral-panel>
+            </coral-panelstack>
+          </coral-tabview>
+        </div>
+      </coral-dialog-content>
+    </form>
+  </div>
+</coral-dialog>

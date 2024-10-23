@@ -18,7 +18,7 @@
     const instances = [];
     const idCounter = new ns.utils.IdCounter();
 
-    class Tool {
+    class ToolModel {
         constructor(options = {}) {
             this.icon = options.icon;
             this.id = options.id;
@@ -31,15 +31,15 @@
         }
 
         get valid() {
-            return this.id && this.handle;
+            return this.id && ns.utils.isFunction(this.handle);
         }
     }
 
-    class ToolInstance {
+    class Tool {
         constructor(model, options = {}) {
             this._model = model;
             this.id = idCounter.nextIndexedId(model.id);
-            ns.utils.intern(options, this, { exclude: ['id'], prefix: ['icon', 'ordinal', 'title'] });
+            ns.utils.intern(options, this, { exclude: ['id'], addPrefixTo: ['icon', 'ordinal', 'title'] });
             this._handle = model.handle && model.handle.bind(this);
             const _isMatch = options.isMatch || model.isMatch;
             if (ns.utils.isFunction(_isMatch)) {
@@ -120,12 +120,21 @@
                     console.error('Tool model not found', options.id);
                     return;
                 }
-                instances.push(new ToolInstance(model, options));
+                instances.push(new Tool(model, options));
             } else {
                 // This is a settings-less model
-                instances.push(new ToolInstance(options));
+                const model = new ToolModel(options);
+                if (!model.valid) {
+                    console.error('Invalid tool', options);
+                    return;
+                }
+                instances.push(new Tool(model), { ordinal: Number.MAX_SAFE_INTEGER });
             }
             instances.sort((a, b) => a.ordinal - b.ordinal);
+        },
+
+        clearAll: function () {
+            instances.splice(0, instances.length);
         },
 
         getInstance: function (id) {
@@ -150,7 +159,7 @@
         },
 
         register: function (options) {
-            const model = new Tool(options);
+            const model = new ToolModel(options);
             if (!model.valid) {
                 console.error('Invalid tool', options);
                 return;

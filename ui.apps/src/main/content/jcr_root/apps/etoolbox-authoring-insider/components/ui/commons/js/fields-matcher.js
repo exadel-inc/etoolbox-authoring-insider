@@ -366,12 +366,20 @@
             return false;
         }
         const needles = Array.isArray(needle) ? needle : [needle];
+        if (operator !== '!=') {
+            for (const n of needles) {
+                if (isMatchSingle(haystack, n, operator)) {
+                    return true;
+                }
+            }
+            return false;
+        }
         for (const n of needles) {
-            if (isMatchSingle(haystack, n, operator)) {
-                return true;
+            if (!isMatchSingle(haystack, n, operator)) {
+                return false;
             }
         }
-        return false;
+        return true;
     }
 
     function isMatchSingle(haystack, needle, operator, ci) {

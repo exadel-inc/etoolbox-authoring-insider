@@ -11,6 +11,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
+
 // noinspection JSFileReferences
 require('#commons/fields-matcher.js');
 
@@ -67,7 +69,7 @@ test('Should match a field by being inside dialog', () => {
         <coral-dialog class="cq-Dialog coral3-Dialog">
           <div class="coral3-Dialog-wrapper">
             <form class="cq-dialog foundation-form foundation-layout-form"
-                  action="/content/hpe/base/blueprint/test-page/_jcr_content/textonly"
+                  action="/content/base/blueprint/test-page/_jcr_content"
                   method="post">
               <coral-dialog-content class="coral3-Dialog-content">
                 <div class="cq-dialog-content">
@@ -95,7 +97,7 @@ test('Should match a field by being inside dialog', () => {
 test('Should match a field by being inside page properties', () => {
     const dom = createDom(`
         <form id="cq-sites-properties-form" class="cq-siteadmin-admin-properties coral-Form" 
-              action="/content/hpe/base/blueprint/test-page/_jcr_content" 
+              action="/content/base/blueprint/test-page/_jcr_content" 
               method="post">
           <input class="coral-Form-field" name="./pageTitle">      
         </form>
@@ -195,7 +197,7 @@ test('Should match a field by label', () => {
 
     dom = createDom(`
         <form id="cq-sites-properties-form" class="cq-siteadmin-admin-properties coral-Form" 
-              action="/content/hpe/base/blueprint/test-page/_jcr_content" 
+              action="/content/base/blueprint/test-page/_jcr_content" 
               method="post">
             <div class="coral-Form-fieldwrapper foundation-field-edit">
               <label class="coral-Form-fieldlabel">Enter Description</label>
@@ -212,7 +214,7 @@ test('Should match a field by component title', () => {
         <coral-dialog class="cq-Dialog coral3-Dialog">
           <div class="coral3-Dialog-wrapper">
             <form class="cq-dialog foundation-form foundation-layout-form"
-                  action="/content/hpe/base/blueprint/test-page/_jcr_content/textonly"
+                  action="/content/base/blueprint/test-page/_jcr_content"
                   method="post">
               <div class="coral3-Dialog-header">
                 <div class="coral3-Dialog-title coral-Heading">
@@ -254,7 +256,7 @@ test('Should match a field by tab title', () => {
         <coral-dialog class="cq-Dialog coral3-Dialog">
           <div class="coral3-Dialog-wrapper">
             <form class="cq-dialog foundation-form foundation-layout-form"
-                  action="/content/hpe/base/blueprint/test-page/_jcr_content/textonly"
+                  action="/content/base/blueprint/test-page/_jcr_content"
                   method="post">
               <coral-dialog-content class="coral3-Dialog-content">
                 <div class="cq-dialog-content">
