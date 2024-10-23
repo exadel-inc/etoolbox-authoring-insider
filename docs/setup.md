@@ -91,6 +91,25 @@ Speaking about AI integrations, _Insider_ distinguishes templates for _external_
 
 Most important is the possibility to reorder providers. Because a _tool_ can consume different providers, there must be a default ("first-choice") provider. This is the one that is situated in the lost above other providers for the same tool.
 
+#### Setting up feature support
+
+Some providers will offer int their properties dialogs a multifield with the name like "Support constraints". It allows setting up matching between the tools and providers. A _tool_ may have its feature requirements declared in the `requirements: [...]` section of the tool registration statement. Usually, requirements include a mere ID of a tool. Depending on the tool, there can be more requirements.
+
+If a provider's support setting is empty, it will match any requirement. Otherwise, the "Support constraints" multifield can contain some lines like `"image"` or `"!text"`. The former is a positive match: the provider will match a requirement if it has a support setting that equals to the line, or else _starts with_ the line. The latter is a negative match: the provider will match a requirement if it does NOT equal or starts with the given line. See the examples below:
+
+| Requirement | Support setting | Result     |
+|-------------| --------------- |------------|
+| image       | image           | _match_    |
+| image.create| image           | _match_    |
+| text        | image           | _no match_ |
+| text.expand | !image          | _match_    |
+
+Note: the `!`-starting settings take precedence over the positive ones: if you, e.g., set up a provider to match `!image`, it will match any requirements such as `text`, `audio`, etc., because they are "no images".
+
+Also, a provider always matches a requirement which is the name of a method declared in the registered provider model.
+
+If a tool introduces multiple requirements, a provider must match _all_ of them to be available for the tool.
+
 #### Adding a new provider
 
 Click the "Add" button to add a new provider. Select the provider type in the dialog that opens, and wait for the complete provider properties dialog to appear. After submitting the dialog, drag the newly created provider to a desired position in the list.
