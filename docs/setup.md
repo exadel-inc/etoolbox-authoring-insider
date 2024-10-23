@@ -22,16 +22,16 @@ Many tools offer the way to control "Field selection," that is, to what dialog f
 
 A "rule" can be simply a CSS-style selector. Else it can contain one or more key-value pairs optionally preceded by a scope flag and optionally followed by a selector.
 ```
-@ name="title" attribute = "data-my-attribute" .my-title
+@ name=title|description attribute = "data-attribute" .my-title
 
-│ └──────────────key-value pairs─────────────┘ └selector┘
+│ └─────────────────key-value pairs─────────────────┘ └selector┘
 │
 └─ an optional flag that says the rule is a requrement
 ```
 
 A _flag_ is optional and case-insensitive. When present, it defined the "scope" of the tool. Use _dialog_ for tools that must only be visible insider component's dialogs. Use _properties_ or _page properties_ for tools that must only be visible in page properties.
 
-A key-value pair must start with one of the keys enumerated below, followed by one of the equals/includes operators and a value. A value containing spaces must be enclosed in quotes.
+A key-value pair must start with one of the keys enumerated below, followed by one of the equals/includes operators and a value. A value containing spaces must be enclosed in quotes. You can specify several alternative values  separated with `|`.
 
 Between the key and the value in a key-value pair, the following operators can be used:
 - _=_ exactly equals;
@@ -60,20 +60,21 @@ Example: consider the following group of rules:
 4) name=description, 
 5) name = keywords.
 
-This group of rules contains two requirements: one saying that the component name should not contain the word "Anchor", and another saying that the UI must be of component dialog type. Also the group contains three alternative options, each saying about a possible field name. _Insider_ will attach the current tool to all dialog fields with the name "title" or "description", or "keywords" except those in the dialogs of "Anchor", "New Anchor" or "Anchor Nav" components.
+This group of rules contains two requirements: one saying that the component name should not contain the word "Anchor", and another saying that the UI must be of component dialog type. Also, the group contains three alternative options, each saying about a possible field name. _Insider_ will attach the current tool to all dialog fields with the name "title" or "description", or "keywords" except those in the dialogs of "Anchor", "New Anchor" or "Anchor Nav" components.
 
 Here are some valid examples of "Field selection" rules:
 ```
-.my-field                               // Simple CSS-style selectors.
+.my-field                                   // Simple CSS-style selectors.
 [type="text"]:not(.my-field)
 
-ui=properties field="jcr:description"  // Will match only fields with the name "jcr:description" in page properties.
+ui=properties field="jcr:description"       // Will match only fields with name "jcr:description" in page properties.
 
-component *= "Anchor" field=title       // Will match a field with the name "title" or "./title" in a dialog .
-                                        // of a component whose name contains "Anchor".
+component *= "Anchor" field=title           // Will match a field with name "title" or "./title" in a dialog
+                                            // of a component whose name contains "Anchor".
                                     
-ui = dialog href *= "/we-retail/"       // Will match all fields in dialogs of components located within pages
-                                        // under the "/we-retail/" section of the site. But NOT in page properties.
+ui = dialog href *= "/we-retail/"|"/wknd"   // Will match all fields in dialogs of components located within pages
+                                            // under "/we-retail/" or "/wknd/" section of the site. 
+                                            // But NOT in page properties.
 ```
 
 If the "Field selection" multifield is left empty, the tool is attached to all available dialog fields.

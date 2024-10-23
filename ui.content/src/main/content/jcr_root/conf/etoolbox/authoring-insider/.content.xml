@@ -5,14 +5,14 @@
     <tools jcr:primaryType="nt:unstructured">
         <item0
                 jcr:primaryType="nt:unstructured"
-                details="\{&quot;selectors&quot;:[&quot;[name=\\&quot;./metaDescription\\&quot;]&quot;,&quot;[name=\\&quot;./jcr:description\\&quot;]&quot;],&quot;prompt&quot;:&quot;Provide a summary of the webpage content given in the following message. The summary must contain up to 50 words. Do not include any HTML tags. Respond with only the summary text.&quot;}"
+                details="\{&quot;selectors&quot;:[&quot;ui=properties name=metaDescription|jcr:description&quot;],&quot;prompt&quot;:&quot;Provide a summary of the webpage content given in the following message. The summary must contain up to 50 words. Do not include any HTML tags. Respond with only the summary text.&quot;}"
                 enabled="true"
                 icon="summarize"
                 title="Page summary"
                 type="page.command"/>
         <item1
                 jcr:primaryType="nt:unstructured"
-                details="\{&quot;selectors&quot;:&quot;[name=\\&quot;./metaKeywords\\&quot;]&quot;,&quot;prompt&quot;:&quot;Provide SEO keywords for the web page content in the following message. Give up to 10 keywords. Keywords must start with a capital letter and be separated by comma and a space. Respond with only the keywords. &quot;}"
+                details="\{&quot;selectors&quot;:&quot;[ui=properties name=metaKeywords]&quot;,&quot;prompt&quot;:&quot;Provide SEO keywords for the web page content in the following message. Give up to 10 keywords. Keywords must start with a capital letter and be separated by comma and a space. Respond with only the keywords. &quot;}"
                 enabled="true"
                 icon="viewList"
                 title="Page keywords"
