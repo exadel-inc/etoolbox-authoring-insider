@@ -379,6 +379,7 @@
             console.error('The onReload handler is missing');
             return;
         }
+        dialog.abortController.abort();
         const providerId = ns.fields.getValue(dialog.querySelector(SELECTOR_PROVIDERS));
         dialog.open = false;
         dialog.classList.remove(CLS_MODIFIED);

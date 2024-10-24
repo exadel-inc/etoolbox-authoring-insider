@@ -78,6 +78,9 @@
         const body = JSON.stringify(prepareRequestBody(options));
 
         const response = await ns.http.getJson(endpoint, { method: 'POST', body, signal: options.signal });
+        if (!response) {
+            return '';
+        }
 
         let message;
         if (Array.isArray(response.choices) && response.choices.length > 0) {

@@ -65,6 +65,10 @@
 
         const body = JSON.stringify(prepareRequestBody(options));
         const response = await ns.http.getJson(options.url, { method: 'POST', body, signal: options.signal });
+        if (!response) {
+            return '';
+        }
+
         if (response.content) {
             return response.content.trim().replace(/<\|\w+\|>/g, '');
         } else if (response.message) {
