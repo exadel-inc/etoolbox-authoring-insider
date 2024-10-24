@@ -15,7 +15,7 @@
     'use strict';
 
     const ID = 'text.translate';
-    const PROMPT = 'Translate the next message into {lang}. Respond with only the translation. Give exactly one variant.';
+    const PROMPT = 'Translate the next message into {{lang}}. Respond with only the translation. Give exactly one variant.';
     const REPETITION_PROMPT = 'Provide another variant of how you translate the given message. Respond with only the translation. Give exactly one variant.';
     const DEFAULT_LANGUAGES = ['French', 'German'];
 
@@ -96,7 +96,7 @@
             if (!text) {
                 return context.close();
             }
-            context.appendMessage(text, 'initial');
+            context.appendMessage(text, 'local initial');
         }
 
         let prompt = initialContent.prompt;
@@ -116,8 +116,8 @@
             if (!language) {
                 return context.close();
             }
-            prompt = PROMPT.replace('{lang}', language);
-            context.prependMessage(prompt, 'prompt');
+            prompt = PROMPT.replace('{{lang}}', language);
+            context.setPrompt(prompt);
         }
 
         const messages = [

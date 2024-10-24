@@ -128,7 +128,6 @@
         if (options.intro && options.intro.image) {
             startMessage = ns.ui.createElement({
                 class: 'message initial no-grow',
-                'data-prompt': options.intro.prompt || '',
                 children: {
                     tag: 'img',
                     class: 'preview',
@@ -140,7 +139,6 @@
         if (options.intro && isNotBlank(options.intro.text)) {
             startMessage = ns.ui.createElement({
                 class: 'message initial',
-                'data-prompt': options.intro.prompt || '',
                 children: {
                     class: CLS_CONTENT,
                     innerText: options.intro.text
@@ -148,13 +146,13 @@
             });
         }
 
-        if (options.intro && options.intro.visiblePrompt) {
+        if (options.intro && options.intro.prompt) {
             startMessage = startMessage ? [startMessage] : [];
             startMessage.unshift(ns.ui.createElement({
-                class: 'message local prompt',
+                class: 'message local prompt hidden',
                 children: {
                     class: CLS_CONTENT,
-                    innerText: options.intro.visiblePrompt
+                    innerText: options.intro.prompt
                 }
             }));
         }

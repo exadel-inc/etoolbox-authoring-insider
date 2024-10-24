@@ -192,11 +192,11 @@
       .rounded-right;
       align-self: flex-start;
     }
-    &.initial {
-      background-color: @bg-light;
-    }
     &.local {
       background-color: @bg-lighter;
+    }
+    &.initial {
+      background-color: @bg-light;
     }
     &.local:has(+ .initial) {
       border-bottom-right-radius: 0;
@@ -276,7 +276,8 @@
   }
 
   // A special centered case to make the spinner display in the middle of a dialog when there are no messages
-  .messages:empty + .centered {
+  .messages:empty + .centered,
+  .messages:has(.prompt.hidden:first-child:last-child) + .centered{
     position: relative;
     top: 50%;
     transform: translateY(-100%);

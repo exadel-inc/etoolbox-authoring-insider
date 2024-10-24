@@ -51,7 +51,6 @@
             title: this.title,
             icon: this.icon,
             source: field,
-            intro: initialContent,
             providers: this.providers,
             providerId: providerId,
             responses: [
@@ -74,7 +73,7 @@
                 }
                 const history = context.getHistory();
                 this.handle(field, newProviderId, {
-                    visiblePrompt: history.visiblePrompt,
+                    prompt: history.prompt,
                     text: history.initial,
                 });
             },
@@ -93,10 +92,9 @@
             if (!text) {
                 return context.close();
             }
-            context.appendMessage(text, 'initial');
         }
 
-        let prompt = initialContent.visiblePrompt || initialContent.prompt;
+        let prompt = initialContent.prompt;
         if (!prompt) {
             prompt = await ns.ui.inputDialog({
                 title: 'Enter your prompt',
@@ -108,8 +106,10 @@
             if (!prompt) {
                 return context.close();
             }
-            context.prependMessage(prompt, 'local prompt');
         }
+
+        context.appendMessage(prompt, 'local prompt');
+        context.appendMessage(text, 'local initial');
 
         const messages = [
             { type: 'local', text: prompt },

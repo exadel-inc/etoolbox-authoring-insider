@@ -12,7 +12,7 @@
                 type="page.command"/>
         <item1
                 jcr:primaryType="nt:unstructured"
-                details="\{&quot;selectors&quot;:&quot;[ui=properties name=metaKeywords]&quot;,&quot;prompt&quot;:&quot;Provide SEO keywords for the web page content in the following message. Give up to 10 keywords. Keywords must start with a capital letter and be separated by comma and a space. Respond with only the keywords. &quot;}"
+                details="\{&quot;selectors&quot;:[&quot;ui=properties name=metaKeywords&quot;],&quot;prompt&quot;:&quot;Provide SEO keywords for the web page content in the following message. Give up to 10 keywords. Keywords must start with a capital letter and be separated by comma and a space. Respond with only the keywords. &quot;}"
                 enabled="true"
                 icon="viewList"
                 title="Page keywords"

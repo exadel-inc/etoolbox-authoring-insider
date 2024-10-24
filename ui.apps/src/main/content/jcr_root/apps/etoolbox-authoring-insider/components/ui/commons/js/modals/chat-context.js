@@ -30,16 +30,11 @@
             return this.dom.abortController && this.dom.abortController.signal.aborted;
         }
 
-        appendMessage(message, type, atStart = false) {
+        appendMessage(message, type) {
             if (type === 'prompt') {
-                const firstMessage = this.dom.querySelector(SELECTOR_MESSAGE);
-                if (firstMessage) {
-                    firstMessage.dataset.prompt = message;
-                    return;
-                }
                 type = 'local';
             }
-            this.dom.addMessage(message, type, atStart);
+            this.dom.addMessage(message, type);
         }
 
         close() {
@@ -50,34 +45,34 @@
             const messages = this.dom.querySelectorAll(SELECTOR_MESSAGE);
             const result = { messages: [] };
             for (const message of messages) {
-                if (message.dataset.prompt) {
-                    result.prompt = message.dataset.prompt;
-                    result.messages.push({ role: 'user', text: message.dataset.prompt });
-                }
                 const contentHolder = message.querySelector(ns.ui.SELECTOR_CONTENT);
                 if (!contentHolder) {
                     continue;
                 }
                 const content = contentHolder.innerText.trim();
                 if (message.matches('.prompt')) {
-                    delete result.prompt;
-                    result.visiblePrompt = contentHolder.innerText.trim();
+                    result.prompt = content;
                     result.messages.push({ role: 'user', text: content });
                 } else if (message.matches('.initial')) {
-                    result.initial = contentHolder.innerText.trim();
+                    result.initial = content;
                     result.messages.push({ role: 'user', text: content });
                 } else if (!message.matches('.info')) {
                     result.messages.push({
                         role: message.matches('.remote') ? 'assistant' : 'user',
-                        text: contentHolder.innerText.trim()
+                        text: content
                     });
                 }
             }
             return result;
         }
 
-        prependMessage(message, type) {
-            this.appendMessage(message, type, true);
+        setPrompt(value) {
+            const existingPrompt = this.dom.querySelector('.local.prompt .content');
+            if (existingPrompt) {
+                existingPrompt.innerText = value;
+            } else {
+                this.dom.addMessage(value, 'local prompt hidden', true);
+            }
         }
 
         get signal() {

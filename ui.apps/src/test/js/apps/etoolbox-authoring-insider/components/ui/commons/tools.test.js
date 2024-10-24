@@ -21,7 +21,7 @@ require('#commons/tools.js');
 require('#commons/fields-matcher.js');
 
 const path = require('path');
-const {readFileSync} = require('fs');
+const { readFileSync } = require('fs');
 
 const ns = window.eai;
 
