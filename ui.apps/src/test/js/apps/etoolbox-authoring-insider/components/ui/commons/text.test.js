@@ -21,8 +21,8 @@ require('#commons/text.js');
 const ns = window.eai;
 
 const TEXT = 'Lorem ipsum dolor sit amet, {{ Enter consectetur adipiscing elit }}. ' +
-    'Sed do {{ Select from | Eiusmod:eiusmod, Tempor=tempor, incididunt }}, ' +
-    'ut labore et dolore, {{ Enter magna aliqua }}.';
+    'Sed do {{ Select from | Eiusmod:eiusmod | Tempor=tempor | incididunt }}, ' +
+    'ut labore et dolore, {{ Enter magna | aliqua; veniam }}.';
 
 test('Should parse plain text', () => {
     const text = 'Lorem ipsum dolor sit amet';
@@ -46,7 +46,11 @@ test('Should parse text with placeholders', () => {
     ]);
 
     placeholder = textBuilder.nextPlaceholder();
-    expect(placeholder).toHaveProperty('title', 'Enter magna aliqua');
+    expect(placeholder).toHaveProperty('title', 'Enter magna');
+    expect(placeholder).toHaveProperty('options', [
+        { label: 'aliqua', value: 'aliqua' },
+        { label: 'veniam', value: 'veniam' }
+    ]);
 
     placeholder = textBuilder.nextPlaceholder();
     expect(placeholder).toBeNull();

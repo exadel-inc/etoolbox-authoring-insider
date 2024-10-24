@@ -85,10 +85,15 @@
         if (!value.includes('|')) {
             return { title: value.trim() };
         }
-        const [titlePart, optionsPart] = value.split('|');
-        const optionsDelimiter = optionsPart.includes(';') ? ';' : ',';
-        const options = optionsPart.split(optionsDelimiter)
-            .map((item) => item.trim())
+        const [titlePart, ...optionsPart] = value.split('|');
+        let options;
+        if (optionsPart.length === 1 && optionsPart[0].includes(';') || optionsPart[0].includes(',')) {
+            const optionsDelimiter = optionsPart[0].includes(';') ? ';' : ',';
+            options = optionsPart[0].split(optionsDelimiter)
+        } else {
+            options = optionsPart;
+        }
+        options = options.map((item) => item.trim())
             .filter((item) => item.length > 0)
             .map((item) => {
                 let indexOfKeyValueDelim = item.indexOf('=');
