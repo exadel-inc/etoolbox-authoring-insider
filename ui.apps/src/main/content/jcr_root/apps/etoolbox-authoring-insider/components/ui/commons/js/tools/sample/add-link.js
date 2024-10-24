@@ -20,8 +20,13 @@
         icon: 'link',
         id: ID,
         title: 'Add link',
-        handle: handle,
+        isMatch,
+        handle,
     });
+
+    function isMatch(field) {
+        return !field.matches('.cq-RichText');
+    }
 
     async function handle(field) {
         if (!field) {
