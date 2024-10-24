@@ -79,7 +79,15 @@ ui = dialog href *= "/we-retail/"|"/wknd"   // Will match all fields in dialogs 
 
 If the "Field selection" multifield is left empty, the tool is attached to all available dialog fields.
 
-#### Adding a new tool
+#### Setting up prompt
+
+Some of the tools would allow modifying the LLM prompt. If the label for the prompt textbox says that it supports user input templates, you can make _Insider_ ask for more info before prompting an LLM. An input template is a string enclosed in `{{ }}` brackets. Inside the template, you put the title of dialog and, optionally, the variants to select from. E.g., the prompt `Modify the text to {{ How do you want your text to be modified? }}` will make _Insider_ display an input dialog entitled "How you want your text to be modified?" If a user then enters a text like "comply with standards", the actual prompt sent to an LLM will be "Modify the text to comply with standards".
+
+There is a way to display a select list instead of a text input. To do this, you need to put the variants separated by a semicolon or a comma inside the brackets. E.g., the prompt `Modify the text to {{ How do you want your text to be modified? | comply with standards; be more concise; be more engaging }}` will make _Insider_ display a select list with three options.
+
+If a prompt supports user-input templates, it may contain any number of templates. A user will be displayed multiple input sequentially.  
+
+#### Adding a new dialog tool
 
 Click the "Add" button to add another template-based tool (or "variation"). Select the template in the dialog that opens, and wait for the complete tool properties dialog to appear. After submitting the dialog, drag the newly created tool variation to a desired position in the list. 
 
