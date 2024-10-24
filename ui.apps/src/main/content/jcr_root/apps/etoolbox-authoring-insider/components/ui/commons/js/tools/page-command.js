@@ -28,7 +28,7 @@
         ],
         settings: [
             { name: 'selectors', type: 'textfield', title: 'Field selection (if not specified, will match all text fields)', multi: true },
-            { name: 'prompt', type: 'text', title: 'Prompt', required: true },
+            { name: 'prompt', type: 'text', title: 'Prompt (supports user input templates)', required: true },
         ],
 
         handle,
