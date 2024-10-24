@@ -18,6 +18,33 @@
         <title jcr:primaryType="nt:unstructured"
                sling:resourceType="granite/ui/components/coral/foundation/text"
                text="EToolbox Authoring Insider - Settings"/>
+        <actions jcr:primaryType="nt:unstructured">
+            <primary jcr:primaryType="nt:unstructured">
+                <addTool
+                        jcr:primaryType="nt:unstructured"
+                        sling:resourceType="granite/ui/components/coral/foundation/button"
+                        granite:id="addTool"
+                        granite:title="Add tool"
+                        icon="add"
+                        text="Add tool">
+                    <granite:data
+                            jcr:primaryType="nt:unstructured"
+                            adds-to="tools"/>
+                </addTool>
+                <addProvider
+                        jcr:primaryType="nt:unstructured"
+                        sling:resourceType="granite/ui/components/coral/foundation/button"
+                        granite:id="addProvider"
+                        granite:title="Add provider"
+                        granite:class="hidden"
+                        icon="add"
+                        text="Add provider">
+                    <granite:data
+                            jcr:primaryType="nt:unstructured"
+                            adds-to="providers"/>
+                </addProvider>
+            </primary>
+        </actions>
         <content jcr:primaryType="nt:unstructured"
                  sling:resourceType="granite/ui/components/coral/foundation/container">
             <items jcr:primaryType="nt:unstructured">
@@ -124,15 +151,6 @@
                                                         </items>
                                                     </field>
                                                 </tools>
-                                                <addTool
-                                                        jcr:primaryType="nt:unstructured"
-                                                        sling:resourceType="granite/ui/components/coral/foundation/button"
-                                                        granite:id="addTool"
-                                                        text="Add">
-                                                    <granite:data
-                                                            jcr:primaryType="nt:unstructured"
-                                                            adds-to="tools"/>
-                                                </addTool>
                                             </items>
                                         </tab-dialog-tools>
                                         <tab-providers
@@ -221,14 +239,6 @@
                                                         </items>
                                                     </field>
                                                 </providers>
-                                                <addProvider
-                                                        jcr:primaryType="nt:unstructured"
-                                                        sling:resourceType="granite/ui/components/coral/foundation/button"
-                                                        text="Add">
-                                                    <granite:data
-                                                            jcr:primaryType="nt:unstructured"
-                                                            adds-to="providers"/>
-                                                </addProvider>
                                             </items>
                                         </tab-providers>
                                     </items>

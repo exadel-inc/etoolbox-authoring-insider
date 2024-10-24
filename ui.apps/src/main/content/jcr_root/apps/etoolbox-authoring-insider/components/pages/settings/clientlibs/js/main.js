@@ -51,7 +51,11 @@
         // This hook is added apart from the rest to avoid "autosubmit" handler running unconditionally upon a page load
         $(document).on('change', '.autosubmit-defer', debouncedSubmit);
 
-        displayTabs();
+        const hash = window.location.hash;
+        const targetId = hash && hash.substring(1);
+
+        displayTabs(targetId);
+        adjustToolbarVisibility(targetId);
     }
 
     async function onAutoSubmit(e) {
@@ -98,6 +102,7 @@
             return;
         }
         window.location.hash = '#' + element;
+        adjustToolbarVisibility(element);
     }
 
     function onKeyDownInDialog(e) {
@@ -284,19 +289,19 @@
        Tabs logic
        ---------- */
 
-    function displayTabs() {
+    function displayTabs(targetId) {
         const tabList = document.querySelector('coral-tablist');
         const transparentTabs = tabList.closest('.transparent');
         if (transparentTabs) {
             transparentTabs.classList.remove('transparent');
         }
+        adjustTabVisibility(tabList, targetId);
+    }
 
-        const hash = window.location.hash;
-        if (!hash) {
+    function adjustTabVisibility(tabList, targetId) {
+        if (!targetId) {
             return;
         }
-        const targetId = hash.substring(1);
-
         for (const tab of tabList.items.getAll()) {
             const foundationTrackingEvent = tab.dataset.foundationTrackingEvent;
             const element = foundationTrackingEvent && JSON.parse(foundationTrackingEvent).element;
@@ -305,6 +310,19 @@
                 return;
             }
         }
+    }
+
+    /* -------------
+       Toolbar logic
+       ------------- */
+
+    function adjustToolbarVisibility(targetId) {
+        if (!targetId) {
+            return;
+        }
+        document.querySelectorAll('[data-adds-to]').forEach((item) => {
+            item.classList.toggle('hidden', item.dataset.addsTo !== targetId);
+        });
     }
 
     /* ------------
