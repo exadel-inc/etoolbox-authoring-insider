@@ -13,7 +13,8 @@ EToolbox Authoring Insider (or simply _Insider_) is part of Exadel Toolbox for A
 
 _Insider_ plugs in different points in the AEM authoring interface, such as:
 - component dialogs;
-- page properties, etc.
+- page properties;
+- in-place editors, etc.
 
 _Insider_ appends to input fields (text fields, textarea-s, RTE fields) and provides different **tools** (= "commands") to change field content. These are such commands as "expand text", "compact text", "do translation". "summarize", etc.
 

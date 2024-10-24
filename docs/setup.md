@@ -77,7 +77,7 @@ ui = dialog href *= "/we-retail/"|"/wknd"   // Will match all fields in dialogs 
                                             // But NOT in page properties.
 ```
 
-If the "Field selection" multifield is left empty, the tool is attached to all available dialog fields.
+If the "Field selection" multifield is left empty, the tool is attached to all available text fields and RTEs.
 
 #### Setting up prompt
 

@@ -114,7 +114,7 @@
         validate: function (field) {
             return ns.fields.getValue(field).replaceAll(/^\s+|\s$/g, '').length > 0
                 ? null
-                : 'A non-blank value is expected';
+                : 'You need to enter some text';
         }
     });
 
