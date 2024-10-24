@@ -16,6 +16,9 @@
 
     const ID = 'page.command';
 
+    const NON_CONTENT_TAGS = ['script', 'style', 'link', 'iframe', 'object', 'embed'];
+    const NON_EMPTY_TAGS = ['div', 'span', 'section', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'];
+
     ns.tools.register({
         icon: 'page',
         id: ID,
@@ -123,11 +126,35 @@
         const result = await provider.textToText({
             messages: [
                 { type: 'user', text: initialContent.prompt },
-                { type: 'user', text: main.innerText }
+                { type: 'user', text: cleanUpDom(main) },
             ],
             signal: context.signal
         });
         return !context.aborted ? result : '';
+    }
+
+    function cleanUpDom(value) {
+        NON_CONTENT_TAGS.forEach(tag => {
+            value.querySelectorAll(tag).forEach(element => element.remove());
+        });
+        cleanUpNodes(value)
+        Array.from(value.querySelectorAll(':empty'))
+            .filter(element => NON_EMPTY_TAGS.includes(element.tagName.toLowerCase()))
+            .forEach((element) => element.remove());
+        return value.innerHTML.trim();
+    }
+
+    function cleanUpNodes(value) {
+        const removableAttributes = value.getAttributeNames()
+            .filter((name) => name !== 'role' && !name.startsWith('aria-'));
+        removableAttributes.forEach((name) => value.removeAttribute(name));
+        for (const childNode of value.childNodes) {
+            if (childNode.nodeType === Node.ELEMENT_NODE) {
+                cleanUpNodes(childNode);
+            } else if (childNode.nodeType === Node.TEXT_NODE) {
+                childNode.nodeValue = childNode.nodeValue.trim();
+            }
+        }
     }
 
 })(window, document, window.eai = window.eai || {});
