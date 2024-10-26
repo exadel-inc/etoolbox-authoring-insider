@@ -4,5 +4,5 @@
           jcr:primaryType="cq:ClientLibraryFolder"
           allowProxy="{Boolean}true"
           categories="[etoolbox.insider.runtime]"
-          embed="[etoolbox.insider.commons]"
+          embed="[etoolbox.insider.commons,etoolbox.insider.plugins]"
           jsProcessor="[default:none;languageOut=ECMASCRIPT5,min:gcc;languageIn=ECMASCRIPT_2015;compilationLevel=simple;languageOut=ECMASCRIPT5]"/>

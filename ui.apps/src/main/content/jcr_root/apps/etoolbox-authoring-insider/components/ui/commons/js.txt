@@ -14,15 +14,4 @@ modals/chat-context.js
 modals/notification.js
 
 tools.js
-tools/image-caption.js
-tools/text-command.js
-tools/text-modify-free.js
-tools/text-proofread.js
-tools/text-translate.js
-tools/page-command.js
-tools/sample/add-link.js
-
 providers.js
-providers/llm-external.js
-providers/llm-own.js
-providers/sample/repeater.js
