@@ -16,46 +16,41 @@
 
     ns.TITLE = 'EToolbox Authoring Insider';
 
-    let settings = {};
+    let settings;
 
-    let settingsLoader = new Promise(async (resolve) => {
+    async function loadSettings() {
+        if (settings !== undefined) {
+            return settings;
+        }
         try {
             settings = await ns.http.getJson('/content/etoolbox/authoring-insider/servlet/config.json');
+            return settings;
         } catch (error) {
             console.error(`Failed to load ${ns.TITLE} settings`);
+            settings = null;
+            throw error;
         }
-        resolve(settings);
-        settingsLoader = new Promise((resolve) => resolve(settings));
-    });
+    }
+
+    async function extractSettings(namespace, id) {
+        const result = await loadSettings();
+        if (result === null) {
+            return null;
+        }
+        if (!id) {
+            return result[namespace] || [];
+        }
+        return (result[namespace] || []).filter(f => f.id === id) || [];
+    }
 
     ns.settings = {
-        ifAvailable: function () {
-            return new Promise(async (resolve, reject) => {
-                const hasProperties = (await settingsLoader).hasOwnProperty('tools');
-                if (hasProperties) {
-                    resolve();
-                } else {
-                    reject();
-                }
-            })
-        },
-
         getToolSettings: async function (id) {
-            const result = (await settingsLoader).tools || [];
-            if (!id) {
-                return result;
-            }
-            return result.filter(f => f.id === id) || [];
+            return await extractSettings('tools', id);
         },
 
         getProviderSettings: async function (id) {
-            const result = (await settingsLoader).providers || [];
-            if (!id) {
-                return result;
-            }
-            return result.filter(p => p.id === id) || [];
+            return await extractSettings('providers', id);
         },
     };
 
 })(window.eai = window.eai || {});
-
