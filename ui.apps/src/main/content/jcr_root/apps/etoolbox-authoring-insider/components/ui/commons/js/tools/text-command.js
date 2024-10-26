@@ -63,7 +63,7 @@
             source: field,
             intro: initialContent,
             providers: this.providers,
-            providerId: providerId,
+            providerId,
             responses: [
                 {
                     icon: 'plus-one',
@@ -79,9 +79,9 @@
                     style: 'icon'
                 }
             ],
-            onStart: async (context) =>
+            onStart: async(context) =>
                 await inputAndRun(context, provider, initialContent),
-            onInput: async (msg, context) =>
+            onInput: async(msg, context) =>
                 provider.textToText({ messages: context.getHistory().messages, signal: context.signal }),
             onReload: (newProviderId, context) => {
                 if (context.isRefresh) {

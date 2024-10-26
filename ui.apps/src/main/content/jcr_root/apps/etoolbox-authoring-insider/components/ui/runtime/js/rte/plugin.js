@@ -74,7 +74,7 @@
                 if (!Array.isArray(toolbar)) {
                     toolbar = cui.toolbar = [];
                 }
-                toolbar.push('#' + FEATURE)
+                toolbar.push('#' + FEATURE);
             });
 
             // Register the popover
@@ -91,7 +91,7 @@
                 if (!popovers) {
                     popovers = cui.popovers = {};
                 }
-                popovers.insider = popoverDefinition
+                popovers.insider = popoverDefinition;
             });
 
             // Register the popover template
@@ -169,11 +169,11 @@
         const selection = context.win.getSelection();
         const anchorNode = selection.anchorNode;
         const extentNode = selection.extentNode;
-        if (!anchorNode
-            || !extentNode
-            || anchorNode === extentNode
-            || extentNode.nodeType !== Node.ELEMENT_NODE
-            || selection.extentOffset !== 0) {
+        if (!anchorNode ||
+            !extentNode ||
+            anchorNode === extentNode ||
+            extentNode.nodeType !== Node.ELEMENT_NODE ||
+            selection.extentOffset !== 0) {
             return;
         }
         const previousNode = extentNode.previousSibling;

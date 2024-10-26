@@ -62,7 +62,7 @@
             icon: this.icon,
             source: field,
             providers: this.providers,
-            providerId: providerId,
+            providerId,
             responses: [
                 {
                     icon: 'scribble',
@@ -71,8 +71,8 @@
                     style: 'icon'
                 }
             ],
-            onStart: async (context) => await doTask(context, provider, initialContent),
-            onReload: (newProviderId, context) =>  {
+            onStart: async(context) => await doTask(context, provider, initialContent),
+            onReload: (newProviderId, context) => {
                 if (context.isRefresh) {
                     return this.handle(field, newProviderId);
                 }
@@ -137,7 +137,7 @@
         NON_CONTENT_TAGS.forEach(tag => {
             value.querySelectorAll(tag).forEach(element => element.remove());
         });
-        cleanUpNodes(value)
+        cleanUpNodes(value);
         Array.from(value.querySelectorAll(':empty'))
             .filter(element => NON_EMPTY_TAGS.includes(element.tagName.toLowerCase()))
             .forEach((element) => element.remove());

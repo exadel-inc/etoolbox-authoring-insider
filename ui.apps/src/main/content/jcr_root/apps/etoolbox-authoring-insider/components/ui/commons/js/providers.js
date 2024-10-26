@@ -27,7 +27,9 @@
             this.settings = options.settings;
             Object.keys(options)
                 .filter((key) => ns.utils.isFunction(options[key]))
-                .forEach((key) => this[key] = options[key]);
+                .forEach((key) => {
+                    this[key] = options[key];
+                });
         }
 
         get valid() {
@@ -42,7 +44,9 @@
             ns.utils.intern(options, this, { exclude: ['id'], addPrefixTo: ['icon', 'ordinal', 'title'] });
             Object.keys(model)
                 .filter((key) => ns.utils.isFunction(model[key]))
-                .forEach((key) => this[key] = model[key].bind(this));
+                .forEach((key) => {
+                    this[key] = model[key].bind(this);
+                });
         }
 
         get icon() {
@@ -90,11 +94,11 @@
                         }
                         if (item === req || item.startsWith(req.replace(/\.+?/, '') + '.')) {
                             return true;
-                        } else if (item === '!' + req || item.startsWith('!' + req.replace(/\.+$/,'') + '.')) {
+                        } else if (item === '!' + req || item.startsWith('!' + req.replace(/\.+$/, '') + '.')) {
                             return false;
                         }
                     }
-                    return allowByDefault
+                    return allowByDefault;
                 }
                 return true;
             });
@@ -157,5 +161,5 @@
             delete models[id];
         }
     };
-})(window.eai = window.eai || {});
 
+})(window.eai = window.eai || {});

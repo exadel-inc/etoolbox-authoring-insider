@@ -58,9 +58,9 @@
             if (range.startNode && range.endNode && range.startNode !== range.endNode) {
                 return true;
             }
-            return ns.utils.isNumber(range.startOffset)
-                && ns.utils.isNumber(range.endOffset)
-                && (range.startOffset < range.endOffset);
+            return ns.utils.isNumber(range.startOffset) &&
+                ns.utils.isNumber(range.endOffset) &&
+                (range.startOffset < range.endOffset);
         }
 
         lock() {
@@ -72,9 +72,9 @@
         preserveSelectionRange() {
             delete this._storedRange;
             const currentRange = this.getSelectionRange();
-            const noSelection = !currentRange
-                || !currentRange.startNode
-                || (ns.utils.isNumber(currentRange.startOffset) && !currentRange.endNode);
+            const noSelection = !currentRange ||
+                !currentRange.startNode ||
+                (ns.utils.isNumber(currentRange.startOffset) && !currentRange.endNode);
             if (noSelection) {
                 return;
             }
@@ -119,6 +119,6 @@
             RTE.Selection.selectBookmark(this._plugin.editorKernel.editContext, bookmark);
             return true;
         }
-    }
+    };
 
 })(window.CUI.rte, window.eai = window.eai || {});

@@ -20,7 +20,7 @@
      * Presents a criteria-based matcher for dialogs and page properties fields
      * @class
      */
-    ns.fields.Matcher  = class {
+    ns.fields.Matcher = class {
         /**
          * Creates a new instance of the matcher
          * @param {string} value - A string representing match criteria
@@ -170,7 +170,7 @@
             }
             const name = this['fieldName'];
             const variants = Array.isArray(name) ? [].concat(...name) : [name];
-            if ((operator === '=' || operator === '^=') ) {
+            if (operator === '=' || operator === '^=') {
                 // Supplement provided filed name(-s) with the variants that start with "./"
                 variants.filter((v) => !v.startsWith('./')).forEach((v) => variants.push(`./${v}`));
             }
@@ -273,7 +273,7 @@
             }
             return operator === '=' ? result : !result;
         }
-    }
+    };
 
     function appendIfNeeded(first, second) {
         if (!first || first.length === 0) {
@@ -398,10 +398,10 @@
     }
 
     function isNameCharacter(chr, extraChars = '-_') {
-        return (chr >= 'A' && chr <= 'Z')
-            || (chr >= 'a' && chr <= 'z')
-            || (chr >= '0' && chr <= '9')
-            || extraChars.includes(chr);
+        return (chr >= 'A' && chr <= 'Z') ||
+            (chr >= 'a' && chr <= 'z') ||
+            (chr >= '0' && chr <= '9') ||
+            extraChars.includes(chr);
     }
 
     function normalizeKey(value) {

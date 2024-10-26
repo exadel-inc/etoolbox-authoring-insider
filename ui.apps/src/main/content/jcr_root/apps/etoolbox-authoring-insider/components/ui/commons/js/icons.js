@@ -46,7 +46,7 @@
         // Create from a predefined path/url
         if (PREDEFINED_ICONS.includes(icon)) {
             // return `<img src="${PREDEFINED_ICONS[icon]}" alt="${alt || 'Icon'}" class="icon">`;
-            return `<span class="icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill-rule="evenodd" clip-rule="evenodd"><use href="${ICON_PACK}#${icon}"/></svg></span>`
+            return `<span class="icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill-rule="evenodd" clip-rule="evenodd"><use href="${ICON_PACK}#${icon}"/></svg></span>`;
         }
         // Create from a DOM element
         if (/^<[\w-]+/.test(icon)) {
@@ -67,7 +67,7 @@
             return `<img class="icon" src="${getSyntheticSvg(alt, DEFAULT_COLOR)}" alt="${alt || 'Icon'}">`;
         }
         return '';
-    }
+    };
 
     ns.icons.DEFAULT_MONO = ns.icons.getHtml('insider-mono');
 
@@ -82,8 +82,6 @@
               <circle r="100" cx="100" cy="100" mask="url(#mask)" fill="${color}"/>
             </svg>`;
         return 'data:image/svg+xml;base64,' + btoa(svgContent);
-
     }
 
 })(window, window.eai = window.eai || {});
-

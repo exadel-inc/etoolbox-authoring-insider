@@ -89,7 +89,6 @@
                 this.dom.querySelector(ns.ui.SELECTOR_WAIT).dataset.message = message;
             }
         }
-    }
-
+    };
 
 })(window.eai = window.eai || {});

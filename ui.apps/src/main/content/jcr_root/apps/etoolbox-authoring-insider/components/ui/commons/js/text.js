@@ -30,7 +30,7 @@
                 if (!this._placeholders) {
                     this._placeholders = [];
                 }
-                this._placeholders.push({start: bracketPos, end: closingBracketPos + 2});
+                this._placeholders.push({ start: bracketPos, end: closingBracketPos + 2 });
                 bracketPos = this._value.indexOf('{{', closingBracketPos + 2);
             }
         }
@@ -41,9 +41,9 @@
             }
             for (let i = this._placeholders.length - 1; i >= 0; i--) {
                 const placeholder = this._placeholders[i];
-                this._value = this._value.substring(0, placeholder.start)
-                    + (placeholder.content || '')
-                    + this._value.substring(placeholder.end);
+                this._value = this._value.substring(0, placeholder.start) +
+                    (placeholder.content || '') +
+                    this._value.substring(placeholder.end);
             }
             return this.toString();
         }
@@ -52,8 +52,8 @@
             if (!ns.utils.isObjectWithProperty(placeholder, 'start')) {
                 return;
             }
-            const matchingPlaceholder = Array.isArray(this._placeholders)
-                && this._placeholders.find((p) => p.start === placeholder.start && p.end === placeholder.end);
+            const matchingPlaceholder = Array.isArray(this._placeholders) &&
+                this._placeholders.find((p) => p.start === placeholder.start && p.end === placeholder.end);
             if (!matchingPlaceholder) {
                 return;
             }
@@ -87,9 +87,9 @@
         }
         const [titlePart, ...optionsPart] = value.split('|');
         let options;
-        if (optionsPart.length === 1 && optionsPart[0].includes(';') || optionsPart[0].includes(',')) {
+        if (optionsPart.length === 1 && (optionsPart[0].includes(';') || optionsPart[0].includes(','))) {
             const optionsDelimiter = optionsPart[0].includes(';') ? ';' : ',';
-            options = optionsPart[0].split(optionsDelimiter)
+            options = optionsPart[0].split(optionsDelimiter);
         } else {
             options = optionsPart;
         }
@@ -104,12 +104,12 @@
                     return {
                         label: item.substring(0, indexOfKeyValueDelim).trim(),
                         value: item.substring(indexOfKeyValueDelim + 1).trim()
-                    }
+                    };
                 }
                 return {
                     label: item.trim(),
                     value: item.trim()
-                }
+                };
             });
         return { title: titlePart.trim(), options };
     }

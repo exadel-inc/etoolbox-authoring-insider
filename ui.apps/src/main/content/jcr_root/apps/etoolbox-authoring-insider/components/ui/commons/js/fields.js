@@ -34,7 +34,7 @@
             field.lock();
         },
 
-        getSelectedContent: function(field) {
+        getSelectedContent: function (field) {
             if (!field) {
                 return '';
             }
@@ -123,7 +123,6 @@
             }
             field.unlock();
         }
-    }
+    };
 
 })(window, Granite.$, window.eai = window.eai || {});
-

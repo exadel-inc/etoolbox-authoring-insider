@@ -31,7 +31,7 @@
         settings: [
             { name: 'selectors', type: 'text', title: 'Field selection (if not specified, default will apply)', multi: true },
             { name: 'prompt', type: 'text', title: 'Prompt', defaultValue: DEFAULT_PROMPT },
-            { name: 'repeatPrompt', type: 'text', title: 'Repetition Prompt', defaultValue: DEFAULT_REPEAT_PROMPT}
+            { name: 'repeatPrompt', type: 'text', title: 'Repetition Prompt', defaultValue: DEFAULT_REPEAT_PROMPT }
         ],
 
         isMatch,
@@ -82,7 +82,7 @@
                 prompt
             },
             providers: this.providers,
-            providerId: providerId,
+            providerId,
             responses: [
                 {
                     icon: 'plus-one',
@@ -98,14 +98,14 @@
                     style: 'icon'
                 }
             ],
-            onStart: async (context) => provider.imageToText({
+            onStart: async(context) => provider.imageToText({
                 image: encodedImage,
                 messages: [
                     { type: 'user', text: prompt }
                 ],
                 signal: context.signal
             }),
-            onInput: async (msg, context) => provider.imageToText({
+            onInput: async(msg, context) => provider.imageToText({
                 image: encodedImage,
                 messages: context.getHistory().messages,
                 signal: context.signal
@@ -143,4 +143,3 @@
     }
 
 })(window.eai = window.eai || {});
-

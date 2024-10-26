@@ -39,15 +39,13 @@
     }
 
     function createAllInsiderObjects() {
-        ns.settings.ifAvailable().then(() => {
-            createInsiderObjects(ns.tools, ns.settings.getToolSettings);
-            createInsiderObjects(ns.providers, ns.settings.getProviderSettings);
-        });
+        createInsiderObjects(ns.tools, ns.settings.getToolSettings)
+            .then(() => createInsiderObjects(ns.providers, ns.settings.getProviderSettings));
     }
 
     function createInsiderObjects(namespace, settingsSupplier) {
         const models = namespace.getModels();
-        settingsSupplier().then((loadedSettings) => {
+        return settingsSupplier().then((loadedSettings) => {
             while (models.length) {
                 const model = models.pop();
                 const matchingSettings = loadedSettings.filter((settings) => settings.type === model.id);
@@ -62,4 +60,3 @@
     }
 
 })(document, Granite.$, window.eai = window.eai || {});
-

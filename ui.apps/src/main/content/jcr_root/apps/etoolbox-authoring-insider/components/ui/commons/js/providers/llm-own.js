@@ -36,7 +36,7 @@
     async function imageToText(options) {
         if (!options.image) {
             ns.ui.alert(this.title, 'No image provided', 'error');
-            return
+            return;
         }
         return await getText(setGeneralValues.call(this, options));
     }
@@ -60,7 +60,7 @@
         }
         if (!Array.isArray(options.messages) || options.messages.length === 0) {
             ns.ui.alert(options.title, 'Prompt message(-s) are missing', 'error');
-            return
+            return;
         }
 
         const body = JSON.stringify(prepareRequestBody(options));
@@ -97,7 +97,7 @@
             const newMessage = {
                 role,
                 content: source.text || source
-            }
+            };
             if (i === 0 && options.image) {
                 let encodedImage = options.image;
                 if (encodedImage.indexOf(',') > 0) {

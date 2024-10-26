@@ -26,11 +26,11 @@
         options.expects = JSON;
 
         return await ajax(url, options);
-    }
+    };
 
     ns.http.getText = async function (url, options = {}) {
         return await ajax(url, options);
-    }
+    };
 
     ns.http.postJson = async function (url, options = {}) {
         options.method = 'POST';
@@ -39,12 +39,12 @@
         }
         options.headers['Content-Type'] = JSON;
         return await ajax(url, options);
-    }
+    };
 
     ns.http.post = async function (url, options = {}) {
         options.method = 'POST';
         return await ajax(url, options);
-    }
+    };
 
     async function ajax(url, options) {
         const expects = options.expects;
@@ -90,9 +90,8 @@
     }
 
     function truncate(str, maxLength) {
-        let result = (str || '').trim();
+        const result = (str || '').trim();
         return result.length > maxLength ? result.substring(0, maxLength).trim() + '...' : result;
     }
 
 })(document, window.eai = window.eai || {});
-

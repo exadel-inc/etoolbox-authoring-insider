@@ -21,7 +21,7 @@
     ns.ui.alert = function (title, message, type) {
         console[type === 'error' ? 'error' : 'info'](message);
         foundationUI.alert(title, `<div class="notification">${message}</div>`, type);
-    }
+    };
 
     ns.ui.prompt = async function (title, message, type = 'default') {
         return new Promise((resolve) => {
@@ -42,18 +42,18 @@
                     }
                 ]);
         });
-    }
+    };
 
     ns.ui.notify = function (title, message, type) {
         foundationUI.notify(title, message, type);
-    }
+    };
 
     ns.ui.wait = function (target) {
         foundationUI.wait(target);
-    }
+    };
 
     ns.ui.clearWait = function () {
         foundationUI.clearWait();
-    }
+    };
 
 })(window, Granite.$, window.eai = window.eai || {});

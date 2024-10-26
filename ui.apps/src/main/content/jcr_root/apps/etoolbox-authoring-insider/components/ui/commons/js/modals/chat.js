@@ -80,15 +80,15 @@
         dialog.onResponse = options.onResponse;
 
         Coral.commons.ready(dialog, function () {
-            const parent = options.parent || options.source && options.source.closest('coral-dialog');
+            const parent = options.parent || (options.source && options.source.closest('coral-dialog'));
             ns.ui.adjustDialogSize(dialog, parent);
             if (ns.utils.isFunction(options.onStart)) {
                 runAndRenderResponse(dialog, options.onStart);
             }
             ns.fields.lock(dialog.source);
             dialog.show();
-        })
-    }
+        });
+    };
 
     ns.ui.chatDialog = function (options = {}) {
         return new Promise((resolve) => {
@@ -97,7 +97,7 @@
                 options.onAccept = (text, dialog) => {
                     parentAccept(text, dialog);
                     resolve(text, dialog);
-                }
+                };
             } else {
                 options.onAccept = (text) => resolve(text);
             }
@@ -106,21 +106,21 @@
                 options.onCancel = () => {
                     parentCancel();
                     resolve(null);
-                }
+                };
             } else {
                 options.onCancel = () => resolve(null);
             }
             ns.ui.showChatDialog(options);
         });
-    }
+    };
 
     /* --------------
        Initialization
        -------------- */
 
     function createHeader(options) {
-        return ns.icons.getHtml(options.icon || 'edit')
-            + `<span class="title">${options.title || 'EToolbox Authoring Insider'}</span>`;
+        return ns.icons.getHtml(options.icon || 'edit') +
+            `<span class="title">${options.title || 'EToolbox Authoring Insider'}</span>`;
     }
 
     function createContent(options) {
@@ -284,15 +284,15 @@
             console.error('The onAccept handler is missing');
             return;
         }
-        const message = event.target.closest('.message')
-            || event.target.closest('coral-dialog-content').querySelector('.message.remote:last-of-type');
+        const message = event.target.closest('.message') ||
+            event.target.closest('coral-dialog-content').querySelector('.message.remote:last-of-type');
         dialog.open = false;
         if (!message) {
-            return
+            return;
         }
-        const responseText = message.classList.contains('html')
-            ? message.querySelector(SELECTOR_CONTENT).innerHTML
-            : message.querySelector(SELECTOR_CONTENT).innerText.trim();
+        const responseText = message.classList.contains('html') ?
+            message.querySelector(SELECTOR_CONTENT).innerHTML :
+            message.querySelector(SELECTOR_CONTENT).innerText.trim();
         onAccept(responseText);
     }
 

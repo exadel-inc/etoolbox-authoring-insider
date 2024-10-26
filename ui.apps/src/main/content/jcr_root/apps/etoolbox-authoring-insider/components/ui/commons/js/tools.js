@@ -78,9 +78,9 @@
             if (!this._handle) {
                 return;
             }
-            const providerId = ns.utils.isString(id) && id.includes('@')
-                ? id.split('@')[1]
-                : (this.providers.length > 0 ? this.providers[0].id : null);
+            const providerId = ns.utils.isString(id) && id.includes('@') ?
+                id.split('@')[1] :
+                (this.providers.length > 0 ? this.providers[0].id : null);
             await this._handle(field, providerId, options);
         }
 
@@ -106,8 +106,9 @@
             }
             const requirements = selectors.filter((selector) => selector.isRequirement);
             const options = selectors.filter((selector) => !selector.isRequirement);
-            return requirements.every((requirement) => requirement.matches(field))
-                && (options.length === 0 || options.some((option) => option.matches(field)));
+            const allRequirementsMatched = requirements.every((requirement) => requirement.matches(field));
+            const someOptionsMatched = options.length === 0 || options.some((option) => option.matches(field));
+            return allRequirementsMatched && someOptionsMatched;
         }
     }
 

@@ -56,7 +56,7 @@
             source: field,
             intro: initialContent,
             providers: this.providers,
-            providerId: providerId,
+            providerId,
             responses: [
                 {
                     icon: 'plus-one',
@@ -65,10 +65,10 @@
                     style: 'icon'
                 },
             ],
-            onStart: async (context) => {
+            onStart: async(context) => {
                 return await inputAndRun(this, context, provider, initialContent);
             },
-            onInput: async (msg, context) => {
+            onInput: async(msg, context) => {
                 return await provider.textToText({ messages: context.getHistory().messages, signal: context.signal });
             },
             onReload: (newProviderId, context) => {
@@ -122,7 +122,7 @@
 
         const messages = [
             { type: 'user', text: prompt },
-            { type: 'user', text: text },
+            { type: 'user', text },
         ];
 
         const result = await provider.textToText({ messages, signal: context.signal });

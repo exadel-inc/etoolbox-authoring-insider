@@ -48,7 +48,7 @@
         },
 
         isAsyncFunction: function (value) {
-            return ns.utils.isFunction(value) && value.constructor.name === "AsyncFunction";
+            return ns.utils.isFunction(value) && value.constructor.name === 'AsyncFunction';
         },
 
         isFunction: function (value) {
@@ -75,7 +75,7 @@
             if (!ns.utils.isObject(value) || !propName) {
                 return false;
             }
-            if (!value.hasOwnProperty(propName)) {
+            if (!Object.prototype.hasOwnProperty.call(value, propName)) {
                 return false;
             }
             return !propValue || value[propName] === propValue;
@@ -84,7 +84,6 @@
         isString: function (value) {
             return typeof value === 'string' || value instanceof String;
         },
-    }
+    };
 
 })(window, Granite.$, window.eai = window.eai || {});
-

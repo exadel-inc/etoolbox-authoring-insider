@@ -55,11 +55,11 @@
             icon: this.icon,
             source: field,
             providers: this.providers,
-            providerId: providerId,
-            onStart: async (context) => {
+            providerId,
+            onStart: async(context) => {
                 return await doTask(context, provider, sourceValue);
             },
-            onInput: async (msg, context) => {
+            onInput: async(msg, context) => {
                 return await provider.textToText({ messages: context.getHistory().messages, signal: context.signal });
             },
             onReload: (newProviderId, context) => {
@@ -73,7 +73,7 @@
                     result = result.replace(/<del>[^<]*<\/del>/g, '');
                 }
                 result = result.replace(/<\/?ins>/g, '');
-                ns.fields.setSelectedContent(field, result)
+                ns.fields.setSelectedContent(field, result);
             },
         });
     }

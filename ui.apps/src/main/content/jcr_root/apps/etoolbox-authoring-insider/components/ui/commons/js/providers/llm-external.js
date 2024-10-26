@@ -19,7 +19,7 @@
     const DEFAULT_SERVICE = 'openai';
     const DEFAULT_MODEL = 'gpt-4o-mini';
 
-    const MODELS = {}
+    const MODELS = {};
     MODELS[DEFAULT_SERVICE] = DEFAULT_MODEL;
 
     ns.providers.register({
@@ -43,7 +43,7 @@
     async function imageToText(options) {
         if (!options.image) {
             ns.ui.alert(this.title, 'No image provided', 'error');
-            return
+            return;
         }
         return await getText(setGeneralValues.call(this, options));
     }
@@ -64,7 +64,7 @@
     async function getText(options) {
         if (!Array.isArray(options.messages) || options.messages.length === 0) {
             ns.ui.alert(options.title, 'Prompt message(-s) are missing', 'error');
-            return
+            return;
         }
 
         let endpoint = RELAY_ENDPOINT + options.service;
@@ -117,7 +117,7 @@
             const newMessage = {
                 role,
                 content: [{ type: 'text', text: source.text || source }]
-            }
+            };
             if (i === 0 && options.image) {
                 newMessage.content.push({ type: 'image_url', image_url: { url: options.image, detail: 'low' } });
             }

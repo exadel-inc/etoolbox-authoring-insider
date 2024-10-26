@@ -26,7 +26,7 @@
        ----------------- */
 
     ns.ui.showInputDialog = function (options = {}) {
-        const parent = options.parent || options.source && options.source.closest('coral-dialog');
+        const parent = options.parent || (options.source && options.source.closest('coral-dialog'));
 
         if (parent && ns.utils.isFunction(parent.addFrame)) {
             parent.addFrame(Object.assign(options, {
@@ -65,8 +65,8 @@
         dialog.show();
         Coral.commons.ready(dialog, function () {
             ns.ui.adjustDialogSize(dialog, parent);
-        })
-    }
+        });
+    };
 
     ns.ui.inputDialog = function (options = {}) {
         return new Promise((resolve) => {
@@ -74,7 +74,7 @@
                 options,
                 { onAccept: (result) => resolve(result), onCancel: () => resolve(null) }));
         });
-    }
+    };
 
     /* --------------
        Initialization
@@ -118,7 +118,7 @@
 
     function createInputs(fields) {
         if (!Array.isArray(fields) || fields.length === 0) {
-            fields = [{ type: 'textarea', validation: 'notBlank' }];
+            fields = [{ type: 'textarea', validation: 'notBlank', validationMessage: 'You need to enter some text' }];
         }
         const result = [];
         for (const field of fields) {
@@ -178,7 +178,8 @@
                     type: 'text',
                     name: fieldName,
                     class: CLS_FIELD + ' coral3-Textfield',
-                    'data-validation': field.validation
+                    'data-validation': field.validation,
+                    'data-validation-message': field.validationMessage
                 }));
 
             } else {
@@ -186,7 +187,8 @@
                     tag: 'textarea',
                     name: fieldName,
                     class: CLS_FIELD,
-                    'data-validation': field.validation
+                    'data-validation': field.validation,
+                    'data-validation-message': field.validationMessage
                 }));
             }
         }

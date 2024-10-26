@@ -50,6 +50,16 @@
                         </configuration>
                     </execution>
                     <execution>
+                        <id>Run UI linter</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>npm</goal>
+                        </goals>
+                        <configuration>
+                            <arguments>run lint</arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>Run UI tests</id>
                         <phase>test</phase>
                         <goals>

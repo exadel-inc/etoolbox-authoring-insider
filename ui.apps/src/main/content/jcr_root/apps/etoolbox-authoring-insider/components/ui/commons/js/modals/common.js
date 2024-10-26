@@ -62,9 +62,11 @@
             return ns.fields.getValue(valueHolders[0]);
         }
         const result = {};
-        valueHolders.forEach((item) => result[item.name || item.getAttribute('name')] = ns.fields.getValue(item));
+        valueHolders.forEach((item) => {
+            result[item.name || item.getAttribute('name')] = ns.fields.getValue(item);
+        });
         return result;
-    }
+    };
 
     ns.ui.initDialog = function (options) {
         let dialog = document.getElementById(options.id);
@@ -83,7 +85,7 @@
         dialog.set(options);
         dialog.set({
             footer: {
-                innerHTML: `<button is="coral-button" id="cancel">Cancel</button><button is="coral-button" id="accept" variant="primary">OK</button>`
+                innerHTML: '<button is="coral-button" id="cancel">Cancel</button><button is="coral-button" id="accept" variant="primary">OK</button>'
             },
         });
 
@@ -100,21 +102,22 @@
         const validatable = container.querySelectorAll('[data-validation],[required]');
         let isValid = true;
         for (const item of validatable) {
-            const validation = $(validatable).adaptTo('foundation-validation');
+            const validation = $(item).adaptTo('foundation-validation');
             if (validation && !validation.checkValidity()) {
                 validation.updateUI();
                 isValid = false;
             }
         }
         return isValid;
-    }
+    };
 
     $(window).adaptTo('foundation-registry').register('foundation.validation.validator', {
-        selector:'[data-validation="notBlank"]',
+        selector: '[data-validation="notBlank"]',
         validate: function (field) {
-            return ns.fields.getValue(field).replaceAll(/^\s+|\s$/g, '').length > 0
-                ? null
-                : 'You need to enter some text';
+            if (ns.fields.getValue(field).replaceAll(/^\s+|\s$/g, '').length > 0) {
+                return null;
+            }
+            return field.dataset.validationMessage || 'This field is required';
         }
     });
 

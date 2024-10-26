@@ -63,7 +63,7 @@
         await submitAllData();
     }
 
-    async function onAddEntryClick(e){
+    async function onAddEntryClick(e) {
         const targetId = e.target.closest('[data-adds-to]').dataset.addsTo;
         await addMultifieldItem(targetId);
     }
@@ -146,7 +146,7 @@
     async function submitAllData() {
         const form = document.getElementById('settings');
         try {
-            await ns.http.post(form.action, {body: new FormData(form)});
+            await ns.http.post(form.action, { body: new FormData(form) });
             ns.ui.notify(null, 'Settings saved', 'success');
             await quietReload();
 
@@ -161,7 +161,7 @@
     }
 
     async function submitItemData(dialog, dialogForm) {
-        const cancelled  = !dialogForm.dispatchEvent(new Event('submit', { cancelable: true }));
+        const cancelled = !dialogForm.dispatchEvent(new Event('submit', { cancelable: true }));
         if (cancelled) {
             return;
         }
@@ -267,8 +267,8 @@
         let isDeletable = model.isTemplate;
         if (isDeletable) {
             const typeField = item.querySelector('.type');
-            isDeletable = typeField.value
-                && item.closest('coral-multifield').querySelectorAll(`.type[value="${typeField.value}"]`).length > 1;
+            isDeletable = typeField.value &&
+                item.closest('coral-multifield').querySelectorAll(`.type[value="${typeField.value}"]`).length > 1;
         }
         if (!isDeletable) {
             const deleteButton = item.querySelector('.delete');
@@ -339,10 +339,10 @@
         }
 
         const nodePath = item.querySelector('.path').value;
-        const dialogSrc = '/mnt/overlay'
-            + '/etoolbox-authoring-insider/components/pages/settings/properties.eai.html'
-            + nodePath;
-        const dialogData= JSON.stringify(model.settings || []);
+        const dialogSrc = '/mnt/overlay' +
+            '/etoolbox-authoring-insider/components/pages/settings/properties.eai.html' +
+            nodePath;
+        const dialogData = JSON.stringify(model.settings || []);
 
         let dialogContent;
         try {
@@ -404,7 +404,7 @@
        ------- */
 
     if (window.DOMPurify) {
-        window.DOMPurify.addHook('uponSanitizeAttribute', function (node, hookEvent ) {
+        window.DOMPurify.addHook('uponSanitizeAttribute', function (node, hookEvent) {
             // noinspection JSDeprecatedSymbols
             if (hookEvent.attrName && hookEvent.attrName.includes('coral-multifield')) {
                 hookEvent.forceKeepAttr = true;
@@ -413,4 +413,3 @@
     }
 
 })(window, document, Granite.$, Granite.UI.Foundation.Utils, window.eai = window.eai || {});
-
