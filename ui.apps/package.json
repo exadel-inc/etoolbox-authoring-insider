@@ -1,16 +1,17 @@
 {
-  "name": "ui.tests",
+  "name": "ui.apps.tests",
   "version": "1.0.0",
-  "main": "index.js",
+  "private": true,
   "scripts": {
     "test": "jest"
   },
   "devDependencies": {
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0"
+    "jest-environment-jsdom": "^29.7.0",
   },
   "imports": {
-    "#commons/*": "../../main/content/jcr_root/apps/etoolbox-authoring-insider/components/ui/commons/js/*"
+    "#commons/*": "./src/main/content/jcr_root/apps/etoolbox-authoring-insider/components/ui/commons/js/*"
   },
   "jest": {
     "testEnvironment": "jsdom",
