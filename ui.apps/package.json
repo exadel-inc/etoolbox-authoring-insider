@@ -13,12 +13,7 @@
     "neostandard": "^0.11.6"
   },
   "imports": {
-    "#commons/*": "./src/main/content/jcr_root/apps/etoolbox-authoring-insider/components/ui/commons/js/*"
-  },
-  "jest": {
-    "testEnvironment": "jsdom",
-    "globals": {
-      "Granite": {}
-    }
+    "#commons/*": "./src/main/content/jcr_root/apps/etoolbox-authoring-insider/components/ui/commons/js/*",
+    "#runtime/*": "./src/main/content/jcr_root/apps/etoolbox-authoring-insider/components/ui/runtime/js/*"
   }
 }
