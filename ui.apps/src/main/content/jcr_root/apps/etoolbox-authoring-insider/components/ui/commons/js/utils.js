@@ -68,7 +68,7 @@
         },
 
         isObject: function (value) {
-            return value && typeof value === 'object' && value.constructor === Object;
+            return !!value && typeof value === 'object' && value.constructor === Object;
         },
 
         isObjectWithProperty: function (value, propName, propValue) {

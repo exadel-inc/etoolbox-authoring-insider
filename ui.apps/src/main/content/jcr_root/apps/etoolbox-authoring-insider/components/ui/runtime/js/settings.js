@@ -24,12 +24,11 @@
         }
         try {
             settings = await ns.http.getJson('/content/etoolbox/authoring-insider/servlet/config.json');
-            return settings;
         } catch (error) {
             console.error(`Failed to load ${ns.TITLE} settings`);
             settings = null;
-            throw error;
         }
+        return settings;
     }
 
     async function extractSettings(namespace, id) {
@@ -44,6 +43,10 @@
     }
 
     ns.settings = {
+        clearAll: function () {
+            settings = undefined;
+        },
+
         getToolSettings: async function (id) {
             return await extractSettings('tools', id);
         },

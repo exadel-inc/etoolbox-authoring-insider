@@ -69,6 +69,9 @@
             if (foundationField) {
                 return foundationField.getValue();
             }
+            if (field.value !== undefined) {
+                return field.value;
+            }
             if (field.selectedItem) {
                 return field.selectedItem.value || field.selectedItem.textContent;
             }
@@ -87,7 +90,7 @@
                 const selectionStart = field.selectionStart;
                 const selectionEnd = field.selectionEnd;
                 if (selectionEnd > selectionStart) {
-                    const existingValue = this.getValue(field);
+                    const existingValue = this.getValue(field) || '';
                     const pre = existingValue.substring(0, selectionStart);
                     const post = existingValue.substring(selectionEnd);
                     this.setValue(field, pre + value + post);
@@ -112,9 +115,15 @@
             }
             if (ns.utils.isFunction(field.setValue)) {
                 field.setValue(selectorOrValue);
+                return;
             } else {
-                $(field).adaptTo('foundation-field').setValue(selectorOrValue);
+                const foundationField = $(field).adaptTo('foundation-field');
+                if (foundationField) {
+                    foundationField.setValue(selectorOrValue);
+                    return;
+                }
             }
+            field.value = selectorOrValue;
         },
 
         unlock: function (field) {

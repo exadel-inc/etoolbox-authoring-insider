@@ -69,8 +69,6 @@
         return '';
     };
 
-    ns.icons.DEFAULT_MONO = ns.icons.getHtml('insider-mono');
-
     function getSyntheticSvg(text, color) {
         const char = text.charAt(0).toUpperCase();
         const svgContent = `

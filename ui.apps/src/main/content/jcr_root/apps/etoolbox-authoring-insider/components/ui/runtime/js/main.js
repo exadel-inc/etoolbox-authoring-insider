@@ -46,6 +46,9 @@
     function createInsiderObjects(namespace, settingsSupplier) {
         const models = namespace.getModels();
         return settingsSupplier().then((loadedSettings) => {
+            if (!loadedSettings) {
+                return;
+            }
             while (models.length) {
                 const model = models.pop();
                 const matchingSettings = loadedSettings.filter((settings) => settings.type === model.id);
