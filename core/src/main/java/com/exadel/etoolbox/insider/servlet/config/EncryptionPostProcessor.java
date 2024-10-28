@@ -36,6 +36,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * A Sling Post Processor implementation that encrypts sensitive data upon storing it in the repository
+ */
 @Component(service = SlingPostProcessor.class)
 @Slf4j
 public class EncryptionPostProcessor implements SlingPostProcessor {
@@ -43,6 +46,12 @@ public class EncryptionPostProcessor implements SlingPostProcessor {
     @Reference
     private transient CryptoSupport cryptoService;
 
+    /**
+     * Processes the request to encrypt sensitive data before storing it in the repository
+     * @param request       The {@link SlingHttpServletRequest} object
+     * @param modifications The list of {@link Modification} objects representing changes to be applied to the
+     *                      repository
+     */
     @Override
     public void process(SlingHttpServletRequest request, List<Modification> modifications) {
         if (!isMatch(request)) {

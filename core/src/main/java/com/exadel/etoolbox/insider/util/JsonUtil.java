@@ -30,6 +30,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Contains utility methods for JSON serialization and deserialization
+ */
 @NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 @Slf4j
 public class JsonUtil {
@@ -42,6 +45,11 @@ public class JsonUtil {
     private static final String EXCEPTION_PARSE = "Could not parse JSON string: {}";
     private static final String EXCEPTION_SERIALIZE = "Could not serialize {} to JSON";
 
+    /**
+     * Deserializes a JSON string into a {@code Map<String, Object>}
+     * @param json A JSON string
+     * @return A non-null {@code Map<String, Object>} object; might be empty
+     */
     @NotNull
     public static Map<String, Object> getMap(String json) {
         if (StringUtils.isBlank(json)) {
@@ -55,6 +63,13 @@ public class JsonUtil {
         }
     }
 
+    /**
+     * Deserializes a JSON string into a list of typed objects
+     * @param json A JSON string
+     * @param type A class reference matching the objects in the list
+     * @return A non-null list of objects; might be empty
+     * @param <T> The type of the objects in the list
+     */
     @NotNull
     public static <T> List<T> getList(String json, Class<T> type) {
         if (StringUtils.isBlank(json)) {
@@ -68,6 +83,12 @@ public class JsonUtil {
         }
     }
 
+    /**
+     * Serializes an object into a JSON string
+     * @param value An object to serialize
+     * @return A JSON string. If the objects is null or otherwise cannot be serialized, a string representing an empty
+     * JSON object is returned
+     */
     public static String toJson(Object value) {
         if (value == null) {
             return Constants.EMPTY_JSON;
@@ -80,10 +101,23 @@ public class JsonUtil {
         }
     }
 
+    /**
+     * Writes a JSON-formatted message to the response with the {@code 200 OK} HTTP status
+     * @param response A {@link SlingHttpServletResponse} object
+     * @param value The message to write
+     * @throws IOException If an I/O error occurs
+     */
     public static void writeTo(@NotNull SlingHttpServletResponse response,  Object value) throws IOException {
         writeTo(response, HttpStatus.SC_OK, value);
     }
 
+    /**
+     * Writes a JSON-formatted message to the response with the specified HTTP status
+     * @param response A {@link SlingHttpServletResponse} object
+     * @param status The HTTP status code
+     * @param values A sequence of key-value pairs that will build up to the JSON structure in the response
+     * @throws IOException If an I/O error occurs
+     */
     public static void writeTo(@NotNull SlingHttpServletResponse response, int status, @NotNull String... values) throws IOException {
         Map<String, String> map = new LinkedHashMap<>();
         for (int i = 0; i < values.length; i += 2) {
@@ -92,6 +126,13 @@ public class JsonUtil {
         writeTo(response, status, map);
     }
 
+    /**
+     * Writes a JSON-formatted message to the response with the specified HTTP status
+     * @param response A {@link SlingHttpServletResponse} object
+     * @param status The HTTP status code
+     * @param value The message to write
+     * @throws IOException If an I/O error occurs
+     */
     public static void writeTo(@NotNull SlingHttpServletResponse response, int status, Object value) throws IOException {
         response.setStatus(status);
         response.setContentType(CONTENT_TYPE_JSON);

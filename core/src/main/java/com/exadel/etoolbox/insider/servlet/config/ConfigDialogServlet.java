@@ -29,6 +29,11 @@ import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 import java.io.IOException;
 
+/**
+ * A Sling Servlet implementation that processes POST requests targeted at Granite UI dialogs with a specific selector.
+ * This implementation serves as kind of proxy to convert a contentful request that features dialog field definitions
+ * into an ordinary GET request for a dialog that can be processed by {@link ConfigDialogDatasource}
+ */
 @Component(
         service = Servlet.class,
         property = {
@@ -40,6 +45,13 @@ import java.io.IOException;
 )
 public class ConfigDialogServlet extends SlingAllMethodsServlet {
 
+    /**
+     * Processes a POST request that targets at a Granite UI dialog resource and contains the {@code .eai.} selector
+     * @param request  The {@link SlingHttpServletRequest} object
+     * @param response The {@link SlingHttpServletResponse} object
+     * @throws ServletException If a routing error occurs during request processing
+     * @throws IOException      If an I/O error occurs
+     */
     @Override
     protected void doPost(
             @NotNull SlingHttpServletRequest request,

@@ -16,6 +16,9 @@ package com.exadel.etoolbox.insider.util;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
+/**
+ * Contains constants used across the solution
+ */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Constants {
 

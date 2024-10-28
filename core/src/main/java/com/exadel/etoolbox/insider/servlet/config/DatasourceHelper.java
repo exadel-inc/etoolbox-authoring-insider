@@ -30,13 +30,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
+/**
+ * A helper class that processes a {@link SlingHttpServletRequest} object to build a Granite {@link DataSource} object
+ * which contains fields for a TouchUI dialog that manages properties of a tool or a provider
+ */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 class DatasourceHelper {
 
@@ -57,6 +58,10 @@ class DatasourceHelper {
 
     private static final List<String> DEFAULT_FIELDS  = Arrays.asList("enabled", PROP_TYPE, "title", "icon");
 
+    /**
+     * Processes a {@link SlingHttpServletRequest} object to build a {@link DataSource} object
+     * @param request The {@code SlingHttpServletRequest} object that contains the dialog field definitions
+     */
     static void process(SlingHttpServletRequest request) {
         List<Resource> resources = new ArrayList<>();
 
@@ -142,6 +147,9 @@ class DatasourceHelper {
         collection.add(titleAndIcon);
     }
 
+    /**
+     * A simple data class representing a dialog field definition that can be deserialized from a request attribute
+     */
     @Getter
     @SuppressWarnings("unused")
     private static class FieldDefinition {

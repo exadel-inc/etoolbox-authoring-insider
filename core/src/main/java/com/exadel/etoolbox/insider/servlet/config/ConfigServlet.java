@@ -39,6 +39,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+/**
+ * A Sling Servlet implementation that returns configuration data for the Authoring Insider tools and providers
+ */
 @Component(
         service = Servlet.class,
         property = {
@@ -57,6 +60,12 @@ public class ConfigServlet extends SlingSafeMethodsServlet {
 
     private static final String PROP_ENABLED = "enabled";
 
+    /**
+     * Processes a GET request targeted at a configuration resource
+     * @param request  The {@link SlingHttpServletRequest} object
+     * @param response The {@link SlingHttpServletResponse} object
+     * @throws IOException If an I/O error occurs
+     */
     @Override
     protected void doGet(
             @NotNull SlingHttpServletRequest request,

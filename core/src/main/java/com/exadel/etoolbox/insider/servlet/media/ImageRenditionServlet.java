@@ -31,6 +31,9 @@ import java.util.Base64;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * A Sling Servlet implementation that returns a base64-encoded rendition of an image asset
+ */
 @Component(
         service = Servlet.class,
         property = {
@@ -43,6 +46,14 @@ public class ImageRenditionServlet extends SlingSafeMethodsServlet {
 
     private static final List<String> SUPPORTED_MIME_TYPES = Arrays.asList("image/jpeg", "image/png", "image/webp", "image/gif");
 
+    private static final String IMAGE_SIZE_BOUNDARIES = "100x100:600x600";
+
+    /**
+     * Processes a GET request targeted at an image asset resource
+     * @param request  The {@link SlingHttpServletRequest} object
+     * @param response The {@link SlingHttpServletResponse} object
+     * @throws IOException If an I/O error occurs
+     */
     @Override
     protected void doGet(
             @NotNull SlingHttpServletRequest request,
@@ -50,7 +61,7 @@ public class ImageRenditionServlet extends SlingSafeMethodsServlet {
 
         Resource resource = request.getResource();
         Asset asset = resource.adaptTo(Asset.class);
-        BoundariesPredicate boundaries = new BoundariesPredicate("100x100:600x600");
+        BoundariesPredicate boundaries = new BoundariesPredicate(IMAGE_SIZE_BOUNDARIES);
         Rendition rendition = getFitRendition(asset, boundaries);
         if (rendition == null) {
             response.setStatus(404);

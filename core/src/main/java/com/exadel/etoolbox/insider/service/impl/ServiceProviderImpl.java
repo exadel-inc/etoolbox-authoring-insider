@@ -34,6 +34,7 @@ import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.request.RequestParameter;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ValueMap;
+import org.jetbrains.annotations.NotNull;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Modified;
@@ -46,6 +47,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Map;
 
+/**
+ * Default implementation of the {@link ServiceProvider} interface aimed at communicating with third-party data
+ * providers. This implementation allows creating multiple instances for various endpoints, etc. via the OSGi config
+ * factory mechanism
+ */
 @Component(service = ServiceProvider.class)
 @Designate(ocd = ServiceProviderConfig.class, factory = true)
 @Slf4j
@@ -78,13 +84,19 @@ public class ServiceProviderImpl implements ServiceProvider {
         this.skipSsl = config.skipSsl();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public String getId() {
+    public @NotNull String getId() {
         return id;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public String getResponse(SlingHttpServletRequest request) throws ServiceException {
+    public @NotNull String getResponse(SlingHttpServletRequest request) throws ServiceException {
         String requestPayload = extractPayload(request);
         if (StringUtils.isBlank(requestPayload)) {
             throw new ServiceException("Request payload is empty or invalid");

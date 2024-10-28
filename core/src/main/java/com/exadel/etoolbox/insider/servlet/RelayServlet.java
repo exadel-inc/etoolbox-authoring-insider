@@ -32,10 +32,13 @@ import javax.servlet.Servlet;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * A Sling Servlet implementation that relays requests to service providers based on the provider ID
+ * @see ServiceProvider
+ */
 @Component(
         service = Servlet.class,
         property = {
-                ServletResolverConstants.SLING_SERVLET_METHODS + "=GET",
                 ServletResolverConstants.SLING_SERVLET_METHODS + "=POST",
                 ServletResolverConstants.SLING_SERVLET_RESOURCE_TYPES + "=/bin/etoolbox/authoring-insider/relay",
                 ServletResolverConstants.SLING_SERVLET_EXTENSIONS + "=json"
@@ -46,6 +49,13 @@ public class RelayServlet extends SlingAllMethodsServlet {
     @Reference(cardinality = ReferenceCardinality.MULTIPLE, policy = ReferencePolicy.DYNAMIC)
     private volatile List<ServiceProvider> providers;
 
+    /**
+     * Processes a POST request targeted at a resource with the {@code /bin/etoolbox/authoring-insider/relay} resource
+     * type
+     * @param request  The {@link SlingHttpServletRequest} object
+     * @param response The {@link SlingHttpServletResponse} object
+     * @throws IOException If an I/O error occurs
+     */
     @Override
     protected void doPost(
             @NotNull SlingHttpServletRequest request,

@@ -14,11 +14,29 @@
 package com.exadel.etoolbox.insider.service;
 
 import org.apache.sling.api.SlingHttpServletRequest;
+import org.jetbrains.annotations.NotNull;
 
+/**
+ * Defines an interface for a component that answers to a request from the Authoring Insider's UI relayed via
+ * {@link com.exadel.etoolbox.insider.servlet.RelayServlet}. Such a component usually communicates to a third-party HTTP
+ * endpoint or a service, or else performs a complex operation
+ */
 public interface ServiceProvider {
 
+    /**
+     * Returns the unique identifier of the service provider
+     * @return String value; a non-blank string is expected
+     */
+    @NotNull
     String getId();
 
+    /**
+     * Retrieves the response to a request from the Authoring Insider's UI
+     * @param request The {@link SlingHttpServletRequest} object containing parameters of the request
+     * @return String value; a non-null string is expected
+     * @throws ServiceException If an error occurs during the operation
+     */
+    @NotNull
     String getResponse(SlingHttpServletRequest request) throws ServiceException;
 
 }

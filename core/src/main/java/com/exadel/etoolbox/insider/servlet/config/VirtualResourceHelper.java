@@ -32,11 +32,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Contains utility methods for creating virtual resources  designed to be entries of a Granite UI datasource
+ */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 class VirtualResourceHelper {
 
     private static final String RESTYPE_CONTAINER = "granite/ui/components/coral/foundation/container";
 
+    /**
+     * Creates a new instance of the {@link Resource} class representing a container resource with a set of child
+     * resources
+     * @param resolver   A {@link ResourceResolver} object used to create the container resource
+     * @param path       The path of the container resource
+     * @param properties A {@code Map} of properties to set on the container resource
+     * @param children   An array of {@code Resource} objects representing child resources of the container
+     * @return A {@code Resource} object representing the container resource
+     */
     static Resource newContainer(
             ResourceResolver resolver,
             String path,
@@ -49,6 +61,14 @@ class VirtualResourceHelper {
         return newResource(resolver, path, containerProperties, items);
     }
 
+    /**
+     * Creates a new instance of the {@link Resource} class representing a TouchUI dialog field
+     * @param resolver A {@link ResourceResolver} object used to create the resource
+     * @param path     The path of the field resource
+     * @param values   A sequence of strings that are treated as key-value pairs representing properties to set on the
+     *                 field resource
+     * @return A {@code Resource} object representing the field resource
+     */
     static Resource newResource(ResourceResolver resolver, String path, String... values) {
         Map<String, Object> properties = new HashMap<>();
         for (int i = 0; i < values.length; i += 2) {
@@ -61,10 +81,25 @@ class VirtualResourceHelper {
         return newResource(resolver, path, properties);
     }
 
+    /**
+     * Creates a new instance of the {@link Resource} class representing a TouchUI dialog field
+     * @param resolver   A {@link ResourceResolver} object used to create the resource
+     * @param path       The path of the field resource
+     * @param properties A {@code Map} of properties to set on the field resource
+     * @return A {@code Resource} object representing the field resource
+     */
     static Resource newResource(ResourceResolver resolver, String path, Map<String, Object> properties) {
         return newResource(resolver, path, properties, (Resource) null);
     }
 
+    /**
+     * Creates a new instance of the {@link Resource} class representing a TouchUI dialog field
+     * @param resolver   A {@link ResourceResolver} object used to create the resource
+     * @param path       The path of the field resource
+     * @param properties A {@code Map} of properties to set on the field resource
+     * @param child      An optional {@code Resource} object representing a child resource of the field
+     * @return A {@code Resource} object representing the field resource
+     */
     static Resource newResource(ResourceResolver resolver, String path, Map<String, Object> properties, Resource child) {
         return newResource(
                 resolver,
@@ -73,7 +108,19 @@ class VirtualResourceHelper {
                 child != null ? Collections.singletonList(child) : Collections.emptyList());
     }
 
-    static Resource newResource(ResourceResolver resolver, String path, Map<String, Object> properties, List<Resource> children) {
+    /**
+     * Creates a new instance of the {@link Resource} class representing a TouchUI dialog field
+     * @param resolver   A {@link ResourceResolver} object used to create the resource
+     * @param path       The path of the field resource
+     * @param properties A {@code Map} of properties to set on the field resource
+     * @param children   A list of {@code Resource} objects representing child resources of the field
+     * @return A {@code Resource} object representing the field resource
+     */
+    static Resource newResource(
+            ResourceResolver resolver,
+            String path,
+            Map<String, Object> properties,
+            List<Resource> children) {
         Map<String, Object> filteredProperties = properties.entrySet()
                 .stream()
                 .filter(e -> e.getValue() != null && StringUtils.isNotBlank(e.getValue().toString()))

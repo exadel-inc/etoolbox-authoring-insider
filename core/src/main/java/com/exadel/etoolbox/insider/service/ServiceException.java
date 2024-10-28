@@ -13,12 +13,25 @@
  */
 package com.exadel.etoolbox.insider.service;
 
+/**
+ * Represents an exception that may occur during service operations
+ * @see ServiceProvider
+ */
 public class ServiceException extends Exception {
 
+    /**
+     * Constructs a new exception with the specified detail message
+     * @param message The detail message
+     */
     public ServiceException(String message) {
         super(message);
     }
 
+    /**
+     * Constructs a new exception with the specified detail message and cause
+     * @param message The detail message
+     * @param cause   The upstream exception (or "cause") per the {@link Exception} contract
+     */
     public ServiceException(String message, Throwable cause) {
         super(message, cause);
     }

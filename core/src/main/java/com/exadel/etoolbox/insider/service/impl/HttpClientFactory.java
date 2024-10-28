@@ -32,6 +32,10 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 
+/**
+ * A factory class for creating customized {@link CloseableHttpClient}s for use with
+ * {@link com.exadel.etoolbox.insider.service.ServiceProvider} instances
+ */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @Slf4j
 class HttpClientFactory {
@@ -39,30 +43,58 @@ class HttpClientFactory {
     private static final String PROTOCOL_TLS = "TLS";
     private static final X509TrustManager PERMISSIVE_TRUST_MANAGER = new PermissiveTrustManager();
 
+    /**
+     * Starts creating a new {@link CloseableHttpClient} instance via the builder interface
+     * @return A new {@link Builder} instance
+     */
     public static Builder newClient() {
         return new Builder();
     }
 
+    /**
+     * A builder class for creating customized {@link CloseableHttpClient} instances
+     */
     public static class Builder {
         private int timeout;
         private boolean skipSsl;
         private String proxy;
 
+        /**
+         * Assigns the client timeout
+         * @param value Timeout value in milliseconds
+         * @return This instance
+         */
         public Builder timeout(int value) {
-            timeout = value;
+            if (value >= 0) {
+                timeout = value;
+            }
             return this;
         }
 
+        /**
+         * Assigns the flag indicating whether SSL verification should be skipped
+         * @param value {@code True} to skip SSL verification, {@code false} otherwise
+         * @return This instance
+         */
         public Builder skipSsl(boolean value) {
             skipSsl = value;
             return this;
         }
 
+        /**
+         * Assigns the proxy server address
+         * @param value String value; a valid URL is expected
+         * @return This instance
+         */
         public Builder proxy(String value) {
             proxy = value;
             return this;
         }
 
+        /**
+         * Creates a new {@link CloseableHttpClient} instance based on the provided settings
+         * @return A {@code CloseableHttpClient} instance
+         */
         public CloseableHttpClient get() {
             RequestConfig.Builder configBuilder = RequestConfig.custom();
             if (timeout > 0) {
@@ -106,6 +138,9 @@ class HttpClientFactory {
         }
     }
 
+    /**
+     * A permissive {@link X509TrustManager} implementation used to bypass certificate validation
+     */
     @SuppressWarnings("java:S4830")
     private static class PermissiveTrustManager implements X509TrustManager {
         @Override

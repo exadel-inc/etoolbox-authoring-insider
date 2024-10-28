@@ -22,6 +22,10 @@ import org.osgi.service.component.annotations.Component;
 
 import javax.servlet.Servlet;
 
+/**
+ * A Sling Servlet implementation that feeds form data and Granite component datasource to a request for a TouchUI
+ * dialog that manages properties of a tool or a provider
+ */
 @Component(
         service = Servlet.class,
         property = {
@@ -31,6 +35,11 @@ import javax.servlet.Servlet;
 )
 public class ConfigDialogDatasource extends SlingSafeMethodsServlet {
 
+    /**
+     * Processes a GET request targeted at a Granite container resource
+     * @param request  The {@link SlingHttpServletRequest} object
+     * @param response The {@link SlingHttpServletResponse} object
+     */
     @Override
     protected void doGet(
             @NotNull SlingHttpServletRequest request,

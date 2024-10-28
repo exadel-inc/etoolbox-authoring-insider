@@ -28,9 +28,18 @@ import org.apache.sling.api.wrappers.ValueMapDecorator;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * A helper class providing a way to process form data for a TouchUI dialog. This helper attempts to deserialize
+ * ("unpack") the JSON string stored in the {@code details} property of the target resource and merge the resulting
+ * key-value pairs with the existing form data
+ */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 class FormDataHelper {
 
+    /**
+     * Processes the form data for a TouchUI dialog by unpacking the JSON string stored in the {@code details} property
+     * @param request The {@link SlingHttpServletRequest} object
+     */
     static void process(SlingHttpServletRequest request) {
         Map<String, Object> unpackedDetails = unpackDetails(request);
         if (MapUtils.isEmpty(unpackedDetails)) {

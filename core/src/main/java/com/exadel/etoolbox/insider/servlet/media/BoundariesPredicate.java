@@ -25,6 +25,10 @@ import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * A {@link Predicate} implementation that filters {@link Rendition} objects based on their dimensions with use of the
+ * provided user constraints
+ */
 class BoundariesPredicate implements Predicate<Rendition> {
 
     private static final Pattern SIZE_PATTERN = Pattern.compile("(\\d+)\\.(\\d+)(?=\\.\\w+$)");
@@ -34,10 +38,19 @@ class BoundariesPredicate implements Predicate<Rendition> {
 
     private final Boundaries boundaries;
 
+    /**
+     * Creates a new instance of the {@link BoundariesPredicate} class
+     * @param value A {@code String} value representing the user constraints for the rendition dimensions
+     */
     BoundariesPredicate(String value) {
         boundaries = forString(value);
     }
 
+    /**
+     * Tests whether the given {@link Rendition} object meets the user constraints for the rendition dimensions
+     * @param rendition The {@link Rendition} object to test
+     * @return True or false
+     */
     @Override
     public boolean test(Rendition rendition) {
         Size size = getSize(rendition, rendition.getResourceResolver());
@@ -89,6 +102,9 @@ class BoundariesPredicate implements Predicate<Rendition> {
                 Integer.parseInt(rightMax));
     }
 
+    /**
+     * A simple data class representing the size of an image
+     */
     @RequiredArgsConstructor
     @Getter
     private static class Size {
@@ -103,6 +119,9 @@ class BoundariesPredicate implements Predicate<Rendition> {
         }
     }
 
+    /**
+     * A simple data class representing the boundaries for the image size
+     */
     @RequiredArgsConstructor
     @Getter
     private static class Boundaries {
