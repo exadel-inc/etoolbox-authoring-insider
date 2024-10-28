@@ -13,13 +13,14 @@
  */
 package com.exadel.etoolbox.insider.service.impl;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpHost;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
@@ -31,14 +32,12 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@Slf4j
 class HttpClientFactory {
-    private static final Logger LOG = LoggerFactory.getLogger(HttpClientFactory.class);
 
     private static final String PROTOCOL_TLS = "TLS";
     private static final X509TrustManager PERMISSIVE_TRUST_MANAGER = new PermissiveTrustManager();
-
-    private HttpClientFactory() {
-    }
 
     public static Builder newClient() {
         return new Builder();
@@ -86,7 +85,7 @@ class HttpClientFactory {
                     URL proxyUrl = new URL(proxy);
                     httpClientBuilder.setProxy(new HttpHost(proxyUrl.getHost(), proxyUrl.getPort()));
                 } catch (MalformedURLException e) {
-                    LOG.warn("Incorrect proxy setting {}", proxy);
+                    log.warn("Incorrect proxy setting {}", proxy);
                 }
             }
             return httpClientBuilder.build();
@@ -101,7 +100,7 @@ class HttpClientFactory {
                     new SecureRandom());
                 return result;
             } catch (NoSuchAlgorithmException | KeyManagementException e) {
-                LOG.error("Could not initialize a permissive SSL context", e);
+                log.error("Could not initialize a permissive SSL context", e);
             }
             return null;
         }

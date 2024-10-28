@@ -38,7 +38,6 @@ public class JsonUtil {
 
     private static final Gson GSON = new Gson();
     private static final Type MAP = new TypeToken<Map<String, Object>>() {}.getType();
-    private static final String EMPTY_JSON = "{}";
 
     private static final String EXCEPTION_PARSE = "Could not parse JSON string: {}";
     private static final String EXCEPTION_SERIALIZE = "Could not serialize {} to JSON";
@@ -71,13 +70,13 @@ public class JsonUtil {
 
     public static String toJson(Object value) {
         if (value == null) {
-            return EMPTY_JSON;
+            return Constants.EMPTY_JSON;
         }
         try {
             return GSON.toJson(value);
         } catch (JsonParseException e) {
             log.error(EXCEPTION_SERIALIZE, value, e);
-            return EMPTY_JSON;
+            return Constants.EMPTY_JSON;
         }
     }
 

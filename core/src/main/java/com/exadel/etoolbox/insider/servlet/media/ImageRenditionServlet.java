@@ -61,6 +61,7 @@ public class ImageRenditionServlet extends SlingSafeMethodsServlet {
         String encoded = Base64.getEncoder().encodeToString(bytes);
 
         response.setContentType("text/plain");
+        response.setHeader("X-Rendition", rendition.getName());
         response.getWriter().write("data:" + rendition.getMimeType() + ";base64," + encoded);
     }
 

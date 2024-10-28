@@ -95,7 +95,7 @@ public class ServiceProviderImpl implements ServiceProvider {
 
         if (isDryRun(request)) {
             log.debug("Dry run mode is enabled. Sending empty response from {}", url);
-            return "{}";
+            return Constants.EMPTY_JSON;
         }
 
         HttpPost httpPost = new HttpPost(url);

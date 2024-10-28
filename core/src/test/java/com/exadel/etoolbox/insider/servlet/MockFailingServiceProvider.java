@@ -11,21 +11,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.exadel.etoolbox.insider.util;
+package com.exadel.etoolbox.insider.servlet;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import com.exadel.etoolbox.insider.service.ServiceException;
+import com.exadel.etoolbox.insider.service.ServiceProvider;
+import org.apache.sling.api.SlingHttpServletRequest;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class Constants {
+class MockFailingServiceProvider implements ServiceProvider {
+    @Override
+    public String getId() {
+        return "mock-failing";
+    }
 
-    public static final String EMPTY_JSON = "{}";
-
-    public static final String PROP_DETAILS = "details";
-    public static final String PROP_FIELDS = "fields";
-    public static final String PROP_PATH = "_path";
-
-    public static final String PREFIX_ENCRYPT = "enc_";
-
-    public static final String SUFFIX_ENCRYPT = "@encrypt";
+    @Override
+    public String getResponse(SlingHttpServletRequest request) throws ServiceException {
+        throw new ServiceException("Dolor sit amet");
+    }
 }
