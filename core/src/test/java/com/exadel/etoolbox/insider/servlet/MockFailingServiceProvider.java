@@ -16,14 +16,17 @@ package com.exadel.etoolbox.insider.servlet;
 import com.exadel.etoolbox.insider.service.ServiceException;
 import com.exadel.etoolbox.insider.service.ServiceProvider;
 import org.apache.sling.api.SlingHttpServletRequest;
+import org.jetbrains.annotations.NotNull;
 
 class MockFailingServiceProvider implements ServiceProvider {
     @Override
+    @NotNull
     public String getId() {
         return "mock-failing";
     }
 
     @Override
+    @NotNull
     public String getResponse(SlingHttpServletRequest request) throws ServiceException {
         throw new ServiceException("Dolor sit amet");
     }

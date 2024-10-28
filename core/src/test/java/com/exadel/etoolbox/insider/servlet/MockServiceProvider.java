@@ -15,14 +15,17 @@ package com.exadel.etoolbox.insider.servlet;
 
 import com.exadel.etoolbox.insider.service.ServiceProvider;
 import org.apache.sling.api.SlingHttpServletRequest;
+import org.jetbrains.annotations.NotNull;
 
 class MockServiceProvider implements ServiceProvider {
     @Override
+    @NotNull
     public String getId() {
         return "mock";
     }
 
     @Override
+    @NotNull
     public String getResponse(SlingHttpServletRequest request) {
         return "Lorem ipsum";
     }
