@@ -32,8 +32,13 @@
             { name: 'repeatPrompt', type: 'text', title: 'Repetition Prompt' }
         ],
 
+        isValid,
         handle,
     });
+
+    function isValid() {
+        return !!this.prompt;
+    }
 
     function handle(field, providerId, initialContent) {
         if (!field) {

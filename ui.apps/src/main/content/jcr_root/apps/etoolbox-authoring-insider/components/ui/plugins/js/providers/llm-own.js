@@ -29,9 +29,14 @@
             { name: 'supports', title: 'Support constraints', multi: true }
         ],
 
+        isValid,
         imageToText,
         textToText
     });
+
+    function isValid() {
+        return !!this.url && !!this.llm;
+    }
 
     async function imageToText(options) {
         if (!options.image) {

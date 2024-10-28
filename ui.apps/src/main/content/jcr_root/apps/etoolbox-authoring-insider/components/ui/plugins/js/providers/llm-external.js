@@ -36,9 +36,14 @@
             { name: 'supports', title: 'Support constraints', multi: true }
         ],
 
+        isValid,
         imageToText,
         textToText
     });
+
+    function isValid() {
+        return !!this.service;
+    }
 
     async function imageToText(options) {
         if (!options.image) {

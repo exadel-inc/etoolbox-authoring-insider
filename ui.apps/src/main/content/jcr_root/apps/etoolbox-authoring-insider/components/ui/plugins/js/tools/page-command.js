@@ -34,8 +34,13 @@
             { name: 'prompt', type: 'text', title: 'Prompt (supports user input templates)', required: true },
         ],
 
+        isValid,
         handle,
     });
+
+    function isValid() {
+        return !!this.prompt;
+    }
 
     function handle(field, providerId, initialContent) {
         if (!field) {

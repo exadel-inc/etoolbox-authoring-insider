@@ -90,10 +90,34 @@ test('Should create a provider instance without settings', () => {
     });
 });
 
+test('Should validate a provider', () => {
+    ns.providers.addInstance({
+        type: 'my-provider',
+        icon: 'provider4',
+        title: 'My Provider Instance 4',
+        isValid: function () {
+            return !!this['_icon'];
+        }
+    });
+    const instance = ns.providers.getInstance('my-provider');
+    expect(instance.valid).toBe(true);
+
+    delete instance['_icon'];
+    expect(instance.valid).toBe(false);
+
+    delete instance.isValid;
+    expect(instance.valid).toBe(true);
+});
+
 test('Should select providers for a tool (function-based)', () => {
     ns.providers.addInstance({
         type: 'my-provider',
         supports: (tool) => tool.includes('ai.')
+    });
+    ns.providers.addInstance({
+        type: 'my-provider',
+        supports: (tool) => tool.includes('ai.'),
+        isValid: () => false
     });
 
     let providers = ns.providers.forRequirements('ai.translation');
@@ -108,6 +132,7 @@ test('Should select providers for a tool', () => {
     addProviderInstance('Supports only method', ['none']);
     addProviderInstance('Supports text', ['text.expand', 'text.shrink', 'summary']);
     addProviderInstance('Supports anything but image and voice', ['!image', '!voice']);
+    ns.providers.addInstance({ type: 'my-provider', title: 'Invalid', isValid: () => false });
 
     expectProvidersForRequirementsToContain(
         ['method'],
@@ -117,7 +142,7 @@ test('Should select providers for a tool', () => {
             'Supports text',  // Hits because 'method' is the name of a function this provider's model has
             'Supports anything but image and voice'
         ],
-        []
+        ['Invalid']
     );
     expectProvidersForRequirementsToContain(
         ['text'],
@@ -127,7 +152,8 @@ test('Should select providers for a tool', () => {
             'Supports anything but image and voice'
         ],
         [
-            'Supports only method'
+            'Supports only method',
+            'Invalid'
         ]
     );
     expectProvidersForRequirementsToContain(
@@ -138,7 +164,8 @@ test('Should select providers for a tool', () => {
         ],
         [
             'Supports only method',
-            'Supports text'
+            'Supports text',
+            'Invalid'
         ]
     );
     expectProvidersForRequirementsToContain(
@@ -149,7 +176,8 @@ test('Should select providers for a tool', () => {
         [
             'Supports only method',
             'Supports text',
-            'Supports anything but image and voice'
+            'Supports anything but image and voice',
+            'Invalid'
         ]
     );
 });

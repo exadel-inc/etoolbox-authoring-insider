@@ -31,10 +31,6 @@
                     this[key] = options[key];
                 });
         }
-
-        get valid() {
-            return !!this.id;
-        }
     }
 
     class Provider {
@@ -59,6 +55,14 @@
 
         get title() {
             return this['_title'] || this._model.title || this.id;
+        }
+
+        get valid() {
+            if (ns.utils.isFunction(this['isValid'])) {
+                // noinspection JSValidateTypes
+                return this['isValid']();
+            }
+            return true;
         }
 
         matches(requirements) {
@@ -140,21 +144,21 @@
             }
         },
 
-        getModels: function () {
-            return Object.values(models);
-        },
-
         forRequirements: function (value) {
             if (!value) {
                 return [];
             }
             value = Array.isArray(value) ? value : [value];
-            return instances.filter((item) => item.matches(value));
+            return instances.filter((item) => item.valid && item.matches(value));
+        },
+
+        getModels: function () {
+            return Object.values(models);
         },
 
         register: function (value) {
             const model = new ProviderModel(value);
-            if (!model.valid) {
+            if (!isValid(model)) {
                 console.error('Invalid provider', value);
                 return;
             }
@@ -165,5 +169,9 @@
             delete models[id];
         }
     };
+
+    function isValid(model) {
+        return model && !!model.id;
+    }
 
 })(window.eai = window.eai || {});

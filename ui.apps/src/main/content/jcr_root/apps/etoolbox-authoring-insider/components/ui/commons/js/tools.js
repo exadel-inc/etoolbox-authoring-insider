@@ -29,21 +29,20 @@
             this.settings = options.settings;
             this.title = options.title;
         }
-
-        get valid() {
-            return !!this.id && ns.utils.isFunction(this.handle);
-        }
     }
 
     class Tool {
         constructor(model, options = {}) {
             this._model = model;
             this.id = idCounter.nextIndexedId(model.id);
-            ns.utils.intern(options, this, { exclude: ['id'], addPrefixTo: ['icon', 'ordinal', 'title'] });
+            ns.utils.intern(options, this, { exclude: ['id', 'isMatch'], addPrefixTo: ['icon', 'ordinal', 'title'] });
             this._handle = model.handle && model.handle.bind(this);
             const _isMatch = options.isMatch || model.isMatch;
             if (ns.utils.isFunction(_isMatch)) {
                 this._isMatch = _isMatch.bind(this);
+            }
+            if (ns.utils.isFunction(options.isValid)) {
+                this._isValid = options.isValid.bind(this);
             }
         }
 
@@ -72,6 +71,13 @@
 
         get title() {
             return this['_title'] || this._model.title || this.id;
+        }
+
+        get valid() {
+            if (ns.utils.isFunction(this._isValid)) {
+                return this._isValid();
+            }
+            return true;
         }
 
         async handle(field, id, options) {
@@ -125,7 +131,7 @@
             } else {
                 // This is a settings-less model
                 const model = new ToolModel(options);
-                if (!model.valid) {
+                if (!isValid(model)) {
                     console.error('Invalid tool', options);
                     return;
                 }
@@ -152,20 +158,20 @@
             }
         },
 
-        getModels: function () {
-            return Object.values(models);
-        },
-
         forField: function (field) {
             if (!field) {
                 return [];
             }
-            return instances.filter((item) => item.matches(field) && item.providers.length > 0);
+            return instances.filter((item) => item.valid && item.matches(field) && item.providers.length > 0);
+        },
+
+        getModels: function () {
+            return Object.values(models);
         },
 
         register: function (options) {
             const model = new ToolModel(options);
-            if (!model.valid) {
+            if (!isValid(model)) {
                 console.error('Invalid tool', options);
                 return;
             }
@@ -180,6 +186,10 @@
 
     function isStringArray(value) {
         return Array.isArray(value) && value.every((item) => ns.utils.isString(item));
+    }
+
+    function isValid(model) {
+        return model && !!model.id && ns.utils.isFunction(model.handle);
     }
 
 })(window.eai = window.eai || {});

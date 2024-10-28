@@ -28,7 +28,7 @@ const ns = window.eai;
 beforeEach(() => {
     ns.tools.register({
         id: 'my-tool',
-        handle: () => {}
+        handle: () => {},
     });
 });
 
@@ -92,10 +92,36 @@ test('Should create a tool instance without settings', () => {
     });
 });
 
+test('Should validate a tool', () => {
+    ns.tools.addInstance({
+        type: 'my-tool',
+        icon: 'tool',
+        title: 'My Tool Instance',
+        fooSetting: 'bar',
+        isValid: function () {
+            return !!this.icon;
+        }
+    });
+    const instance = ns.tools.getInstance('my-tool');
+    expect(instance.valid).toBe(true);
+
+    delete instance['_icon'];
+    expect(instance.valid).toBe(false);
+
+    delete instance._isValid;
+    expect(instance.valid).toBe(true);
+});
+
 test('Should select tools for a field (function-based)', () => {
     ns.tools.addInstance({
         type: 'my-tool',
         isMatch: (field) => field.name.includes('title')
+    });
+
+    ns.tools.addInstance({
+        type: 'my-tool',
+        isMatch: (field) => field.name.includes('title'),
+        isValid: () => false
     });
 
     const dom = createDom('dialog.html');
@@ -118,6 +144,7 @@ test('Should select tools for a field', () => {
     addToolInstance('For ./description (matcher by name)', ['@ tab="Tab 0"|Basic', 'name=description']);
     addToolInstance('For margins (matcher by tab)', ['tab != "Tab 0"|Basic']);
     addToolInstance('For margins (matcher by name)', ['name $= Margin']);
+    ns.tools.addInstance({ type: 'my-tool', title: 'Invalid', isValid: () => false });
 
     let dom = createDom('dialog.html');
 
@@ -134,7 +161,8 @@ test('Should select tools for a field', () => {
             'For page properties',
             'For ./description (matcher by name)',
             'For margins (matcher by tab)',
-            'For margins (matcher by name)'
+            'For margins (matcher by name)',
+            'Invalid'
         ]
     );
 
@@ -151,7 +179,8 @@ test('Should select tools for a field', () => {
             'For page properties',
             'For ./title',
             'For margins (matcher by tab)',
-            'For margins (matcher by name)'
+            'For margins (matcher by name)',
+            'Invalid'
         ]
     );
 
@@ -168,7 +197,8 @@ test('Should select tools for a field', () => {
             'For page properties',
             'For ./title',
             'For ./title and ./description (matcher by name)',
-            'For ./description (matcher by name)'
+            'For ./description (matcher by name)',
+            'Invalid'
         ]
     );
 
@@ -187,7 +217,8 @@ test('Should select tools for a field', () => {
             'For dialog fields',
             'For ./description (matcher by name)',
             'For margins (matcher by tab)',
-            'For margins (matcher by name)'
+            'For margins (matcher by name)',
+            'Invalid'
         ]
     );
 
@@ -204,7 +235,8 @@ test('Should select tools for a field', () => {
             'For dialog fields',
             'For ./title',
             'For margins (matcher by tab)',
-            'For margins (matcher by name)'
+            'For margins (matcher by name)',
+            'Invalid'
         ]
     );
 
@@ -221,7 +253,8 @@ test('Should select tools for a field', () => {
             'For dialog fields',
             'For ./title',
             'For ./title and ./description (matcher by name)',
-            'For ./description (matcher by name)'
+            'For ./description (matcher by name)',
+            'Invalid'
         ]
     );
 });
