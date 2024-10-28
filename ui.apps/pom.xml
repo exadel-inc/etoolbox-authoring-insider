@@ -81,4 +81,36 @@
             <artifactId>commons-lang3</artifactId>
         </dependency>
     </dependencies>
+
+    <profiles>
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>disable-samples</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <unzip src="${project.basedir}/target/${project.artifactId}-${project.version}.zip" dest="${project.basedir}/target/${project.artifactId}-${project.version}-temp" encoding="UTF8"/>
+                                        <replace file="${project.basedir}/target/${project.artifactId}-${project.version}-temp/jcr_root/apps/etoolbox-authoring-insider/components/ui/plugins/js.txt" token="providers/sample/" value="#providers/sample/"/>
+                                        <zip basedir="${project.basedir}/target/${project.artifactId}-${project.version}-temp" destfile="${project.basedir}/target/${project.artifactId}-${project.version}.zip" encoding="UTF8"/>
+                                        <delete dir="${project.basedir}/target/${project.artifactId}-${project.version}-temp"/>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
 </project>

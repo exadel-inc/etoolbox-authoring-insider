@@ -55,17 +55,16 @@
                 type="text.modify.free"/>
         <item8
                 jcr:primaryType="nt:unstructured"
-                enabled="true"
+                enabled="false"
                 title="Add link"
                 type="text.addLink"/>
     </tools>
     <providers jcr:primaryType="nt:unstructured">
         <item0
                 jcr:primaryType="nt:unstructured"
-                details="\{&quot;url&quot;:&quot;http://10.134.64.2:11434/api/chat&quot;,&quot;llm&quot;:&quot;llava-llama3&quot;}"
                 enabled="true"
                 icon="llama"
-                title="Llava"
+                title="Own LLM"
                 type="llm.own"/>
         <item1
                 jcr:primaryType="nt:unstructured"
@@ -74,15 +73,5 @@
                 icon="openai"
                 title="ChatGPT"
                 type="llm.external"/>
-        <item2
-                jcr:primaryType="nt:unstructured"
-                enabled="true"
-                title="Repeater #1"
-                type="repeater.1"/>
-        <item3
-                jcr:primaryType="nt:unstructured"
-                enabled="false"
-                title="Repeater #2"
-                type="repeater.2"/>
     </providers>
 </jcr:root>
