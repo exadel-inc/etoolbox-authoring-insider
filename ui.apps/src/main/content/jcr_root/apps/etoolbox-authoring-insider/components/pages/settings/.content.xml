@@ -261,7 +261,7 @@
                   sling:resourceType="granite/ui/components/coral/foundation/form"
                   granite:id="item-properties"
                   method="POST"
-                  action="${requestPathInfo.suffix}"
+                  action="${requestPathInfo.suffix}.eai.store.html"
                   dataPath="${requestPathInfo.suffix}"
                   foundationForm="{Boolean}true"
                   style="vertical">
