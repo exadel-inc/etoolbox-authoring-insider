@@ -63,14 +63,16 @@ test('Should create a tool instance', () => {
         title: 'My Tool Instance',
         fooSetting: 'bar'
     });
-    const instance = ns.tools.getInstance('my-tool:0');
-    expect(typeof instance).toBe('object');
-    expect(instance).toMatchObject({
-        icon: 'tool',
-        ordinal: Number.MAX_SAFE_INTEGER,
-        title: 'My Tool Instance',
-        fooSetting: 'bar'
-    });
+    for (const id of ['my-tool:0', 'my-tool']) {
+        const instance = ns.tools.getInstance(id);
+        expect(typeof instance).toBe('object');
+        expect(instance).toMatchObject({
+            icon: 'tool',
+            ordinal: Number.MAX_SAFE_INTEGER,
+            title: 'My Tool Instance',
+            fooSetting: 'bar'
+        });
+    }
 });
 
 test('Should create a tool instance without settings', () => {

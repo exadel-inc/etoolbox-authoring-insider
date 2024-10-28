@@ -62,13 +62,15 @@ test('Should create a provider instance', () => {
         title: 'My Provider Instance',
         fooSetting: 'bar'
     });
-    const instance = ns.providers.getInstance('my-provider:0');
-    expect(typeof instance).toBe('object');
-    expect(instance).toMatchObject({
-        icon: 'provider2',
-        title: 'My Provider Instance',
-        fooSetting: 'bar'
-    });
+    for (const id of ['my-provider:0', 'my-provider']) {
+        const instance = ns.providers.getInstance(id);
+        expect(typeof instance).toBe('object');
+        expect(instance).toMatchObject({
+            icon: 'provider2',
+            title: 'My Provider Instance',
+            fooSetting: 'bar'
+        });
+    }
 });
 
 test('Should create a provider instance without settings', () => {

@@ -133,7 +133,11 @@
             if (id.includes('@')) {
                 id = id.split('@')[1];
             }
-            return instances.find((item) => item.id === id);
+            if (id.includes(':')) {
+                return instances.find((item) => item.id === id);
+            } else {
+                return instances.find((item) => item.id === id || item.id.startsWith(id + ':'))
+            }
         },
 
         getModels: function () {

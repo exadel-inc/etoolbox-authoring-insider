@@ -25,7 +25,11 @@
     });
 
     function isMatch(field) {
-        return !field.matches('.cq-RichText');
+        if (field.matches('.cq-RichText') || field.closest('.cq-siteadmin-admin-properties')) {
+            return false;
+        }
+        const imageCaptionTool = ns.tools.getInstance('image.caption');
+        return !imageCaptionTool || !imageCaptionTool.matches(field);
     }
 
     async function handle(field) {
