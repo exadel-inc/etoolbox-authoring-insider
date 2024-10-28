@@ -48,18 +48,6 @@ Read the manual [here](docs/usage.md).
 
 We welcome contributions to the project. Please read the [Contributing](CONTRIBUTING.md) guide.
 
-### Licensing and credits
+### Licensing
 
 This software is licensed under the [Apache License, Version 2.0](./LICENSE).
-
-The project refers to AEM _uber-jar_ artifact and makes use of the following open-source libraries:
-
-- [Apache Commons Collections](https://github.com/apache/commons-collections) under the Apache License, Version 2.0;
-- [Apache HTTP Client](https://github.com/apache/httpd) under the Apache License, Version 2.0;
-- [Apache Commons Lang](https://github.com/apache/commons-lang/) under the Apache License, Version 2.0;
-- [Google GSON](https://github.com/google/gson) under the Apache License, Version 2.0;
-- [JetBrains java-annotations](https://github.com/JetBrains/java-annotations) under the Apache License, Version 2.0;
-- [JUnit](https://github.com/junit-team/junit4) under the [Eclipse Public License Version 1.0](https://www.eclipse.org/legal/epl-v10.html);
-- [OSGi (specification, framework, and annotations)](https://github.com/osgi/osgi) under the Apache License, Version 2.0;
-- [Project Lombok](https://github.com/projectlombok/lombok) under the [License](https://github.com/projectlombok/lombok/blob/master/LICENSE);
-- [SLF4J](https://github.com/qos-ch/slf4j) under the MIT License.
