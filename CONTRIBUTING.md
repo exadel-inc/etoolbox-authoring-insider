@@ -35,7 +35,7 @@ A more verbose description in the "description" section is optional but welcomed
 Every pull request consists of one or more commits. Commit messages must be presented in the same format as the pull request title. E.g., the following 3 commits: `[EAI-333] Implemented the NPE fix... [EAI-333] Altered Javadoc for the affected method... [EAI-333] Added a unit test for the NPE fix`.
 
 ## Licensing
-Any contributions you make are understood to be under the  [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0) that covers the whole project. Feel free to contact the maintainers if that's a concern.
+Any contributions you make are understood to be under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0) that covers the whole project. Feel free to contact the maintainers if that's a concern.
 
 After creating your first pull request, you will be asked to sign our [Contributor License Agreement](../../Java/etoolbox-anydiff/CLA.md) by commenting on your PR with a special message.
 
@@ -53,29 +53,10 @@ Report a bug by opening a new issue.
 * We place dependencies in the alphabetic order of their `groupId`-s except for the `uber-jar` that comes last to allow overlaying bundled dependencies.
 * Use `dependencyManagement` / `pluginManagement` sections of the main POM to specify the common requisites, scope, and config values of dependencies. Override them in a dependent POM file only if necessary.
 
-#### For Java code
+#### For code
 
-* We stick to the [Code Conventions for the Java Programming Language](https://www.oracle.com/java/technologies/javase/codeconventions-contents.html) and also to the [Google Java Style Guide](https://google.github.io/styleguide/javaguide.html) in essential parts.
-* We use 4 spaces for indentation rather than tabs.
-* Every import is a separate line, no wildcard imports.
-* Avoid static imports (like constants, etc.).
-* Give meaningful names to classes, methods, and variables.
-* Avoid long lines. No line should exceed 150 characters. Split lengthy lines where appropriate (between method arguments, before ternary operators, etc.).
-* Split lengthy methods into smaller parts. A method body must not exceed 20-25 lines.
-* Avoid introducing multi-line lambdas.
-* Observe the proper sequence of declarations: static variables (constants), then instance variables, then constructors, then instance methods, then static methods, then static nested classes.
-* Observe the proper sequence of visibility modifiers: public, then protected, then package-private, then private; public static, then package-private static, etc. You may place a private method immediately after the preceding public if called from this public as a secondary routine.
-* Avoid excessive visibility of classes or class member. E.g., do not make a class `public` if it is only called from other classes within this very package. In a public class, do not make a method `public` unless it will be called from a class residing in another package.
-* Declare methods that do not have a context (neither read nor mutate the instance fields of a class) as `static`.
-* Do not create methods with number of parameters greater than 4.
-* Use constants: no "magic" numbers and literals.
-* Add `try-catch` blocks to reduce the risk of code termination. Never ignore caught exceptions.
-* When unsure, follow the style of the existing code files.
-
-#### For JavaScript / CSS / LESS code
-
-* Use the predefined _eslint_ rules to verify code with an IDE such as IntelliJ.
-* The rules are automatically applied via a Github workflow when you create or modify a pull request.
+* In Java code, stick to the [Code Conventions for the Java Programming Language](https://www.oracle.com/java/technologies/javase/codeconventions-contents.html) and also to the [Google Java Style Guide](https://google.github.io/styleguide/javaguide.html) in essential parts.
+* In JS code, use the predefined [ESLint](ui.apps/eslint.config.js) rules to verify code with an IDE such as IntelliJ.
 * When unsure, follow the style of the existing code files.
 
 #### For XML markup files
