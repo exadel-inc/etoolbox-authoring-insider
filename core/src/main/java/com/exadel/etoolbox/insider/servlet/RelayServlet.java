@@ -17,6 +17,7 @@ import com.exadel.etoolbox.insider.service.ServiceException;
 import com.exadel.etoolbox.insider.service.ServiceProvider;
 import com.exadel.etoolbox.insider.util.JsonUtil;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
@@ -60,6 +61,8 @@ public class RelayServlet extends SlingAllMethodsServlet {
     protected void doPost(
             @NotNull SlingHttpServletRequest request,
             @NotNull SlingHttpServletResponse response) throws IOException {
+
+        response.setHeader(HttpHeaders.CACHE_CONTROL, "no-cache");
 
         String providerString = StringUtils.strip(request.getRequestPathInfo().getSuffix(), "/ ");
         if (StringUtils.isEmpty(providerString)) {

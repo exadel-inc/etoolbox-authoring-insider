@@ -16,6 +16,7 @@ package com.exadel.etoolbox.insider.servlet.config;
 import com.exadel.etoolbox.insider.util.Constants;
 import com.exadel.etoolbox.insider.util.JsonUtil;
 import org.apache.commons.lang.StringUtils;
+import org.apache.http.HttpHeaders;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.resource.Resource;
@@ -71,6 +72,7 @@ public class ConfigServlet extends SlingSafeMethodsServlet {
             @NotNull SlingHttpServletRequest request,
             @NotNull SlingHttpServletResponse response) throws IOException {
 
+        response.setHeader(HttpHeaders.CACHE_CONTROL, "no-cache");
         Map<String, Object> config = new HashMap<>();
         config.put(
                 NODE_TOOLS,

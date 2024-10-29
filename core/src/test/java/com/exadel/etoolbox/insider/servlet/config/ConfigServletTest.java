@@ -19,6 +19,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.wcm.testing.mock.aem.junit5.AemContext;
 import io.wcm.testing.mock.aem.junit5.AemContextExtension;
+import org.apache.http.HttpHeaders;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -45,6 +46,7 @@ public class ConfigServletTest {
                 "/conf/etoolbox/authoring-insider");
         servlet.doGet(context.request(), context.response());
         Assertions.assertEquals(200, context.response().getStatus());
+        Assertions.assertTrue(context.response().getHeader(HttpHeaders.CACHE_CONTROL).contains("no-cache"));
 
         String output = context.response().getOutputAsString();
         JsonObject json = JsonParser.parseString(output).getAsJsonObject();

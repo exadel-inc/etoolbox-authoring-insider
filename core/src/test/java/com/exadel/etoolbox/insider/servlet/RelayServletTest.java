@@ -15,6 +15,7 @@ package com.exadel.etoolbox.insider.servlet;
 
 import io.wcm.testing.mock.aem.junit5.AemContext;
 import io.wcm.testing.mock.aem.junit5.AemContextExtension;
+import org.apache.http.HttpHeaders;
 import org.apache.sling.testing.mock.sling.servlet.MockRequestPathInfo;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -48,6 +49,7 @@ public class RelayServletTest {
         servlet.doPost(context.request(), context.response());
 
         Assertions.assertEquals(200, context.response().getStatus());
+        Assertions.assertTrue(context.response().getHeader(HttpHeaders.CACHE_CONTROL).contains("no-cache"));
         Assertions.assertEquals("Lorem ipsum", context.response().getOutputAsString());
     }
 
