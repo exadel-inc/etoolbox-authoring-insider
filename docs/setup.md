@@ -89,7 +89,7 @@ If a prompt supports user-input templates, it may contain any number of template
 
 #### Adding a new dialog tool
 
-Click the "Add" button to add another template-based tool (or "variation"). Select the template in the dialog that opens, and wait for the complete tool properties dialog to appear. After submitting the dialog, drag the newly created tool variation to a desired position in the list. 
+Click the "Add tool" button to add another template-based tool (or "variation"). Select the template in the dialog that opens, and wait for the complete tool properties dialog to appear. After submitting the dialog, drag the newly created tool variation to a desired position in the list. 
 
 ### Providers
 
@@ -120,4 +120,4 @@ If a tool introduces multiple requirements, a provider must match _all_ of them 
 
 #### Adding a new provider
 
-Click the "Add" button to add a new provider. Select the provider type in the dialog that opens, and wait for the complete provider properties dialog to appear. After submitting the dialog, drag the newly created provider to a desired position in the list.
+Click the "Add provider" button to add a new provider. Select the provider type in the dialog that opens, and wait for the complete provider properties dialog to appear. After submitting the dialog, drag the newly created provider to a desired position in the list.

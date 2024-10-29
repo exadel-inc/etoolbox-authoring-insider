@@ -16,15 +16,19 @@ _Insider_ plugs in different points in the AEM authoring interface, such as:
 - page properties;
 - in-place editors, etc.
 
+_Insider_ offers instrumentation for modifying content of AEM dialog fields and properties using customizable tools and integrations with third-party providers, such as AI or search engines.
+
+![Insider chart](docs/image-chart.png)
+
 _Insider_ appends to input fields (text fields, textarea-s, RTE fields) and provides different **tools** (= "commands") to change field content. These are such commands as "expand text", "compact text", "do translation". "summarize", etc.
 
 Every tool is a separate JS script that follows a certain format and is registered in the framework. There are out-of-box tools/scripts. Users can create tools/scripts of their own. Also, users can define for each tool for what fields it is available.
 
-There are also tool **templates** that allow creating tool variations without writing any code. Usually the variations created upn a template differ in their prompts to AI. Other tools are individual (= "equivalent" to their internal template).
+There are also tool **templates** that allow creating tool variations without writing any code. Usually the variations created upon a template differ in their prompts to AI. Other tools are individual (= "equivalent" to their internal template).
 
-When a tool requires an integration with AI (technically, a Large Language Model), it uses a **provider**. A provider is yet another JS script, formatted and registered, than implements some logic needed for the integration.
+When a tool requires an integration with AI or some other third-party service, it uses a **provider**. A provider is yet another JS script that implements some logic needed for the integration.
 
-A provider, same as a tool, can be based on a template. A user is able to introduce a new provider as a variation of an existing one (to say, with another system prompt, or addressing to another network endpoint). Using providers, you can employ different LLMs, be them publicly available or private, for different commands within the same AEM interface.   
+A provider, same as a tool, can be based on a template. A user is able to introduce a new provider as a variation of an existing one (to say, with another system prompt, or addressing to another network endpoint). Using providers, you can employ different LLMs, be them publicly available or private, for different commands within the same AEM interface. 
 
 ### System requirements
 
