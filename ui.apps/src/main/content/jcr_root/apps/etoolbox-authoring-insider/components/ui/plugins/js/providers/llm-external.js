@@ -29,7 +29,7 @@
         isTemplate: true,
 
         settings: [
-            { name: 'service', title: 'Service Identifier', defaultValue: DEFAULT_SERVICE, required: true },
+            { name: 'service', title: 'Service Identifier', placeholder: 'E.g.,' + DEFAULT_SERVICE, required: true },
             { name: '_token', type: 'encrypted', title: 'Authentication Token', placeholder: 'Leave empty if not needed' },
             { name: 'llm', title: 'Model', placeholder: 'If left empty, a default for this service will be applied' },
             { name: 'systemPrompt', type: 'text', title: 'System Prompt' },
