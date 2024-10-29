@@ -15,6 +15,7 @@
     'use strict';
 
     const ATTR_ACTION = 'data-eai-action';
+    const SELECTOR_TOOLS = '.eai-tool-button'
 
     /**
      * Contains utility methods for working with Authoring Insider controls
@@ -31,7 +32,7 @@
          * @param {Tool} tool - The tool to use
          * @param {Element} field - The target field
          */
-        createButton,
+        createButton: createActionButton,
 
         /**
          * Executes the specified action for the current field
@@ -48,10 +49,10 @@
         }
         createDropdown(tools, field);
         const container = field.closest('coral-dialog') || field.closest('form');
-        renewButtonClickHandler(container, `[${ATTR_ACTION}]`);
+        renewActionHandlers(container, `[${ATTR_ACTION}]`);
     }
 
-    function createButton(tool, field) {
+    function createActionButton(tool) {
         let toolButtonHtml = `${ns.icons.getHtml(tool.icon || 'insider-mono')}<span class="title">${tool.title}</span>`;
         let displaysProviders = false;
         if (tool.providers.length > 1 && tool.providers.length < 5) {
@@ -71,7 +72,6 @@
         if (displaysProviders) {
             toolButton.classList.add('has-providers');
         }
-        toolButton.controlled = field;
         return toolButton;
     }
 
@@ -85,19 +85,16 @@
 
         const dropDownList = new Coral.ButtonList();
         for (const tool of tools) {
-            dropDownList.items.add(createButton(tool, field));
+            dropDownList.items.add(createActionButton(tool));
         }
 
         const popover = new Coral.Popover();
         popover.set({
-            alignMy: 'right top',
-            alignAt: 'right bottom',
-            target: dropDownButton,
-            focusOnShow: Coral.mixin.overlay.focusOnShow.OFF
+            focusOnShow: Coral.mixin.overlay.focusOnShow.OFF,
+            returnFocus: Coral.mixin.overlay.returnFocus.ON
         });
         popover.content.appendChild(dropDownList);
         popover.classList.add('eai-tools');
-        popover.returnFocusTo = field;
 
         const wrapper = document.createElement('div');
         wrapper.classList.add('eai-field-wrapper');
@@ -120,24 +117,48 @@
         await tool.handle(field, actionId);
     }
 
-    function renewButtonClickHandler(target, selector) {
+    function renewActionHandlers(target) {
         if (!target) {
             return;
         }
+        const actionSelector = `[${ATTR_ACTION}]`;
         if (ns.utils.isFunction(target.off)) {
-            target.off('click', selector, onButtonClick).on('click', selector, onButtonClick);
+            target
+                .off('click', actionSelector, onActionClick).on('click', actionSelector, onActionClick)
+                .off('click', SELECTOR_TOOLS, onActionClick).on('click', SELECTOR_TOOLS, onToolButtonClick);
         } else {
-            $(target).off('click', selector, onButtonClick).on('click', selector, onButtonClick);
+            $(target)
+                .off('click', actionSelector, onActionClick).on('click', actionSelector, onActionClick)
+                .off('click', SELECTOR_TOOLS, onActionClick).on('click', SELECTOR_TOOLS, onToolButtonClick);
         }
     }
 
-    async function onButtonClick(event) {
+    async function onActionClick(event) {
         event.preventDefault();
         event.stopPropagation();
         const clickedButton = event.target.closest(`[${ATTR_ACTION}]`);
         const action = clickedButton.getAttribute(ATTR_ACTION);
-        clickedButton.closest('coral-popover').hide();
-        await execute(action, clickedButton.closest('button').controlled);
+        const popover = clickedButton.closest('coral-popover');
+        popover.hide();
+        await execute(action, popover.controlled);
+    }
+
+    function onToolButtonClick(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        const clickedButton = event.target.closest(SELECTOR_TOOLS);
+        const popover = clickedButton.nextElementSibling;
+        if (!popover.target) {
+            popover.set({
+                alignMy: 'right top',
+                alignAt: 'right bottom',
+                target: clickedButton,
+            });
+        }
+        if (!popover.controlled) {
+            popover.controlled = clickedButton.previousElementSibling;
+        }
+        popover.show();
     }
 
 })(document, Granite.$, window.eai = window.eai || {});

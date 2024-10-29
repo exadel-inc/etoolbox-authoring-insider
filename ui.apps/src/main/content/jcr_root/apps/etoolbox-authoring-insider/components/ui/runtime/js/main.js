@@ -15,7 +15,9 @@
     'use strict';
 
     const CLS_MANAGED = 'js-eai-managed';
-    const CONTROL_HOOKS = '.coral-Form-field[type="text"][name], textarea[name]';
+
+    const FRAGMENT_TEMPLATES = '[coral-multifield-template]';
+    const INSTRUMENTATION_HOOKS = '.coral-Form-field[type="text"][name], textarea[name]';
 
     document.addEventListener('DOMContentLoaded', onLoad);
     createAllInsiderObjects();
@@ -23,7 +25,10 @@
     function onLoad() {
         const pagePropertiesForm = document.querySelector('.cq-siteadmin-admin-properties');
         if (pagePropertiesForm) {
-            pagePropertiesForm.querySelectorAll(CONTROL_HOOKS).forEach((field) => ns.controls.handleField(field));
+            pagePropertiesForm.querySelectorAll(INSTRUMENTATION_HOOKS).forEach((field) => ns.controls.handleField(field));
+            pagePropertiesForm.querySelectorAll(FRAGMENT_TEMPLATES).forEach((template) => {
+                template.content.querySelectorAll(INSTRUMENTATION_HOOKS).forEach((field) => ns.controls.handleField(field));
+            });
         } else {
             $(document).on('coral-overlay:beforeopen', 'coral-dialog', onDialogOpen);
         }
@@ -35,7 +40,10 @@
         }
         const dialog = event.target;
         dialog.classList.add(CLS_MANAGED);
-        dialog.querySelectorAll(CONTROL_HOOKS).forEach((field) => ns.controls.handleField(field));
+        dialog.querySelectorAll(INSTRUMENTATION_HOOKS).forEach((field) => ns.controls.handleField(field));
+        dialog.querySelectorAll(FRAGMENT_TEMPLATES).forEach((template) => {
+            template.content.querySelectorAll(INSTRUMENTATION_HOOKS).forEach((field) => ns.controls.handleField(field));
+        });
     }
 
     function createAllInsiderObjects() {

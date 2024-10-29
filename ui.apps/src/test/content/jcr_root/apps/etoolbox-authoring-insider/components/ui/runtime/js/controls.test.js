@@ -65,7 +65,8 @@ global.Coral = {
     Popover: MockCoralElement,
     mixin: {
         overlay: {
-            focusOnShow: { OFF: 'off' }
+            focusOnShow: { OFF: 'off' },
+            returnFocus: { ON: 'on' }
         }
     }
 };
