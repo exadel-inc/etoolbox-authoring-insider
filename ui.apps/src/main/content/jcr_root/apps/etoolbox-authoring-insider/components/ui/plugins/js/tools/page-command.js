@@ -77,6 +77,8 @@
                 }
             ],
             onStart: async(context) => await doTask(context, provider, initialContent),
+            onInput: async(msg, context) =>
+                provider.textToText({ messages: context.getHistory().messages, signal: context.signal }),
             onReload: (newProviderId, context) => {
                 if (context.isRefresh) {
                     return this.handle(field, newProviderId);
