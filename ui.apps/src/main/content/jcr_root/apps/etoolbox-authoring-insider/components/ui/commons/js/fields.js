@@ -161,10 +161,12 @@
                 const foundationField = $(field).adaptTo('foundation-field');
                 if (foundationField) {
                     foundationField.setValue(selectorOrValue);
+                    emitInputEvent(field);
                     return;
                 }
             }
             field.value = selectorOrValue;
+            emitInputEvent(field);
         },
 
         /**
@@ -180,5 +182,11 @@
             field.unlock();
         }
     };
+
+    function emitInputEvent(field) {
+        if (ns.utils.isFunction(field.dispatchEvent)) {
+            field.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+    }
 
 })(window, Granite.$, window.eai = window.eai || {});

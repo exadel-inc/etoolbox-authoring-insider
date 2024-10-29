@@ -94,6 +94,8 @@ test('Should set selected content', () => {
 
 test('Should set value', () => {
     const field = document.createElement('input');
+    const dispatchEventMock = jest.spyOn(field, 'dispatchEvent').mockImplementation();
+
     field['foundation-field-value'] = null;
     ns.fields.setValue(field, 'Lorem ipsum');
     expect(field['foundation-field-value']).toBe('Lorem ipsum');
@@ -101,6 +103,9 @@ test('Should set value', () => {
     delete field['foundation-field-value'];
     ns.fields.setValue(field, 'Dolor sit amet');
     expect(field.value).toBe('Dolor sit amet');
+    expect(dispatchEventMock).toHaveBeenCalled();
+
+    dispatchEventMock.mockRestore();
 });
 
 test('Should set value for a descendant field', () => {
