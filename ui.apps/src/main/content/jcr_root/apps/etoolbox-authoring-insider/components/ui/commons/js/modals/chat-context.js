@@ -18,7 +18,18 @@
 
     ns.ui = ns.ui || {};
 
+    /**
+     * Contains meta-information and methods to operate on a chat-like dialog created with {@link ns.ui.showChatDialog}
+     * or a similar method. Instances of this class are usually passed to callback functions that are defined by user
+     * to handle dialog events
+     */
     ns.ui.DialogContext = class {
+
+        /**
+         * Creates a new instance of {@code DialogContext}
+         * @param {Element} dialog - The chat dialog element
+         * @param options - The dialog context options
+         */
         constructor(dialog, options) {
             this.dom = dialog;
             if (ns.utils.isObject(options)) {
@@ -26,10 +37,20 @@
             }
         }
 
+        /**
+         * Gets if the pending operation associated with the current dialog (such as a request to a server) has been
+         * aborted
+         * @returns {*|boolean}
+         */
         get aborted() {
             return this.dom.abortController && this.dom.abortController.signal.aborted;
         }
 
+        /**
+         * Adds a message to the chat dialog
+         * @param {string|Object} message - The message to add
+         * @param {string} type - The message type
+         */
         appendMessage(message, type) {
             if (type === 'prompt') {
                 type = 'local';
@@ -37,10 +58,17 @@
             this.dom.addMessage(message, type);
         }
 
+        /**
+         * Closes the chat dialog
+         */
         close() {
             this.dom.open = false;
         }
 
+        /**
+         * Retrieves the message history from the chat dialog
+         * @returns {{messages: *[]}}
+         */
         getHistory() {
             const messages = this.dom.querySelectorAll(SELECTOR_MESSAGE);
             const result = { messages: [] };
@@ -66,6 +94,10 @@
             return result;
         }
 
+        /**
+         * Sets the prompt string in the chat dialog
+         * @param {string} value - The prompt string
+         */
         setPrompt(value) {
             const existingPrompt = this.dom.querySelector('.local.prompt .content');
             if (existingPrompt) {
@@ -75,14 +107,26 @@
             }
         }
 
+        /**
+         * Gets the AbortSignal object associated with the current dialog
+         * @returns {*|AbortSignal}
+         */
         get signal() {
             return this.dom.abortController && this.dom.abortController.signal;
         }
 
+        /**
+         * Gets the title of the chat dialog
+         * @returns {string}
+         */
         get title() {
             return this.dom.querySelector('.title').innerText;
         }
 
+        /**
+         * Switches the chat dialog into the "waiting" state with a spinner and an optional message displayed
+         * @param {string=} message - The optional waiting message
+         */
         wait(message) {
             this.dom.classList.add(ns.ui.CLS_BUSY);
             if (message) {

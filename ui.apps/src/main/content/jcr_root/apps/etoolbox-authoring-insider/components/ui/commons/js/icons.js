@@ -29,10 +29,19 @@
 
     const DEFAULT_COLOR = '#1182CA';
 
+    /**
+     * Contains utility methods for working with icons
+     */
     ns.icons = ns.icons || {};
 
     ns.icons.DEFAULT = RESOURCES_PREFIX + 'insider.svg';
 
+    /**
+     * Get the HTML representation of the icon
+     * @param {string} icon - The icon name, path, or HTML
+     * @param {string=} alt - The alt text for the icon
+     * @returns {string}
+     */
     ns.icons.getHtml = function (icon, alt) {
         icon = (icon || '').trim();
         // Pass ready HTML as is

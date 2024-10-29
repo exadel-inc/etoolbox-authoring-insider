@@ -18,7 +18,14 @@
     const instances = [];
     const idCounter = new ns.utils.IdCounter();
 
+    /**
+     * Represents a tool model
+     */
     class ToolModel {
+        /**
+         * Creates a new instance of {@code ToolModel}
+         * @param {object} options - The tool model options
+         */
         constructor(options = {}) {
             this.icon = options.icon;
             this.id = options.id;
@@ -31,7 +38,15 @@
         }
     }
 
+    /**
+     * Represents a tool instance
+     */
     class Tool {
+        /**
+         * Creates a new instance of {@code Tool}
+         * @param {ToolModel} model - The tool model
+         * @param {Object} options - The tool instance options
+         */
         constructor(model, options = {}) {
             this._model = model;
             this.id = idCounter.nextIndexedId(model.id);
@@ -46,14 +61,26 @@
             }
         }
 
+        /**
+         * Gets the tool icon
+         * @returns {*|string}
+         */
         get icon() {
             return this['_icon'] || this._model.icon;
         }
 
+        /**
+         * Gets the tool ordinal
+         * @returns {number}
+         */
         get ordinal() {
             return !isNaN(this['_ordinal']) ? this['_ordinal'] : Number.MAX_SAFE_INTEGER;
         }
 
+        /**
+         * Gets the providers matching the current tool instance
+         * @returns {Provider[]}
+         */
         get providers() {
             if (!this._providers) {
                 if (!Array.isArray(this._model.requires)) {
@@ -69,10 +96,18 @@
             return this._providers;
         }
 
+        /**
+         * Gets the tool title
+         * @returns {*|string}
+         */
         get title() {
             return this['_title'] || this._model.title || this.id;
         }
 
+        /**
+         * Gets whether the tool instance is valid
+         * @returns {boolean}
+         */
         get valid() {
             if (ns.utils.isFunction(this._isValid)) {
                 return this._isValid();
@@ -80,6 +115,13 @@
             return true;
         }
 
+        /**
+         * Performs an operation against a field
+         * @param {Element} field - The field to operate on
+         * @param {*|string} id - The provider id
+         * @param {Object=} options - The operation options
+         * @returns {Promise<void>}
+         */
         async handle(field, id, options) {
             if (!this._handle) {
                 return;
@@ -90,6 +132,11 @@
             await this._handle(field, providerId, options);
         }
 
+        /**
+         * Checks if the tool instance matches a given {@code field}
+         * @param {Element} field - The field to match against
+         * @returns {boolean}
+         */
         matches(field) {
             if (!field) {
                 return false;
@@ -118,8 +165,15 @@
         }
     }
 
+    /**
+     * Contains tool-related functionality
+     */
     ns.tools = {
-        addInstance: function (options = {}) {
+        /**
+         * Adds a tool instance to the working set
+         * @param {*|ToolModel} options - The tool model or a dictionary of options
+         */
+        addInstance: function (options) {
             if (options.type) {
                 // This is an instance
                 const model = models[options.type];
@@ -140,10 +194,18 @@
             instances.sort((a, b) => a.ordinal - b.ordinal);
         },
 
+        /**
+         * Clears all tool instances from the working set
+         */
         clearAll: function () {
             instances.splice(0, instances.length);
         },
 
+        /**
+         * Gets a tool instance by its {@code id}
+         * @param {string} id - The tool instance id
+         * @returns {Tool|null}
+         */
         getInstance: function (id) {
             if (!ns.utils.isString(id)) {
                 return null;
@@ -154,10 +216,15 @@
             if (id.includes(':')) {
                 return instances.find((item) => item.id === id);
             } else {
-                return instances.find((item) => item.id === id || item.id.startsWith(id + ':'))
+                return instances.find((item) => item.id === id || item.id.startsWith(id + ':'));
             }
         },
 
+        /**
+         * Gets all tool instances available for a given {@code field}
+         * @param {Element} field - The field to match against
+         * @returns {*[]}
+         */
         forField: function (field) {
             if (!field) {
                 return [];
@@ -165,10 +232,18 @@
             return instances.filter((item) => item.valid && item.matches(field) && item.providers.length > 0);
         },
 
+        /**
+         * Gets all registered tool models
+         * @returns {ToolModel[]}
+         */
         getModels: function () {
             return Object.values(models);
         },
 
+        /**
+         * Registers a tool model
+         * @param {Object} options - The tool model options
+         */
         register: function (options) {
             const model = new ToolModel(options);
             if (!isValid(model)) {
@@ -178,6 +253,10 @@
             models[model.id] = model;
         },
 
+        /**
+         * Removes a tool model by its {@code id}
+         * @param {string} id - The tool model id
+         */
         unregister: function (id) {
             delete models[id];
             instances.splice(0, instances.length, ...instances.filter((item) => item._model.id !== id));

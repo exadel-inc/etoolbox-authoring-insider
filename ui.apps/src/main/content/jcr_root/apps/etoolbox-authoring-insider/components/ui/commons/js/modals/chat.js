@@ -42,6 +42,10 @@
        Interface methods
        ----------------- */
 
+    /**
+     * Brings on screen a dialog with chat-like interface
+     * @param {Object} options - The dialog options
+     */
     ns.ui.showChatDialog = function (options = {}) {
         const dialog = ns.ui.initDialog({
             id: options.id,
@@ -90,6 +94,12 @@
         });
     };
 
+    /**
+     * Displays a dialog with chat-like interface and waits for a user action. Unlike {@link ns.ui.showChatDialog},
+     * this method returns a promise that resolves with the user input or {@code null} if the dialog was canceled.
+     * @param {Object} options - The dialog options
+     * @returns {Promise<*|null>}
+     */
     ns.ui.chatDialog = function (options = {}) {
         return new Promise((resolve) => {
             if (ns.utils.isFunction(options.onAccept)) {

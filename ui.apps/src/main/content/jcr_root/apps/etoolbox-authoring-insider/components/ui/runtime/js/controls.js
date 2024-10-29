@@ -16,9 +16,28 @@
 
     const ATTR_ACTION = 'data-eai-action';
 
+    /**
+     * Contains utility methods for working with Authoring Insider controls
+     */
     ns.controls = {
+        /**
+         * Attaches Authoring Insider controls to the specified field
+         * @param {Element} field - The target field
+         */
         handleField,
+
+        /**
+         * Creates a dropdown button manifesting a particular Authoring Insider tool for the current field
+         * @param {Tool} tool - The tool to use
+         * @param {Element} field - The target field
+         */
         createButton,
+
+        /**
+         * Executes the specified action for the current field
+         * @param {string} actionId - The action identifier
+         * @param {Element} field - The target field
+         */
         execute
     };
 
@@ -30,6 +49,30 @@
         createDropdown(tools, field);
         const container = field.closest('coral-dialog') || field.closest('form');
         renewButtonClickHandler(container, `[${ATTR_ACTION}]`);
+    }
+
+    function createButton(tool, field) {
+        let toolButtonHtml = `${ns.icons.getHtml(tool.icon || 'insider-mono')}<span class="title">${tool.title}</span>`;
+        let displaysProviders = false;
+        if (tool.providers.length > 1 && tool.providers.length < 5) {
+            toolButtonHtml += '<div class="providers">';
+            for (const prov of tool.providers) {
+                toolButtonHtml += `<a title="${prov.title}" ${ATTR_ACTION}="${prov.id}">${ns.icons.getHtml(prov.icon, prov.title)}</a>`;
+            }
+            toolButtonHtml += '</div>';
+            displaysProviders = true;
+        }
+        const firstProviderTitle = displaysProviders ? tool.providers[0].title : '';
+        const toolButton = new Coral.ButtonList.Item().set({
+            title: tool.title + (firstProviderTitle ? ` (${firstProviderTitle})` : ''),
+            content: { innerHTML: toolButtonHtml }
+        });
+        toolButton.setAttribute(ATTR_ACTION, tool.id);
+        if (displaysProviders) {
+            toolButton.classList.add('has-providers');
+        }
+        toolButton.controlled = field;
+        return toolButton;
     }
 
     function createDropdown(tools, field) {
@@ -62,30 +105,6 @@
         wrapper.appendChild(field);
         wrapper.appendChild(dropDownButton);
         wrapper.appendChild(popover);
-    }
-
-    function createButton(tool, field) {
-        let toolButtonHtml = `${ns.icons.getHtml(tool.icon || 'insider-mono')}<span class="title">${tool.title}</span>`;
-        let displaysProviders = false;
-        if (tool.providers.length > 1 && tool.providers.length < 5) {
-            toolButtonHtml += '<div class="providers">';
-            for (const prov of tool.providers) {
-                toolButtonHtml += `<a title="${prov.title}" ${ATTR_ACTION}="${prov.id}">${ns.icons.getHtml(prov.icon, prov.title)}</a>`;
-            }
-            toolButtonHtml += '</div>';
-            displaysProviders = true;
-        }
-        const firstProviderTitle = displaysProviders ? tool.providers[0].title : '';
-        const toolButton = new Coral.ButtonList.Item().set({
-            title: tool.title + (firstProviderTitle ? ` (${firstProviderTitle})` : ''),
-            content: { innerHTML: toolButtonHtml }
-        });
-        toolButton.setAttribute(ATTR_ACTION, tool.id);
-        if (displaysProviders) {
-            toolButton.classList.add('has-providers');
-        }
-        toolButton.controlled = field;
-        return toolButton;
     }
 
     async function execute(actionId, field) {

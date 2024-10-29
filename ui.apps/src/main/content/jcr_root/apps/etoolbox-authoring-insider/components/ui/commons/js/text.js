@@ -14,7 +14,14 @@
 (function (ns) {
     'use strict';
 
+    /**
+     * A utility class for building a string from a template with named placeholders
+     */
     class TextBuilder {
+        /**
+         * Creates a new instance of {@code TextBuilder}
+         * @param {string} value - The template string
+         */
         constructor(value) {
             this._placeholderIndex = 0;
             this._value = value ? value.toString() : '';
@@ -35,6 +42,10 @@
             }
         }
 
+        /**
+         * Compiles the resulting string with the placeholders replaced by the provided values
+         * @returns {string}
+         */
         build() {
             if (!Array.isArray(this._placeholders) || this._placeholders.length === 0) {
                 return this.toString();
@@ -48,6 +59,11 @@
             return this.toString();
         }
 
+        /**
+         * Fills in a placeholder with a value
+         * @param {object} placeholder - The placeholder object
+         * @param value - The value to fill in
+         */
         fillIn(placeholder, value) {
             if (!ns.utils.isObjectWithProperty(placeholder, 'start')) {
                 return;
@@ -60,6 +76,10 @@
             matchingPlaceholder.content = value;
         }
 
+        /**
+         * Gets the next placeholder in the template
+         * @returns {object|null}
+         */
         nextPlaceholder() {
             if (!Array.isArray(this._placeholders) || this._placeholders.length <= this._placeholderIndex) {
                 return null;
@@ -71,11 +91,18 @@
             return result;
         }
 
+        /**
+         * Gets the string representation of the current object
+         * @returns {string}
+         */
         toString() {
             return this._value;
         }
     }
 
+    /**
+     * Contains utility logic for working with text
+     */
     ns.text = {
         TextBuilder
     };

@@ -18,7 +18,14 @@
     const instances = [];
     const idCounter = new ns.utils.IdCounter();
 
+    /**
+     * Represents a provider model
+     */
     class ProviderModel {
+        /**
+         * Creates a new instance of {@code ProviderModel}
+         * @param {object} options - The provider model options
+         */
         constructor(options = {}) {
             this.icon = options.icon;
             this.id = options.id;
@@ -33,7 +40,15 @@
         }
     }
 
+    /**
+     * Represents a provider instance
+     */
     class Provider {
+        /**
+         * Creates a new instance of {@code Provider}
+         * @param {ProviderModel} model - The provider model
+         * @param {Object} options - The provider instance options
+         */
         constructor(model, options = {}) {
             this._model = model;
             this.id = idCounter.nextIndexedId(model.id);
@@ -109,8 +124,15 @@
         }
     }
 
+    /**
+     * Contains provider-related functionality
+     */
     ns.providers = {
-        addInstance: function (options = {}) {
+        /**
+         * Adds a new provider instance to the working set
+         * @param {*|ProviderModel} options - The provider model or a dictionary of options
+         */
+        addInstance: function (options) {
             if (options.type) {
                 // This is an instance
                 const model = models[options.type];
@@ -126,10 +148,18 @@
             instances.sort((a, b) => a.ordinal - b.ordinal);
         },
 
+        /**
+         * Clears all provider instances from the working set
+         */
         clearAll: function () {
             instances.splice(0, instances.length);
         },
 
+        /**
+         * Retrieves a provider instance by its id
+         * @param {string} id - The provider instance id
+         * @returns {Provider|null}
+         */
         getInstance: function (id) {
             if (!ns.utils.isString(id)) {
                 return null;
@@ -140,10 +170,15 @@
             if (id.includes(':')) {
                 return instances.find((item) => item.id === id);
             } else {
-                return instances.find((item) => item.id === id || item.id.startsWith(id + ':'))
+                return instances.find((item) => item.id === id || item.id.startsWith(id + ':'));
             }
         },
 
+        /**
+         * Retrieves all provider instances that match the given requirements
+         * @param value - The requirements to match against
+         * @returns {Provider[]}
+         */
         forRequirements: function (value) {
             if (!value) {
                 return [];
@@ -152,19 +187,31 @@
             return instances.filter((item) => item.valid && item.matches(value));
         },
 
+        /**
+         * Gets all registered provider models
+         * @returns {ProviderModel[]}
+         */
         getModels: function () {
             return Object.values(models);
         },
 
-        register: function (value) {
-            const model = new ProviderModel(value);
+        /**
+         * Registers a new provider model
+         * @param {Object} options - The tool model options
+         */
+        register: function (options) {
+            const model = new ProviderModel(options);
             if (!isValid(model)) {
-                console.error('Invalid provider', value);
+                console.error('Invalid provider', options);
                 return;
             }
             models[model.id] = model;
         },
 
+        /**
+         * Unregisters a provider model by its id
+         * @param {string} id - The provider model id
+         */
         unregister: function (id) {
             delete models[id];
         }

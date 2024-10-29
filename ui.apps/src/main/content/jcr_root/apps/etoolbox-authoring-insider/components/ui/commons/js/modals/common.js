@@ -16,6 +16,11 @@
 
     ns.ui = ns.ui || {};
 
+    /**
+     * Adjusts the size of the specified dialog to match the size of the parent dialog
+     * @param {Element} dialog - The dialog to adjust
+     * @param {Element} parent - The parent dialog
+     */
     ns.ui.adjustDialogSize = function (dialog, parent) {
         if (!parent || parent.matches('.coral3-Dialog--fullscreen')) {
             return;
@@ -28,6 +33,15 @@
         targetWrapper.style.height = sourceWrapper.style.height || sourceWrapper.offsetHeight + 'px';
     };
 
+    /**
+     * Creates a new HTML DOM element with the specified tag name, attributes, and optional children
+     * @param {Object} options - The element attributes and options
+     * @param {string} options.tag - The tag name of the element (optional, default is 'div')
+     * @param {string} options.innerHtml - The inner HTML content of the element (optional)
+     * @param {string} options.innerText - The inner text content of the element (optional)
+     * @param {Array|Object} options.children - The child elements of the element (optional)
+     * @returns {Element}
+     */
     ns.ui.createElement = function (options) {
         const tag = (options && options.tag) || 'div';
         const element = document.createElement(tag);
@@ -56,6 +70,12 @@
         return element;
     };
 
+    /**
+     * Collects the values of the input fields inside the specified container and outputs them either as a single
+     * object (if there is only one input field) or as a key-value dictionary
+     * @param {Element} container
+     * @returns {*|{}}
+     */
     ns.ui.getInputValue = function (container) {
         const valueHolders = container.querySelectorAll('.coral-Form-field');
         if (valueHolders.length === 1) {
@@ -68,6 +88,12 @@
         return result;
     };
 
+    /**
+     * Creates a new Granite/Coral dialog with the specified options. This is a service method designed to be called
+     * from either {@link ns.ui.showChatDialog} or {@link ns.ui.showInputDialog}
+     * @param {Object} options - The dialog options
+     * @returns {Element}
+     */
     ns.ui.initDialog = function (options) {
         let dialog = document.getElementById(options.id);
         if (dialog) {
@@ -98,6 +124,11 @@
         return dialog;
     };
 
+    /**
+     * Validates the input fields inside the specified container
+     * @param {Element} container - The container to validate
+     * @returns {boolean}
+     */
     ns.ui.validate = function (container) {
         const validatable = container.querySelectorAll('[data-validation],[required]');
         let isValid = true;

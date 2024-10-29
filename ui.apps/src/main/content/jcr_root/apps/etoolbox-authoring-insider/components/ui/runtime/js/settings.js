@@ -18,6 +18,37 @@
 
     let settings;
 
+    /**
+     * Contains utility methods for working with user-authored settings
+     */
+    ns.settings = {
+        /**
+         * Clears all settings from the working set
+         */
+        clearAll: function () {
+            settings = undefined;
+        },
+
+        /**
+         * Retrieves an array of user-authored settings for all Authoring Insider tools or else for a specific tool
+         * @param {string=} id - An optional tool identifier
+         * @returns {Promise<[]>}
+         */
+        getToolSettings: async function (id) {
+            return await extractSettings('tools', id);
+        },
+
+        /**
+         * Retrieves an array of user-authored settings for all Authoring Insider providers or else for a specific
+         * provider
+         * @param {string=} id - An optional provider identifier
+         * @returns {Promise<[]>}
+         */
+        getProviderSettings: async function (id) {
+            return await extractSettings('providers', id);
+        }
+    };
+
     async function loadSettings() {
         if (settings !== undefined) {
             return settings;
@@ -41,19 +72,5 @@
         }
         return (result[namespace] || []).filter(f => f.id === id) || [];
     }
-
-    ns.settings = {
-        clearAll: function () {
-            settings = undefined;
-        },
-
-        getToolSettings: async function (id) {
-            return await extractSettings('tools', id);
-        },
-
-        getProviderSettings: async function (id) {
-            return await extractSettings('providers', id);
-        },
-    };
 
 })(window.eai = window.eai || {});

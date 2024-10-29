@@ -19,23 +19,38 @@
 
     /**
      * Wraps a DOM object representing an RTE field to provide content accessor method for use with
-     * {@link window.eai.fields}
+     * {@link ns.fields}
      */
     ns.ui.rte.FieldFacade = class {
+
+        /**
+         * Creates a new instance of {@code FieldFacade}
+         * @param {Element} field - The target field
+         * @param plugin - The RTE plugin instance
+         */
         constructor(field, plugin) {
             this._field = field;
             this._plugin = plugin;
         }
 
+        /**
+         * Returns the closest ancestor of the target field that matches the specified selector
+         * @param selector - The selector to match
+         * @returns {*}
+         */
         closest(selector) {
             return this._field.closest(selector);
         }
 
+        /**
+         * Retrieves the selection content of the target field
+         * @returns {string}
+         */
         getSelectedContent() {
             if (this.hasSelectedText()) {
                 let windowSelection = this._plugin.editorKernel.editContext.win.getSelection().toString();
                 if (!windowSelection && this._storedRange) {
-                    this._renewSelection();
+                    this.renewSelection();
                     windowSelection = this._plugin.editorKernel.editContext.win.getSelection().toString();
                 }
                 return windowSelection;
@@ -43,32 +58,18 @@
             return this._plugin.editorKernel.editContext.root.innerText;
         }
 
-        getSelectionRange() {
-            if (this._storedRange) {
-                return this._storedRange;
-            }
-            return RTE.Selection.createProcessingSelection(this._plugin.editorKernel.editContext);
-        }
-
-        hasSelectedText() {
-            const range = this.getSelectionRange();
-            if (!range) {
-                return false;
-            }
-            if (range.startNode && range.endNode && range.startNode !== range.endNode) {
-                return true;
-            }
-            return ns.utils.isNumber(range.startOffset) &&
-                ns.utils.isNumber(range.endOffset) &&
-                (range.startOffset < range.endOffset);
-        }
-
+        /**
+         * Performs a lock operation on the target RTE field
+         */
         lock() {
             if (!this._plugin.editorKernel.isLocked()) {
                 this._plugin.editorKernel.lock();
             }
         }
 
+        /**
+         * Stores the selection range of the current RTE field for later retrieval
+         */
         preserveSelectionRange() {
             delete this._storedRange;
             const currentRange = this.getSelectionRange();
@@ -90,26 +91,65 @@
             this._storedRange = currentRange;
         }
 
+        /**
+         * Sets focus on the target RTE field
+         */
         setFocus() {
             this._plugin.editorKernel.focus(this._plugin.editorKernel.editContext);
-            this._renewSelection();
+            this.renewSelection();
         }
 
+        /**
+         * Sets the selected content of the target RTE field
+         * @param {string} value - The text to set
+         */
         setSelectedContent(value) {
-            if (!this._renewSelection()) {
+            if (!this.renewSelection()) {
                 this._plugin.editorKernel.relayCmd('clear');
             }
             this._plugin.editorKernel.relayCmd('inserthtml', RTE.Utils.htmlEncode(value));
             delete this._storedRange;
         }
 
+        /**
+         * Performs an unlock operation on the target RTE field
+         */
         unlock() {
             while (this._plugin.editorKernel.isLocked()) {
                 this._plugin.editorKernel.unlock();
             }
         }
 
-        _renewSelection() {
+        /**
+         * @private
+         */
+        getSelectionRange() {
+            if (this._storedRange) {
+                return this._storedRange;
+            }
+            return RTE.Selection.createProcessingSelection(this._plugin.editorKernel.editContext);
+        }
+
+        /**
+         * @private
+         */
+        hasSelectedText() {
+            const range = this.getSelectionRange();
+            if (!range) {
+                return false;
+            }
+            if (range.startNode && range.endNode && range.startNode !== range.endNode) {
+                return true;
+            }
+            return ns.utils.isNumber(range.startOffset) &&
+                ns.utils.isNumber(range.endOffset) &&
+                (range.startOffset < range.endOffset);
+        }
+
+        /**
+         * @private
+         */
+        renewSelection() {
             if (!this.hasSelectedText() || !this._storedRange) {
                 return false;
             }

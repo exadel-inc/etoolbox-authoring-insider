@@ -14,8 +14,16 @@
 (function (window, $, ns) {
     'use strict';
 
+    /**
+     * Contains utility methods for working with input fields
+     */
     ns.fields = {
 
+        /**
+         * Sets focus on the specified input field or field facade
+         * @param {*|Element} field - The target field
+         * @returns {void|any}
+         */
         focus: function (field) {
             if (!field) {
                 return;
@@ -27,6 +35,12 @@
             }
         },
 
+        /**
+         * Performs a lock operation (if present) on the specified input field or field facade. A lock operation is
+         * usually triggered for RTE objects to handle selection
+         * @param {*|Element} field - The target field
+         * @returns {void}
+         */
         lock: function (field) {
             if (!field || !ns.utils.isFunction(field.lock)) {
                 return;
@@ -34,6 +48,11 @@
             field.lock();
         },
 
+        /**
+         * Returns the selected content of the specified input field or field facade
+         * @param {*|Element} field - The target field
+         * @returns {*|string|string}
+         */
         getSelectedContent: function (field) {
             if (!field) {
                 return '';
@@ -51,6 +70,13 @@
             return this.getValue(field);
         },
 
+        /**
+         * Returns the value of the specified input field or field facade, or else returns the value of a descendant
+         * element specified by the selector
+         * @param {*|Element} field - The target field
+         * @param {string=} selector - The selector to use to find the descendant element
+         * @returns {*|string}
+         */
         getValue: function (field, selector) {
             if (selector) {
                 if (ns.utils.isFunction(field.querySelector)) {
@@ -72,12 +98,19 @@
             if (field.value !== undefined) {
                 return field.value;
             }
-            if (field.selectedItem) {
-                return field.selectedItem.value || field.selectedItem.textContent;
+            if (field['selectedItem']) {
+                const selectedItem = field['selectedItem'];
+                return selectedItem.value || selectedItem.textContent;
             }
             return '';
         },
 
+        /**
+         * Sets the selected content of the specified input field or field facade. This method is used to insert new
+         * text at the current cursor position or to replace the selected text
+         * @param {*|Element} field - The target field
+         * @param {string} value - The text to set
+         */
         setSelectedContent: function (field, value) {
             if (!field) {
                 return;
@@ -100,6 +133,14 @@
             this.setValue(field, value);
         },
 
+        /**
+         * Sets the value of the specified input field or field facade, or else the value of a descendant element
+         * specified by the selector
+         * @param {*|Element} field - The target field
+         * @param {string} selectorOrValue - The selector to use to find the descendant element
+         * @param {string=} value - The value to set
+         * @returns {*|string}
+         */
         setValue: function (field, selectorOrValue, value) {
             if (!field) {
                 return;
@@ -126,6 +167,12 @@
             field.value = selectorOrValue;
         },
 
+        /**
+         * Performs an unlock operation (if present) on the specified input field or field facade. An unlock operation
+         * is usually triggered for RTE objects to handle selection
+         * @param {*|Element} field - The target field
+         * @returns {void}
+         */
         unlock: function (field) {
             if (!field || !ns.utils.isFunction(field.unlock)) {
                 return;

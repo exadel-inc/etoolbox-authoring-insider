@@ -25,6 +25,10 @@
        Interface methods
        ----------------- */
 
+    /**
+     * Brings on screen a dialog with custom input fields
+     * @param {Object} options - The dialog options
+     */
     ns.ui.showInputDialog = function (options = {}) {
         const parent = options.parent || (options.source && options.source.closest('coral-dialog'));
 
@@ -68,6 +72,12 @@
         });
     };
 
+    /**
+     * Displays a dialog with custom input fields and waits for a user action. Unlike {@link ns.ui.showInputDialog},
+     * this method returns a promise that resolves with the user input or {@code null} if the dialog was canceled.
+     * @param {Object} options - The dialog options
+     * @returns {Promise<*|null>}
+     */
     ns.ui.inputDialog = function (options = {}) {
         return new Promise((resolve) => {
             ns.ui.showInputDialog(Object.assign(

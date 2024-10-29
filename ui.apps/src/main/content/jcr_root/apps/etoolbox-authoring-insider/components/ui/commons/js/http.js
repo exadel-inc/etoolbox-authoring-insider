@@ -16,8 +16,17 @@
 
     const JSON = 'application/json';
 
+    /**
+     * Contains utility methods for working with HTTP requests
+     */
     ns.http = ns.http || {};
 
+    /**
+     * Performs an HTTP GET request and returns response as JSON
+     * @param {string} url - The URL to request
+     * @param {Object} options - The request options
+     * @returns {Promise<undefined|*>}
+     */
     ns.http.getJson = async function (url, options = {}) {
         if (!options.headers) {
             options.headers = {};
@@ -28,6 +37,12 @@
         return await ajax(url, options);
     };
 
+    /**
+     * Performs an HTTP GET request and returns response as text
+     * @param {string} url - The URL to request
+     * @param {Object} options - The request options
+     * @returns {Promise<undefined|*>}
+     */
     ns.http.getText = async function (url, options = {}) {
         return await ajax(url, options);
     };
@@ -41,6 +56,12 @@
         return await ajax(url, options);
     };
 
+    /**
+     * Performs an HTTP POST request and returns response as JSON
+     * @param {string} url - The URL to request
+     * @param {Object} options - The request options
+     * @returns {Promise<undefined|*>}
+     */
     ns.http.post = async function (url, options = {}) {
         options.method = 'POST';
         return await ajax(url, options);
