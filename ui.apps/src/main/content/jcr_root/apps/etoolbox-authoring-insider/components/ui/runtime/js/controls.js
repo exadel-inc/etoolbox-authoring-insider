@@ -42,6 +42,10 @@
         execute
     };
 
+    /* -------------------------------
+       Shared methods and subsidiaries
+       ------------------------------- */
+
     function handleField(field) {
         const tools = ns.tools.forField(field);
         if (!tools.length) {
@@ -99,9 +103,15 @@
         const wrapper = document.createElement('div');
         wrapper.classList.add('eai-field-wrapper');
         field.parentNode.insertBefore(wrapper, field);
+
+        const tooltipIcon = findSibling(field, '.coral-Form-fieldinfo');
+        const tooltip = findSibling(tooltipIcon, 'coral-tooltip');
+
         wrapper.appendChild(field);
         wrapper.appendChild(dropDownButton);
         wrapper.appendChild(popover);
+        tooltipIcon && wrapper.appendChild(tooltipIcon);
+        tooltip && wrapper.appendChild(tooltip);
     }
 
     async function execute(actionId, field) {
@@ -115,6 +125,24 @@
             return;
         }
         await tool.handle(field, actionId);
+    }
+
+    /* ---------------
+       Service methods
+       --------------- */
+
+    function findSibling(source, selector) {
+        if (!source) {
+            return null;
+        }
+        let current = source.nextElementSibling;
+        while (current) {
+            if (current.matches(selector)) {
+                return current;
+            }
+            current = current.nextElementSibling;
+        }
+        return null;
     }
 
     function renewActionHandlers(target) {
@@ -132,6 +160,10 @@
                 .off('click', SELECTOR_TOOLS, onActionClick).on('click', SELECTOR_TOOLS, onToolButtonClick);
         }
     }
+
+    /* --------------
+       Event handlers
+       -------------- */
 
     async function onActionClick(event) {
         event.preventDefault();
@@ -156,7 +188,7 @@
             });
         }
         if (!popover.controlled) {
-            popover.controlled = clickedButton.previousElementSibling;
+            popover.controlled = clickedButton.parentNode.firstElementChild;
         }
         popover.show();
     }
