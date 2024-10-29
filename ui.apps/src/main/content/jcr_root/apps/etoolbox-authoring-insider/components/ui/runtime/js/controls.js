@@ -55,7 +55,7 @@
     function createActionButton(tool) {
         let toolButtonHtml = `${ns.icons.getHtml(tool.icon || 'insider-mono')}<span class="title">${tool.title}</span>`;
         let displaysProviders = false;
-        if (tool.providers.length > 1 && tool.providers.length < 5) {
+        if (tool.providers.length > 1) {
             toolButtonHtml += '<div class="providers">';
             for (const prov of tool.providers) {
                 toolButtonHtml += `<a title="${prov.title}" ${ATTR_ACTION}="${prov.id}">${ns.icons.getHtml(prov.icon, prov.title)}</a>`;
