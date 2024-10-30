@@ -1,5 +1,5 @@
 # EToolbox Authoring Insider
-![Project logo](docs/logo.png)
+![Project logo](docs/img/logo.png)
 
 ![Version](https://img.shields.io/badge/version-1.0.0.SNAPSHOT-blue)
 ![Platform](https://img.shields.io/badge/AEM-6.5+-orange)
@@ -18,7 +18,7 @@ _Insider_ plugs in different points in the AEM authoring interface, such as:
 
 _Insider_ offers instrumentation for modifying content of AEM dialog fields and properties using customizable tools and integrations with third-party providers, such as AI or search engines.
 
-![Insider chart](docs/image-chart.png)
+![Insider chart](docs/img/chart.png)
 
 _Insider_ appends to input fields (text fields, textarea-s, RTE fields) and provides different **tools** (= "commands") to change field content. These are such commands as "expand text", "compact text", "do translation". "summarize", etc.
 

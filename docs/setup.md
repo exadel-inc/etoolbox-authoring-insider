@@ -2,7 +2,7 @@
 
 Follow the _Insider_'s icon to the [Settings](http://localhost.hpe.com:4502/etoolbox/authoring-insider.html) page. You will see several tabs in the page.
 
-![Image settings](image-settings.png)
+![Image settings](img/settings.png)
 
 ### Dialog tools
 
@@ -14,7 +14,7 @@ The tools can be deleted/cleaned up as well. Mind that a tool that is essentiall
 
 Every tool can be modified by clicking the "Properties" button which opens a properties dialog. Usually the dialog allows altering the title and icon of the tool as well as its enabled status. For AI-powered tools, there is also the possibility to modify prompts and other parameters.
 
-![Tool properties](image-tool-props.png)
+![Tool properties](img/tool-props.png)
 
 #### Field selection
 
