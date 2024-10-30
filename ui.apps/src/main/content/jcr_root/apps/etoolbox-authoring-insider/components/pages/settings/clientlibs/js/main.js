@@ -161,8 +161,8 @@
     }
 
     async function submitItemData(dialog, dialogForm) {
-        const cancelled = !dialogForm.dispatchEvent(new Event('submit', { cancelable: true }));
-        if (cancelled) {
+        const isValid = ns.ui.validate(dialogForm);
+        if (!isValid) {
             return;
         }
         dialog.open = false;
