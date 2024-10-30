@@ -1,0 +1,44 @@
+{
+  "jcr:primaryType": "nt:unstructured",
+  "tools": {
+    "jcr:primaryType": "nt:unstructured",
+    "item0": {
+      "jcr:primaryType": "nt:unstructured",
+      "details": "{\"prompt\": \"Create a new page\", \"selectors\": [\"input\", \".cq-RichText\"], \"_token\": \"enc_ZW5jcnlwdGVk\"}",
+      "enabled": true,
+      "icon": "edit",
+      "title": "Tool 0",
+      "type": "command"
+    },
+    "item1": {
+      "jcr:primaryType": "nt:unstructured",
+      "details": "{\"prompt\": \"Create a new component\"}",
+      "enabled": false,
+      "title": "Tool 1",
+      "type": "command"
+    },
+    "item2": {
+      "jcr:primaryType": "nt:unstructured"
+    }
+  },
+  "providers": {
+    "jcr:primaryType": "nt:unstructured",
+    "item0": {
+      "jcr:primaryType": "nt:unstructured",
+      "details": "{\"url\": \"http://localhost:10001\", \"model\": \"llava\"}",
+      "enabled": true,
+      "icon": "model",
+      "title": "Provider 0",
+      "type": "llm.own"
+    },
+    "item1": {
+      "jcr:primaryType": "nt:unstructured",
+      "enabled": false,
+      "title": "Provider 1",
+      "type": "llm.own"
+    },
+    "item2": {
+      "jcr:primaryType": "nt:unstructured"
+    }
+  }
+}

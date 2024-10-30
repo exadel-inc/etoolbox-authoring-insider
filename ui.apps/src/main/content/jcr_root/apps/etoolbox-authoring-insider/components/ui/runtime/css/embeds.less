@@ -1,0 +1,162 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License").
+ * You may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/* ---------------
+   Vars and mixins
+   --------------- */
+
+@popover-width: 14rem;
+@popover-width-ext: 19rem;
+
+.monochrome {
+  filter: brightness(500%);
+}
+
+/* ------------
+   Dialog field
+   ------------ */
+
+.eai-field-wrapper {
+  display: inline-flex;
+  gap: 0.3125rem;
+  width: 100%;
+
+  &:has(.coral-Form-errorlabel) {
+    padding-bottom: 1rem;
+  }
+
+  .coral-Form-errorlabel {
+    bottom: 0;
+    position: absolute;
+  }
+}
+
+.coral-Form-fieldwrapper {
+  &[disabled] {
+    .eai-tool-button {
+      pointer-events: none;
+      filter: grayscale(100%);
+      opacity: 0.6;
+    }
+  }
+  &:has(.cq-msm-lockable-field) {
+    .eai-field-wrapper {
+      width: 94%;
+    }
+  }
+}
+
+/* --------
+   Dropdown
+   -------- */
+
+.eai-tools {
+  width: @popover-width;
+  &:has(.has-providers) {
+    width: @popover-width-ext;
+  }
+
+  coral-list-item-content {
+    align-items: center;
+    display: flex;
+    gap: 0.5rem;
+
+    .icon {
+      height: 1rem;
+      width: 1rem;
+    }
+
+    .title {
+      flex-grow: 1;
+      min-width: 10rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .providers {
+      display: flex;
+      gap: 0.25rem;
+
+      a {
+        filter: grayscale(25%);
+        height: 1.15rem;
+        opacity: 0.8;
+        text-align: center;
+        width: 1.15rem;
+
+        &:hover {
+          filter: unset;
+          opacity: unset;
+        }
+
+        svg, img {
+          height: 1rem;
+          width: 1rem;
+        }
+
+        &:nth-child(n+5) {
+          display: none;
+        }
+      }
+    }
+  }
+
+  button:focus {
+    .icon, .providers a {
+      .monochrome;
+    }
+  }
+}
+
+.coral--dark {
+  .eai-tools {
+    .icon, .providers a {
+      .monochrome;
+    }
+  }
+  [data-action='#insider'] {
+    .monochrome;
+  }
+}
+
+.rte-ui .rte-popover coral-buttonlist.eai-tools {
+  width: @popover-width;
+  &:has(.has-providers) {
+    width: @popover-width-ext;
+  }
+}
+
+/* This is to make sure that the in-RTE popover is not cut off when the Insider button is positioned at the right edge */
+coral-popover[data-id="insider"] {
+  background-clip: padding-box;
+  border: none;
+  border-right: 2.5rem solid transparent;
+  &:has(.has-providers) {
+    border-right-width: 7.5rem;
+  }
+  .coral3-Popover-content {
+    border: .125rem solid #c8c8c8;
+    border-radius: .25rem;
+  }
+}
+/* ...And this restores some of the overridden styles to match the in-place editor style */
+#InlineEditingUI {
+  coral-popover[data-id="insider"] {
+    border-right: unset;
+    .coral3-Popover-content {
+      border-color: #414141;
+      border-radius: .25rem;
+    }
+  }
+}

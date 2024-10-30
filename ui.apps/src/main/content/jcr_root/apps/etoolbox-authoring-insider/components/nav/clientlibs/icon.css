@@ -1,0 +1,10 @@
+coral-icon[icon="etoolbox-authoring-insider"] {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' xml:space='preserve' style='shape-rendering:geometricPrecision;text-rendering:geometricPrecision;image-rendering:optimizeQuality;fill-rule:evenodd;clip-rule:evenodd' viewBox='0 0 71.989 71.989'%3E%3Ccircle cx='35.994' cy='35.994' r='35.994' style='fill:%23666'/%3E%3Cpath d='M55.137 55.229c.804 1.389 2.607 1.877 3.996 1.073 1.389-.805 1.877-2.608 1.072-3.997L38 13.92c-.868-1.189-2.529-1.567-3.828-.814-1.389.804-1.877 2.607-1.072 3.996 7.334 12.706 14.719 25.45 22.037 38.127zM26.378 27.024 11.783 52.305c-.804 1.389-.316 3.192 1.073 3.997 1.389.804 3.192.316 3.996-1.073L29.75 32.89l2.486 4.323a2.933 2.933 0 0 0 3.992 1.078 2.934 2.934 0 0 0 1.078-3.993l-.808-1.405-.01-.018-3.364-5.851h-.013l-.824-1.426c-.618-1.083-1.465-1.536-2.629-1.536-1.165 0-1.826.479-2.445 1.536l-.823 1.426h-.012zm21.328 25.279-4.707-8.137a2.873 2.873 0 0 0-1.364-1.218 2.925 2.925 0 0 0-1.56-.463H29.816a2.933 2.933 0 0 0-2.925 2.924 2.932 2.932 0 0 0 2.925 2.924h8.846l3.975 6.894c.804 1.389 2.608 1.876 3.997 1.072 1.389-.804 1.876-2.607 1.072-3.996z' style='fill:%23fff'/%3E%3C/svg%3E");
+    height: 3rem;
+    width: 3rem;
+}
+
+coral-icon.coral3-Icon[icon="etoolbox-authoring-insider"] {
+    transform: translateY(-0.75rem);
+}
+

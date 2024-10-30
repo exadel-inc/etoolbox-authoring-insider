@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<workspaceFilter version="1.0">
+    <filter root="/content/etoolbox/authoring-insider/servlet/config" mode="merge"/>
+    <filter root="/content/etoolbox/authoring-insider/servlet/relay" mode="merge"/>
+    <filter root="/conf/etoolbox/authoring-insider" mode="merge"/>
+</workspaceFilter>

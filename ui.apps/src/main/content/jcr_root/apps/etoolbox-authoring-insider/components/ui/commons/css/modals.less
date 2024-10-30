@@ -1,0 +1,443 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License").
+ * You may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/* ---------------
+   Vars and mixins
+   --------------- */
+
+@bg-selection: #326EC8;
+@bg-light: #EAEAEA;
+@bg-lighter: #f4f4f4;
+@border-dark: #8A8A8A;
+@border-medium: #AAA;
+@fg-dark: #323232;
+@fg-error: #721c24;
+@fg-medium: #666;
+
+.flex-column {
+  display: flex;
+  flex-direction: column;
+};
+
+.flex-column-h100 {
+  .flex-column;
+  height: 100%;
+}
+
+.line-clamp(@lines: 10) {
+  display: -webkit-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-line-clamp: @lines;
+  -webkit-box-orient: vertical;
+};
+
+.font-large {
+  font-size: 1rem;
+}
+.font-medium {
+  font-size: 0.9rem;
+}
+
+.rounded {
+  border-radius: 0.75rem;
+}
+.rounded-left {
+  border-radius: 1rem 0 0 1rem;
+}
+.rounded-right {
+  border-radius: 0 1rem 1rem 0;
+}
+
+/* --------------------
+   Common dialog styles
+   -------------------- */
+
+.eai-dialog {
+  .coral3-Dialog-wrapper {
+    height: 490px;
+    min-width: 590px;
+    .flex-column;
+  }
+
+  // Dialog elements
+
+  coral-dialog-content {
+    .flex-column;
+    flex: 1;
+    overflow: auto;
+    padding-top: 1.25rem;
+    padding-bottom: 1.25rem;
+  }
+
+  coral-panelstack, coral-panel, coral-panel-content {
+    .flex-column-h100;
+  }
+
+  coral-dialog-footer {
+    .coral3-Button {
+      min-width: 3.75rem;
+    }
+  }
+
+  &.no-footer {
+    coral-dialog-footer {
+      display: none;
+    }
+  }
+
+  // Common utility classes
+
+  .centered {
+    align-self: center;
+  }
+
+  .no-outline:focus,
+  .coral3-Button--primary.no-outline:not(:disabled):not(.is-disabled):focus {
+    border: none;
+    box-shadow: none;
+    outline: none;
+  }
+
+  .no-padding {
+    margin: 0 -0.9375rem;
+  }
+
+  .scrollable {
+    overflow-y: scroll;
+  }
+
+  // Common elements classes
+
+  .icon {
+    display: inline-block;
+    height: 1rem;
+    margin-right: 0.5rem;
+    width: 1rem;
+
+    img, svg {
+      height: 1rem;
+      width: 1rem;
+    }
+  }
+  coral-dialog-header {
+    .icon {
+      margin-right: 0.6rem;
+    }
+  }
+  .coral3-Button.no-text {
+    .icon {
+      margin-right: 0;
+    }
+  }
+
+  img.preview {
+    border-radius: 0.25rem;
+    height: 140px;
+    width: auto;
+  }
+}
+
+/* ----------
+   Chat panel
+   ---------- */
+
+.chat {
+
+  // Upper toolbar
+
+  .providers {
+    position: absolute;
+    right: 6rem;
+    top: 0.4rem;
+    width: unset;
+
+    .coral3-Select-label,
+    .coral3-SelectList-item {
+      align-items: flex-start;
+      display: flex;
+      white-space: nowrap;
+    }
+
+    .coral3-SelectList.is-focused {
+      .is-selected, .is-highlighted {
+        .icon {
+          filter: brightness(100);
+        }
+      }
+    }
+  }
+
+  .refresh {
+    position: absolute;
+    height: 3rem;
+    line-height: 3rem;
+    right: 3.3rem;
+    top: 0;
+  }
+
+  // Messages
+
+  .messages {
+    .flex-column;
+  }
+
+  .message {
+    .font-large;
+    box-sizing: border-box;
+    margin-bottom: 1.25rem;
+    max-width: 90%;
+    min-width: 90%;
+    padding: 1.25rem;
+    position: relative;
+
+    &.initial, &.local {
+      .rounded-right;
+      align-self: flex-start;
+    }
+    &.local {
+      background-color: @bg-lighter;
+    }
+    &.initial {
+      background-color: @bg-light;
+    }
+    &.local:has(+ .initial) {
+      border-bottom-right-radius: 0;
+      margin-bottom: -1.25rem;
+      padding-bottom: 2.5rem;
+    }
+    &.local + .initial {
+      border-top: 2px Solid #FFF;
+    }
+    &.remote {
+      .rounded-left;
+      align-self: flex-end;
+      background-color: #d1ecf1;
+      padding-right: 4rem;
+      [data-action] {
+        opacity: 0;
+        position: absolute;
+        right: 0.5rem;
+        top: 0.5rem;
+        transition: opacity 300ms;
+        &:focus {
+          border: none;
+          box-shadow: none;
+          outline: none;
+        }
+      }
+      &:hover [data-action] {
+        opacity: 1;
+      }
+      &:last-of-type [data-action] {
+        display: none;
+      }
+    }
+    &.error {
+      .rounded;
+      align-self: center;
+      background-color: #f8d7da;
+      border: 1px solid #f5c6cb;
+      border-radius: 0.5rem;
+      color: @fg-error;
+    }
+    &.info {
+      .rounded;
+      align-self: center;
+      background-color: #dbf195;
+      border: 1px solid #cfe0bd;
+      text-align: center;
+    }
+    &.hidden {
+      display: none;
+    }
+    &.no-grow {
+      min-width: unset;
+    }
+    &.initial .content {
+      .line-clamp;
+      padding: 0.125rem 0;
+    }
+
+    del {
+        color: red;
+        text-decoration: line-through;
+    }
+    ins {
+        color: green;
+        text-decoration: unset;
+    }
+  }
+
+  .response {
+    margin: 0.25rem;
+    min-width: 2.5rem;
+    &:not([variant="primary"]) {
+      color: @fg-medium;
+    }
+    &[variant="secondary"] {
+      border-color: @border-medium;
+    }
+  }
+
+  // A special centered case to make the spinner display in the middle of a dialog when there are no messages
+  .messages:empty + .centered,
+  .messages:has(.prompt.hidden:first-child:last-child) + .centered{
+    position: relative;
+    top: 50%;
+    transform: translateY(-100%);
+  }
+
+  // Spinner
+
+  coral-wait {
+    min-height: 2rem; // A fix for the spinner shrinking to 0px height when at the bottom of a scrollable container
+    margin: 0.25rem 0;
+    &[data-message]:after {
+      .font-medium;
+      color: @fg-medium;
+      content: attr(data-message);
+      display: block;
+      left: -4rem;
+      padding-top: 1rem;
+      position: relative;
+      text-align: center;
+      top: 100%;
+      width: 10rem;
+    }
+  }
+
+  // Controls (quick actions, etc.)
+
+  &:has(.message.info) {
+    .when-not-alert {
+      display: none;
+    }
+  }
+
+  &:not(:has(.message.info)) {
+    .when-alert {
+      display: none;
+    }
+  }
+
+  &.is-busy {
+    coral-panel#chat {
+      cursor: wait;
+    }
+    .when-interactive {
+      display: none;
+    }
+  }
+  &:not(.is-busy) {
+    .when-busy {
+      display: none;
+    }
+  }
+
+  &:not(.is-interactive) {
+    .when-interactive {
+      display: none;
+    }
+  }
+
+  &.is-user-modified {
+    .skip-after-input {
+      display: none;
+    }
+  }
+}
+
+/* ------------------
+   Input dialog/panel
+   ------------------ */
+
+.user-input {
+  .coral3-Dialog-wrapper {
+    coral-dialog-content {
+      .flex-column;
+      flex: 1;
+    }
+  }
+
+  .fields {
+    .flex-column-h100;
+
+    .initial {
+      .rounded-right;
+      align-self: flex-start;
+      box-sizing: border-box;
+      background-color: @bg-light;
+      margin: .5rem 0 1.5rem -0.9375rem;
+      max-width: 95%;
+      min-width: 95%;
+      padding: 1rem;
+
+      &.no-grow {
+        min-width: unset;
+      }
+
+      .content {
+        .font-medium;
+        .line-clamp(5);
+        color: @fg-dark;
+      }
+    }
+
+    .coral-Form-field {
+      width: 100%;
+    }
+
+    label + .coral-Form-field {
+      margin: 0.5rem 0;
+    }
+
+    textarea {
+      .font-large;
+      box-sizing: border-box;
+      flex-grow: 1;
+      padding: 0.5rem;
+      resize: none;
+      &:focus {
+        outline: none;
+      }
+    }
+
+    .coral3-Select-label {
+      .font-large;
+    }
+
+    coral-selectlist {
+      .font-large;
+      border: 1px solid @border-dark;
+      flex-grow: 1;
+      .coral3-SelectList-item:not([disabled]).is-selected {
+        background-color: @bg-selection;
+        color: #FFF;
+      }
+    }
+
+    [aria-invalid="true"] {
+      border: 1px Solid #e14132;
+    }
+  }
+}
+
+/* -------------------
+   Non-dialog overlays
+   ------------------- */
+
+.notification {
+  max-width: 30rem;
+}

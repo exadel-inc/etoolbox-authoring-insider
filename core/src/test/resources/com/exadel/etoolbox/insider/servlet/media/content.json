@@ -1,0 +1,17 @@
+{
+  "image.png": {
+    "jcr:primaryType": "dam:Asset",
+    "jcr:content": {
+      "jcr:primaryType": "dam:AssetContent",
+      "cq:name": "image.png",
+      "metadata":{
+        "jcr:primaryType": "dam:AssetContent",
+        "dam:MIMEtype": "image/png",
+        "dc:format": "image/png"
+      },
+      "renditions": {
+        "jcr:primaryType": "nt:folder"
+      }
+    }
+  }
+}

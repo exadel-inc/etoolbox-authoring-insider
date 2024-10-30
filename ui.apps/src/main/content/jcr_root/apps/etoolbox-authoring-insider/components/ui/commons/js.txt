@@ -1,0 +1,17 @@
+#base=js
+
+fields.js
+fields-matcher.js
+http.js
+icons.js
+text.js
+utils.js
+
+modals/common.js
+modals/input.js
+modals/chat.js
+modals/chat-context.js
+modals/notification.js
+
+tools.js
+providers.js

@@ -1,0 +1,201 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License").
+ * You may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+// Common layout
+
+.coral--light {
+  background-color: #FAFAFA;
+}
+
+.coral-FixedColumn-column {
+  min-width: 40rem;
+  width: 40%;
+}
+
+// Toolbar
+
+betty-titlebar-primary > :not([variant="quiet"]) {
+  margin-left: 1rem;
+}
+
+// Dialog
+
+.cq-dialog-content {
+  box-sizing: border-box;
+  height: 30rem;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0 0.9375rem 0 0;
+  width: 35rem;
+
+}
+
+coral-dialog-footer {
+  .coral3-Button {
+    min-width: 3.75rem;
+  }
+}
+
+.coral-Form-fieldwrapper {
+  margin-bottom: 0.3125rem;
+}
+
+.horizontal-1-2, .horizontal-2-1 {
+  display: flex;
+  gap: 1rem;
+}
+
+.horizontal-1-2 {
+  & > div:last-child {
+    flex: 1;
+  }
+}
+
+.horizontal-2-1 {
+  & > div:first-child {
+    flex: 0.6;
+  }
+  & > div:last-child {
+    flex: 0.4;
+  }
+}
+
+// Multifield
+
+.sparse-items {
+  background: none;
+  border: none;
+  padding: 0;
+
+  & > coral-multifield-item {
+    background: #f0f0f0;
+    border: .0625rem solid #e9e9e9;
+    border-radius: .3125rem;
+    margin-bottom: 1rem;
+    padding: 0.6125rem 1rem;
+  }
+}
+
+.one-row {
+  align-items: center;
+  display: flex;
+  gap: 1rem;
+
+  .coral-Form-field {
+    margin: 0;
+  }
+
+  .icon-holder {
+    display: inline-block;
+    font-size: 1.125rem;
+    min-width: 1.125rem;
+    height: 1.125rem;
+
+    &.default {
+      color: #6d6d6d;
+      //noinspection CssNoGenericFontName
+      font-family: AdobeSpectrumIcons18;
+      transform: translateY(0.1rem);
+
+      &:before {
+        content: "\f1de";
+      }
+    }
+  }
+
+  .buttons {
+    display: flex;
+    flex-direction: row;
+  }
+}
+
+.buttons-align-mr {
+  & > coral-multifield-item {
+    & > coral-multifield-item-content {
+      padding-right: 1.25rem;
+    }
+
+    & > button {
+      top: 50%;
+      transform: translateY(-50%);
+    }
+  }
+}
+
+.no-add-button {
+  [coral-multifield-add] {
+    display: none;
+  }
+}
+
+.no-remove-button {
+  [coral-multifield-remove] {
+    display: none;
+  }
+}
+
+// Typography
+
+.center-icon {
+  coral-icon {
+    transform: translate(-0.05rem, -0.05rem);
+  }
+}
+
+.full-width {
+  width: 100%;
+}
+
+.hidden {
+  display: none;
+}
+
+.minimal {
+  color: #aaa;
+  font-size: 0.85rem;
+  padding: 0 0 0.2rem 0;
+  height: 0.85rem;
+}
+.no-label {
+  label {
+    display: none;
+  }
+}
+
+.no-wrap {
+  white-space: nowrap;
+}
+
+.quiet {
+  background: none;
+  border: none;
+  height: 1.5rem;
+  font-size: 0.9rem;
+  padding: 0;
+
+  &.coral-Form-field {
+    margin: 0;
+  }
+
+  &:focus {
+    border: none;
+    box-shadow: none;
+    -webkit-box-shadow: none;
+    outline: none;
+  }
+}
+
+.transparent {
+  opacity: 0;
+}
