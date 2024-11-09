@@ -40,7 +40,8 @@ public class ConfigDialogDatasourceTest {
 
     static final String FIELDS = "[" +
             "{\"name\":\"url\",\"title\":\"Url\",\"required\":true}," +
-            "{\"name\":\"models\",\"title\":\"Models\",\"multi\":true}" +
+            "{\"name\":\"models\",\"title\":\"Models\",\"multi\":true}," +
+            "{\"name\":\"details\",\"title\":\"Details level\",\"type\":\"select\", \"options\":[\"low\", \"high\"]}" +
             "]";
 
     private final AemContext context = new AemContext();
@@ -88,14 +89,14 @@ public class ConfigDialogDatasourceTest {
                 .stream(Spliterators.spliteratorUnknownSize(dataSource.iterator(), 0), false)
                 .flatMap(resource -> {
                     Resource items = resource.getChild("items");
-                    if (items != null) {
+                    if (resource.getResourceType().contains("/container") && items != null) {
                         return StreamSupport.stream(Spliterators.spliteratorUnknownSize(items.listChildren(), 0), false);
                     }
                     return Stream.of(resource);
                 })
                 .collect(Collectors.toList());
 
-        Assertions.assertEquals(6, dialogFields.size());
+        Assertions.assertEquals(7, dialogFields.size());
 
         ValueMap dialogFieldProperties = dialogFields.get(0).getValueMap();
         Assertions.assertEquals(
@@ -145,7 +146,23 @@ public class ConfigDialogDatasourceTest {
                 "granite/ui/components/coral/foundation/form/textfield",
                 dialogFieldProperties.get(JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY, String.class));
         Assertions.assertEquals("models", dialogFieldProperties.get("name", String.class));
+
+        dialogField = dialogFields.get(6);
+        Assertions.assertEquals(
+                "granite/ui/components/coral/foundation/form/select",
+                dialogField.getValueMap().get(JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY, String.class));
+        Assertions.assertEquals("Details level", dialogField.getValueMap().get("fieldLabel", String.class));
+        Resource items = dialogField.getChild("items");
+        Assertions.assertNotNull(items);
+        Resource item0 = items.getChild("item0");
+        Assertions.assertNotNull(item0);
+        dialogFieldProperties = item0.getValueMap();
+        Assertions.assertEquals("low", dialogFieldProperties.get("text", String.class));
+        Assertions.assertEquals("low", dialogFieldProperties.get("value", String.class));
+        Resource item1 = items.getChild("item1");
+        Assertions.assertNotNull(item1);
+        dialogFieldProperties = item1.getValueMap();
+        Assertions.assertEquals("high", dialogFieldProperties.get("text", String.class));
+        Assertions.assertEquals("high", dialogFieldProperties.get("value", String.class));
     }
-
-
 }
