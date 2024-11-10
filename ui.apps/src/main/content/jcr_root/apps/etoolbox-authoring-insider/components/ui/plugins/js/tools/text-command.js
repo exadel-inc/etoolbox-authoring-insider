@@ -107,7 +107,7 @@
 
     async function inputAndRun(context, provider, initialContent) {
         // Ask for the source text if the original field was empty
-        if (!initialContent.text) {
+        if (ns.utils.isBlank(initialContent.text)) {
             initialContent.text = await ns.ui.inputDialog({
                 title: 'Enter your content',
                 parent: context.dom
