@@ -1,6 +1,6 @@
 ## EToolbox Authoring Insider - Setup
 
-Follow the _Insider_'s icon to the [Settings](http://localhost.hpe.com:4502/etoolbox/authoring-insider.html) page. You will see several tabs in the page.
+Follow the _Insider_'s icon to the "EToolbox Authoring Insider - Settings" page. You will see several tabs in the page.
 
 ![Image settings](img/settings.png)
 
@@ -85,7 +85,17 @@ Some of the tools would allow modifying the LLM prompt. If the label for the pro
 
 There is a way to display a select list instead of a text input. To do this, you need to put inside the brackets several variants separated by `|`. E.g., the prompt `Modify the text to {{ How do you want your text to be modified? | comply with standards | be more concise | be more engaging }}` will make _Insider_ display a select list with three options.
 
-If a prompt supports user-input templates, it may contain any number of templates. Multiple input windows will be displayed sequentially.  
+If a prompt supports user-input templates, it may contain any number of templates. Multiple input windows will be displayed sequentially.
+
+#### Adjusting the "Image caption" tool
+
+The "Image caption" tool fetches an appropriate image rendition from the local AEM storage, encodes it and passes to a provider bound to a multimodal LLM. Apart from prompts, the tool allows setting up a filter for image renditions and the level of detail. Rendition filter is important to select a variant of images with enough visual details and yet not too big to reduce the processing time and token expenditure. 
+
+You can specify the filter and a pair of "min width and height - max width and height" separated with a dash or a colon. E.g., `100x100 - 600x600` (this is system's default) or `200x100:500x500`. You can also provide only a lower or a higher boundary using one of the `>`, `>=`, `<`, `<=` tokens in their usual meaning. E.g., `>= 200x200` or `<800x800`.
+
+If there are several image renditions that fall into the filter, _Insider_ will select the one with the smallest byte size.
+
+Since not all image formats are currently supported by OpenAI and similar LLMs, _Insider_ will try to convert an incompatible format (that is, not one of "jpeg", "png", "gif", or "webp") to PNG. The conversion is done by the AEM instance itself. It may fail if a required image codec is not installed on the server.
 
 #### Adding a new dialog tool
 

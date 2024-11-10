@@ -14,6 +14,7 @@
 package com.exadel.etoolbox.insider.servlet.media;
 
 import com.day.cq.dam.api.Rendition;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -35,7 +36,9 @@ class BoundariesPredicate implements Predicate<Rendition> {
 
     private static final String SEPARATOR_X = "x";
     private static final String SEPARATOR_COLON = ":";
+    private static final String SEPARATOR_DASH = "-";
 
+    @Getter(value = AccessLevel.PACKAGE)
     private final Boundaries boundaries;
 
     /**
@@ -43,7 +46,21 @@ class BoundariesPredicate implements Predicate<Rendition> {
      * @param value A {@code String} value representing the user constraints for the rendition dimensions
      */
     BoundariesPredicate(String value) {
-        boundaries = forString(value);
+        boundaries = getBoundaries(value);
+    }
+
+    /**
+     * Get the passable target size for a synthetic rendition based on the user constraints
+     * @return A {@link Size} object
+     */
+    Size getTargetSize() {
+        if (boundaries.getMinWidth() > 0 && boundaries.getMinHeight() > 0) {
+            return new Size(boundaries.getMinWidth(), boundaries.getMinHeight());
+        }
+        if (boundaries.getMaxWidth() < Integer.MAX_VALUE && boundaries.getMaxHeight() < Integer.MAX_VALUE) {
+            return new Size(boundaries.getMaxWidth(), boundaries.getMaxHeight());
+        }
+        return Size.DEFAULT;
     }
 
     /**
@@ -74,42 +91,75 @@ class BoundariesPredicate implements Predicate<Rendition> {
         return new Size(width, height);
     }
 
-    private static Boundaries forString(String value) {
-        if (!StringUtils.contains(value, SEPARATOR_COLON)) {
-            return Boundaries.DEFAULT;
-        }
-        String[] parts = StringUtils.split(value, SEPARATOR_COLON);
-        if (parts.length != 2 || !StringUtils.contains(parts[0], SEPARATOR_X) || !StringUtils.contains(parts[1], SEPARATOR_X)) {
-            return Boundaries.DEFAULT;
-        }
-        String left = parts[0];
-        String leftMin = StringUtils.substringBefore(left, SEPARATOR_X).trim();
-        String leftMax = StringUtils.substringAfter(left, SEPARATOR_X).trim();
-        if (!StringUtils.isNumeric(leftMin) || !StringUtils.isNumeric(leftMax)) {
+    private static Boundaries getBoundaries(String source) {
+        if (StringUtils.isBlank(source)) {
             return Boundaries.DEFAULT;
         }
 
-        String right = parts[1];
-        String rightMin = StringUtils.substringBefore(right, SEPARATOR_X).trim();
-        String rightMax = StringUtils.substringAfter(right, SEPARATOR_X).trim();
-        if (!StringUtils.isNumeric(rightMin) || !StringUtils.isNumeric(rightMax)) {
-            return Boundaries.DEFAULT;
+        source = source.trim();
+        String[] parts;
+        int correction = 0;
+
+        if (source.contains(SEPARATOR_COLON)) {
+            parts = source.split(SEPARATOR_COLON);
+        } else if (source.contains(SEPARATOR_DASH)) {
+            parts = source.split(SEPARATOR_DASH);
+        } else if (source.startsWith(">=")) {
+            parts = new String[]{source.substring(2), StringUtils.EMPTY};
+        } else if (source.startsWith(">")) {
+            parts = new String[]{source.substring(1), StringUtils.EMPTY};
+            correction = 1;
+        } else if (source.startsWith("<=")) {
+            parts = new String[]{StringUtils.EMPTY, source.substring(2)};
+        } else if (source.startsWith("<")) {
+            parts = new String[]{StringUtils.EMPTY, source.substring(1)};
+            correction = -1;
+        } else {
+            parts = new String[]{source};
         }
-        return new Boundaries(
-                Integer.parseInt(leftMin),
-                Integer.parseInt(leftMax),
-                Integer.parseInt(rightMin),
-                Integer.parseInt(rightMax));
+
+        if (parts.length == 1) {
+            parts = new String[]{parts[0], StringUtils.EMPTY};
+        }
+
+        Size leftBoundary = getBoundarySide(parts[0], correction, 0);
+        Size rightBoundary = getBoundarySide(parts[1], correction, Integer.MAX_VALUE);
+        return new Boundaries(leftBoundary, rightBoundary);
+    }
+
+    private static Size getBoundarySide(String source, int correction, int defaultValue) {
+        if (StringUtils.isBlank(source)) {
+            return new Size(defaultValue, defaultValue);
+        }
+        String widthString = StringUtils.substringBefore(source, SEPARATOR_X).trim();
+        String heightString = StringUtils.substringAfter(source, SEPARATOR_X).trim();
+        if (!StringUtils.isNumeric(widthString)) {
+            return new Size(defaultValue, defaultValue);
+        }
+
+        int width = getNonNegativeInteger(widthString, correction, defaultValue);
+        if (!StringUtils.isNumeric(heightString)) {
+            //noinspection SuspiciousNameCombination
+            return new Size(width, width);
+        }
+        int height = getNonNegativeInteger(heightString, correction, defaultValue);
+        return new Size(width, height);
+    }
+
+    private static int getNonNegativeInteger(String source, int correction, int defaultValue) {
+        int result = Integer.parseInt(source);
+        return result >= 0 ? result + correction : defaultValue;
     }
 
     /**
      * A simple data class representing the size of an image
      */
-    @RequiredArgsConstructor
+    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     @Getter
-    private static class Size {
+    static class Size {
 
         static final Size EMPTY = new Size(0, 0);
+        static final Size DEFAULT = new Size(200, 200);
 
         private final int width;
         private final int height;
@@ -122,16 +172,20 @@ class BoundariesPredicate implements Predicate<Rendition> {
     /**
      * A simple data class representing the boundaries for the image size
      */
-    @RequiredArgsConstructor
+    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     @Getter
-    private static class Boundaries {
+    static class Boundaries {
 
-        static final Boundaries DEFAULT = new Boundaries(0, 0, 0, 0);
+        static final Boundaries DEFAULT = new Boundaries(100, 100, 600, 600);
 
         private final int minWidth;
         private final int minHeight;
         private final int maxWidth;
         private final int maxHeight;
+
+        Boundaries(Size left, Size right) {
+            this(left.getWidth(), left.getHeight(), right.getWidth(), right.getHeight());
+        }
 
         boolean contains(Size size) {
             if (size.isEmpty() || minWidth >= maxWidth || minHeight >= maxHeight) {

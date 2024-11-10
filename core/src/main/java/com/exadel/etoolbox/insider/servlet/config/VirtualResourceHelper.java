@@ -108,15 +108,7 @@ class VirtualResourceHelper {
                 child != null ? Collections.singletonList(child) : Collections.emptyList());
     }
 
-    /**
-     * Creates a new instance of the {@link Resource} class representing a TouchUI dialog field
-     * @param resolver   A {@link ResourceResolver} object used to create the resource
-     * @param path       The path of the field resource
-     * @param properties A {@code Map} of properties to set on the field resource
-     * @param children   A list of {@code Resource} objects representing child resources of the field
-     * @return A {@code Resource} object representing the field resource
-     */
-    static Resource newResource(
+    private static Resource newResource(
             ResourceResolver resolver,
             String path,
             Map<String, Object> properties,

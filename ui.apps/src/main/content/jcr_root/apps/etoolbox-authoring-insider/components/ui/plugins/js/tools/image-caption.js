@@ -30,6 +30,8 @@
         ],
         settings: [
             { name: 'selectors', type: 'text', title: 'Field selection (if not specified, default will apply)', multi: true },
+            { name: 'imageSize', type: 'textfield', title: 'Image size filter', placeholder: 'E.g.: 100x100 - 600x600' },
+            { name: 'imageDetail', type: 'select', title: 'Image detail', options: ['low', 'high'] },
             { name: 'prompt', type: 'text', title: 'Prompt', defaultValue: DEFAULT_PROMPT },
             { name: 'repeatPrompt', type: 'text', title: 'Repetition Prompt', defaultValue: DEFAULT_REPEAT_PROMPT }
         ],
@@ -64,7 +66,7 @@
 
         let encodedImage;
         try {
-            encodedImage = await ns.http.getText(sourceValue + '.base64');
+            encodedImage = await ns.http.getText(sourceValue + '.base64?size=' + (this.imageSize || ''));
         } catch (error) {
             return ns.ui.alert(this.title, 'Cannot load the image. This may be due to an invalid path or an unsupported format', 'error');
         }
@@ -100,6 +102,7 @@
             ],
             onStart: async(context) => provider.imageToText({
                 image: encodedImage,
+                imageDetail: this.imageDetail,
                 messages: [
                     { type: 'user', text: prompt }
                 ],
@@ -107,6 +110,7 @@
             }),
             onInput: async(msg, context) => provider.imageToText({
                 image: encodedImage,
+                imageDetail: this.imageDetail,
                 messages: context.getHistory().messages,
                 signal: context.signal
             }),
