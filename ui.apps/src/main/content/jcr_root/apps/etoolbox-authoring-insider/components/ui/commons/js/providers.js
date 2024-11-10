@@ -89,19 +89,25 @@
                 support = [support];
             }
             return requirements.every((req) => {
+                // If the provider contains a function named "supports", the decision is up to that function
+                if (ns.utils.isFunction(support)) {
+                    return support(req);
+                }
+                // We do not test non-expected requirements
                 if (!ns.utils.isString(req)) {
                     return true;
                 }
+                // If the requirement is a "key=value" expression, we test it against the provider's properties
                 if (req.includes('=')) {
                     const [key, value] = req.split('=');
                     return this[key.trim()] === value.trim();
                 }
+                // If the requirement matches the name of a provider's method, we return true unless
+                // the method is explicitly banned by a string like "!myMethod" in the array of supported tokens
                 if (ns.utils.isFunction(this[req])) {
-                    return true;
+                    return !Array.isArray(support) || !support.includes('!' + req);
                 }
-                if (ns.utils.isFunction(support)) {
-                    return support(req);
-                }
+                // If there is an array of supported tokens, we process it as specified in the README
                 if (Array.isArray(support)) {
                     if (support.length === 0) {
                         return true;
@@ -111,7 +117,7 @@
                         if (item.startsWith('!')) {
                             allowByDefault = true;
                         }
-                        if (item === req || item.startsWith(req.replace(/\.+?/, '') + '.')) {
+                        if (item === req || item.startsWith(req.replace(/\.+$/, '') + '.')) {
                             return true;
                         } else if (item === '!' + req || item.startsWith('!' + req.replace(/\.+$/, '') + '.')) {
                             return false;
@@ -119,6 +125,7 @@
                     }
                     return allowByDefault;
                 }
+                // If the provider has no specific requirements, we return true
                 return true;
             });
         }

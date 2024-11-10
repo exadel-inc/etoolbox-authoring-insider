@@ -132,6 +132,7 @@ test('Should select providers for a tool', () => {
     addProviderInstance('Supports only method', ['none']);
     addProviderInstance('Supports text', ['text.expand', 'text.shrink', 'summary']);
     addProviderInstance('Supports anything but image and voice', ['!image', '!voice']);
+    addProviderInstance('Supports anything but the method', ['!method']);
     ns.providers.addInstance({ type: 'my-provider', title: 'Invalid', isValid: () => false });
 
     expectProvidersForRequirementsToContain(
@@ -142,14 +143,18 @@ test('Should select providers for a tool', () => {
             'Supports text',  // Hits because 'method' is the name of a function this provider's model has
             'Supports anything but image and voice'
         ],
-        ['Invalid']
+        [
+            'Invalid',
+            'Supports anything but the method'
+        ]
     );
     expectProvidersForRequirementsToContain(
         ['text'],
         [
             'Supports all',
             'Supports text',
-            'Supports anything but image and voice'
+            'Supports anything but image and voice',
+            'Supports anything but the method'
         ],
         [
             'Supports only method',
@@ -160,7 +165,8 @@ test('Should select providers for a tool', () => {
         ['translation'],
         [
             'Supports all',
-            'Supports anything but image and voice'
+            'Supports anything but image and voice',
+            'Supports anything but the method'
         ],
         [
             'Supports only method',
@@ -172,6 +178,7 @@ test('Should select providers for a tool', () => {
         ['image', 'audio'],
         [
             'Supports all',
+            'Supports anything but the method'
         ],
         [
             'Supports only method',
