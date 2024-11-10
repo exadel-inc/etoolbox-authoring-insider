@@ -567,7 +567,7 @@
         if (ns.utils.isObject(value)) {
             return isBlank(value.text);
         }
-        return value.toString().trim().length === 0;
+        return ns.utils.isBlank(value);
     }
 
     function isNotBlank(value) {

@@ -61,12 +61,21 @@
             // Register the feature
             this.config.features.push(FEATURE);
 
+            // Make sure uiSettings are present. If the RTE field is being created without a predefined feature set,
+            // they may be missing. Later they will be created with the default feature set, and our plugin will not be
+            // there. So we "act proactively" here to initialize the uiSettings in the same way as RTE does under the hood
+            // and make sure that the "insider" feature is there
+            if (!context.uiSettings || !context.uiSettings.cui) {
+                context.uiSettings = { cui: Object.assign({}, RTE.ui.cui.DEFAULT_UI_SETTINGS) };
+            }
+
             // Register the toolbar button
             const toolbarButton = new RTE.ui.cui.InsiderPopupButton(FEATURE, this, false, { title: ns.TITLE });
             tbGenerator.addElement(GROUP, 999, toolbarButton, 10);
             tbGenerator.registerIcon('#' + FEATURE, ns.icons.DEFAULT);
+
             CUI_NAMESPACES.forEach((ns) => {
-                const cui = context.uiSettings.cui[ns];
+                const cui = context.uiSettings.cui && context.uiSettings.cui[ns];
                 if (!cui) {
                     return;
                 }
@@ -74,7 +83,9 @@
                 if (!Array.isArray(toolbar)) {
                     toolbar = cui.toolbar = [];
                 }
-                toolbar.push('#' + FEATURE);
+                if (!toolbar.includes('#' + FEATURE)) {
+                    toolbar.push('#' + FEATURE);
+                }
             });
 
             // Register the popover
@@ -83,7 +94,7 @@
                 items: 'insider:getTools:insider-dropdown',
             };
             CUI_NAMESPACES.forEach((ns) => {
-                const cui = context.uiSettings.cui[ns];
+                const cui = context.uiSettings.cui && context.uiSettings.cui[ns];
                 if (!cui) {
                     return;
                 }
