@@ -30,7 +30,7 @@
         ],
         settings: [
             { name: 'selectors', type: 'text', title: 'Field selection (if not specified, default will apply)', multi: true },
-            { name: 'imageSize', type: 'textfield', title: 'Image size filter', placeholder: 'E.g.: 100x100 - 600x600' },
+            { name: 'imageSize', type: 'textfield', title: 'Image size filter (if not specified, default will apply)', placeholder: 'E.g.: 100x100 - 600x600' },
             { name: 'imageDetail', type: 'select', title: 'Image detail', options: ['low', 'high'] },
             { name: 'prompt', type: 'text', title: 'Prompt', defaultValue: DEFAULT_PROMPT },
             { name: 'repeatPrompt', type: 'text', title: 'Repetition Prompt', defaultValue: DEFAULT_REPEAT_PROMPT }
