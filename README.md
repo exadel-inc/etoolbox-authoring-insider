@@ -24,7 +24,7 @@ _Insider_ appends to input fields (text fields, textarea-s, RTE fields) and prov
 
 Every tool is a separate JS script that follows a certain format and is registered in the framework. There are out-of-box tools/scripts. Users can create tools/scripts of their own. Also, users can define for each tool for what fields it is available.
 
-There are also tool **templates** that allow creating tool variations without writing any code. Usually the variations created upon a template differ in their prompts to AI. Other tools are individual (= "equivalent" to their internal template).
+Some tools are actually template-based. It means that a user is able to create a "variation" of the tool without writing any code. Usually the variations differ in their prompts to AI (like "modify the given text &lt;this way&gt; or &lt;that way&gt;").
 
 When a tool requires an integration with AI or some other third-party service, it uses a **provider**. A provider is yet another JS script that implements some logic needed for the integration.
 
@@ -32,7 +32,7 @@ A provider, same as a tool, can be based on a template. A user is able to introd
 
 ### System requirements
 
-_Insider_ is compatible with AEM 6.5.12 and later versions. It requires a Java 8 runtime.
+_Insider_ has been tested with AEM 6.5.12 and is compatible with later AEM versions. It requires at least Java 8 runtime.
 
 ### Installation
 
