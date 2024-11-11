@@ -56,7 +56,7 @@ public class ConfigServletTest {
         Assertions.assertTrue(json.has("providers"));
 
         JsonArray toolsList = json.get("tools").getAsJsonArray();
-        Assertions.assertEquals(3, toolsList.size());
+        Assertions.assertEquals(4, toolsList.size());
 
         JsonObject tool = toolsList.get(0).getAsJsonObject();
         Assertions.assertEquals("tools/item0", tool.get(Constants.PROP_PATH).getAsString());
@@ -82,6 +82,10 @@ public class ConfigServletTest {
         Assertions.assertNull(tool.get("icon"));
         Assertions.assertNull(tool.get("title"));
 
+        tool = toolsList.get(3).getAsJsonObject();
+        Assertions.assertEquals("tools/item3", tool.get(Constants.PROP_PATH).getAsString());
+        Assertions.assertFalse(tool.get("enabled").getAsBoolean());
+
         JsonArray providersList = json.get("providers").getAsJsonArray();
         Assertions.assertEquals(3, providersList.size());
 
@@ -91,7 +95,7 @@ public class ConfigServletTest {
         Assertions.assertTrue(provider.get("enabled").getAsBoolean());
         Assertions.assertEquals("model", provider.get("icon").getAsString());
         Assertions.assertEquals("Provider 0", provider.get("title").getAsString());
-        Assertions.assertEquals("llm.own", provider.get("type").getAsString());
+        Assertions.assertEquals("llm.external", provider.get("type").getAsString());
         Assertions.assertEquals("http://localhost:10001", provider.get("url").getAsString());
 
         provider = providersList.get(1).getAsJsonObject();

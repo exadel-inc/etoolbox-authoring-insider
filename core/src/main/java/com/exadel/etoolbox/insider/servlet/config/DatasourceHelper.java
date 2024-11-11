@@ -99,32 +99,6 @@ class DatasourceHelper {
             ResourceResolver resolver,
             String rootPath) {
 
-        Resource enabled = VirtualResourceHelper.newResource(
-                resolver,
-                rootPath + "/enabled",
-                JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY, RESTYPE_CHECKBOX,
-                PROP_NAME, "enabled",
-                PROP_CLASS, "no-wrap",
-                PROP_TEXT, "Enabled",
-                "checked", Boolean.TRUE.toString(),
-                "deleteHint", Boolean.FALSE.toString(),
-                PROP_VALUE, Boolean.TRUE.toString(),
-                "uncheckedValue", Boolean.FALSE.toString());
-
-        Resource type = VirtualResourceHelper.newResource(
-                resolver,
-                rootPath + "/type",
-                JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY, RESTYPE_TEXT_FIELD,
-                PROP_NAME, PROP_TYPE,
-                "disabled", Boolean.TRUE.toString());
-
-        Resource enabledAndType = VirtualResourceHelper.newContainer(
-                resolver,
-                rootPath + "/enabledAndType",
-                Collections.singletonMap(PROP_CLASS, "horizontal-1-2"),
-                enabled, type);
-        collection.add(enabledAndType);
-
         Resource title = VirtualResourceHelper.newResource(
                 resolver,
                 rootPath + "/title",
@@ -147,6 +121,16 @@ class DatasourceHelper {
                 Collections.singletonMap(PROP_CLASS, "horizontal-2-1"),
                 title, icon);
         collection.add(titleAndIcon);
+
+        Resource type = VirtualResourceHelper.newResource(
+                resolver,
+                rootPath + "/type",
+                JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY, RESTYPE_TEXT_FIELD,
+                PROP_NAME, PROP_TYPE,
+                "disabled", Boolean.TRUE.toString(),
+                PROP_LABEL, "Type:",
+                PROP_CLASS, "subscript");
+        collection.add(type);
     }
 
     /**

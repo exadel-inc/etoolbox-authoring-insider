@@ -96,23 +96,9 @@ public class ConfigDialogDatasourceTest {
                 })
                 .collect(Collectors.toList());
 
-        Assertions.assertEquals(7, dialogFields.size());
+        Assertions.assertEquals(6, dialogFields.size());
 
         ValueMap dialogFieldProperties = dialogFields.get(0).getValueMap();
-        Assertions.assertEquals(
-                "granite/ui/components/coral/foundation/form/checkbox",
-                dialogFieldProperties.get(JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY, String.class));
-        Assertions.assertEquals("enabled", dialogFieldProperties.get("name", String.class));
-        Assertions.assertEquals("Enabled", dialogFieldProperties.get("text", String.class));
-
-        dialogFieldProperties = dialogFields.get(1).getValueMap();
-        Assertions.assertEquals(
-                "granite/ui/components/coral/foundation/form/textfield",
-                dialogFieldProperties.get(JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY, String.class));
-        Assertions.assertEquals("type", dialogFieldProperties.get("name", String.class));
-        Assertions.assertTrue(dialogFieldProperties.get("disabled", false));
-
-        dialogFieldProperties = dialogFields.get(2).getValueMap();
         Assertions.assertEquals(
                 "granite/ui/components/coral/foundation/form/textfield",
                 dialogFieldProperties.get(JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY, String.class));
@@ -120,14 +106,21 @@ public class ConfigDialogDatasourceTest {
         Assertions.assertEquals("Title", dialogFieldProperties.get("fieldLabel", String.class));
         Assertions.assertTrue(dialogFieldProperties.get("required", false));
 
-        dialogFieldProperties = dialogFields.get(3).getValueMap();
+        dialogFieldProperties = dialogFields.get(1).getValueMap();
         Assertions.assertEquals(
                 "granite/ui/components/coral/foundation/form/textfield",
                 dialogFieldProperties.get(JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY, String.class));
         Assertions.assertEquals("icon", dialogFieldProperties.get("name", String.class));
         Assertions.assertEquals("Icon", dialogFieldProperties.get("fieldLabel", String.class));
 
-        dialogFieldProperties = dialogFields.get(4).getValueMap();
+        dialogFieldProperties = dialogFields.get(2).getValueMap();
+        Assertions.assertEquals(
+                "granite/ui/components/coral/foundation/form/textfield",
+                dialogFieldProperties.get(JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY, String.class));
+        Assertions.assertEquals("type", dialogFieldProperties.get("name", String.class));
+        Assertions.assertTrue(dialogFieldProperties.get("disabled", false));
+
+        dialogFieldProperties = dialogFields.get(3).getValueMap();
         Assertions.assertEquals(
                 "granite/ui/components/coral/foundation/form/textfield",
                 dialogFieldProperties.get(JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY, String.class));
@@ -135,7 +128,7 @@ public class ConfigDialogDatasourceTest {
         Assertions.assertEquals("Url", dialogFieldProperties.get("fieldLabel", String.class));
         Assertions.assertTrue(dialogFieldProperties.get("required", false));
 
-        Resource dialogField = dialogFields.get(5);
+        Resource dialogField = dialogFields.get(4);
         Assertions.assertEquals(
                 "granite/ui/components/coral/foundation/form/multifield",
                 dialogField.getValueMap().get(JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY, String.class));
@@ -147,7 +140,7 @@ public class ConfigDialogDatasourceTest {
                 dialogFieldProperties.get(JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY, String.class));
         Assertions.assertEquals("models", dialogFieldProperties.get("name", String.class));
 
-        dialogField = dialogFields.get(6);
+        dialogField = dialogFields.get(5);
         Assertions.assertEquals(
                 "granite/ui/components/coral/foundation/form/select",
                 dialogField.getValueMap().get(JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY, String.class));
