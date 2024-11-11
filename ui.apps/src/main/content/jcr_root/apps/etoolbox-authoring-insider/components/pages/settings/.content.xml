@@ -88,14 +88,6 @@
                                                             <meta
                                                                     jcr:primaryType="nt:unstructured"
                                                                     sling:resourceType="etoolbox-authoring-insider/components/authoring/multifieldItemMeta"/>
-                                                            <enabled
-                                                                    jcr:primaryType="nt:unstructured"
-                                                                    sling:resourceType="granite/ui/components/coral/foundation/form/checkbox"
-                                                                    granite:class="autosubmit no-label"
-                                                                    name="enabled"
-                                                                    checked="{Boolean}true"
-                                                                    value="true"
-                                                                    uncheckedValue="false"/>
                                                             <iconSource
                                                                     jcr:primaryType="nt:unstructured"
                                                                     sling:resourceType="granite/ui/components/coral/foundation/form/hidden"
@@ -151,6 +143,11 @@
                                                         </items>
                                                     </field>
                                                 </tools>
+                                                <disabledTools
+                                                        jcr:primaryType="nt:unstructured"
+                                                        sling:resourceType="granite/ui/components/coral/foundation/form/hidden"
+                                                        granite:class="disabled-items"
+                                                        name="./disabledTools"/>
                                             </items>
                                         </tab-dialog-tools>
                                         <tab-providers
@@ -175,14 +172,6 @@
                                                             <meta
                                                                     jcr:primaryType="nt:unstructured"
                                                                     sling:resourceType="etoolbox-authoring-insider/components/authoring/multifieldItemMeta"/>
-                                                            <enabled
-                                                                    jcr:primaryType="nt:unstructured"
-                                                                    sling:resourceType="granite/ui/components/coral/foundation/form/checkbox"
-                                                                    granite:class="autosubmit no-label"
-                                                                    name="enabled"
-                                                                    checked="{Boolean}true"
-                                                                    value="true"
-                                                                    uncheckedValue="false"/>
                                                             <iconSource
                                                                     jcr:primaryType="nt:unstructured"
                                                                     sling:resourceType="granite/ui/components/coral/foundation/form/hidden"
@@ -235,10 +224,14 @@
                                                                             variant="actionBar"/>
                                                                 </items>
                                                             </buttons>
-
                                                         </items>
                                                     </field>
                                                 </providers>
+                                                <disabledProviders
+                                                        jcr:primaryType="nt:unstructured"
+                                                        sling:resourceType="granite/ui/components/coral/foundation/form/hidden"
+                                                        granite:class="disabled-items"
+                                                        name="./disabledProviders"/>
                                             </items>
                                         </tab-providers>
                                     </items>

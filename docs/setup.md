@@ -6,32 +6,33 @@ Follow the _Insider_'s icon to the "EToolbox Authoring Insider - Settings" page.
 
 ### Dialog tools
 
-The *Dialog tools* tab is the list of present tools. Each of the tools can be enabled or disabled with a checkbox. Those tools that are deactivated will not be displayed in tool dropdowns in AEM dialogs.
+The *Dialog tools* tab is the list of present tools. The tools can be dragged up and down. This will, naturally, change their order in a tool dropdown in an AEM dialog.
 
-The tools can be dragged up and down. This will, naturally, change their order in a tool dropdown in an AEM dialog.
-
-The tools can be deleted/cleaned up as well. Mind that a tool that is essentially a variation of a common templated (such as "Expand text") can be removed completely. But a tool which is unique for its own template (such as "Image caption") can only be "cleaned up." That is, the current settings of the tool are erased, but the "template" remains there and can only be disabled. Owing to this, a user always sees all the tools/templates that are technically available and is able to activate or deactivate them as they need.
+You can deactivate or delete a tool by clicking the "Delete" button. If a tool is a variation of common template (_e.g., "Expand text" which is a variation of "Text-modifying command"_), this variation is removed completely. But if a tool is singular (_e.g., "Image caption"_), it is essentially disabled and can be brought back later on." 
 
 Every tool can be modified by clicking the "Properties" button which opens a properties dialog. Usually the dialog allows altering the title and icon of the tool as well as its enabled status. For AI-powered tools, there is also the possibility to modify prompts and other parameters.
 
 ![Tool properties](img/tool-props.png)
 
+New tools are added by clicking the "Add tool" button. A dialog will open showing templates of tool variations that you can initialize plus the previously disabled tools that you can restore. After you select an option, the property dialog will appear on the screen for the new addition.
+After submitting the dialog, drag the newly created item to a desired position in the list.
+
+!["Add tool" dialog](img/tool-add.png)
+
 #### Field selection
 
 Many tools offer the way to control "Field selection," that is, to what dialog fields in what areas the tool will attach. This setting is a multifield. Every entry is a sort of "rule" that defines the "visibility" of a tool.
 
-A "rule" can be simply a CSS-style selector. Else it can contain one or more key-value pairs optionally preceded by a scope flag and optionally followed by a selector.
+A "rule" can be simply a CSS-style selector. Else it can contain one or more key-value pairs optionally preceded by a "required" flag and optionally followed by a selector.
 ```
-@ name=title|description attribute = "data-attribute" .my-title
+@ name=title|description attribute="data-attribute" .my-title
 
-│ └─────────────────key-value pairs─────────────────┘ └selector┘
+│ └────────────────key-value pairs────────────────┘ └selector┘
 │
 └─ an optional flag that says the rule is a requrement
 ```
 
-A _flag_ is optional and case-insensitive. When present, it defined the "scope" of the tool. Use _dialog_ for tools that must only be visible insider component's dialogs. Use _properties_ or _page properties_ for tools that must only be visible in page properties.
-
-A key-value pair must start with one of the keys enumerated below, followed by one of the equals/includes operators and a value. A value containing spaces must be enclosed in quotes. You can specify several alternative values  separated with `|`.
+A key-value pair must start with one of the keys enumerated below, followed by one of the equals/includes operators and a value. A value containing spaces must be enclosed in quotes. You can specify several alternative values separated with `|`.
 
 Between the key and the value in a key-value pair, the following operators can be used:
 - _=_ exactly equals;
@@ -51,7 +52,9 @@ We process the following keys:
 - _tab_ - the name of the tab in the dialog.
 - _ui_ - the type of interface the current field is in. Valid options are "dialog", "properties" ("page properties"), and "inplace" ("in-place"). Note: this key is only used with `=` and `!=` operators.
 
-Usually, rules are grouped by the logical OR. That is, if there are several rules, the tool will be attached to a field if at least one of the rules is satisfied. However, if a rule is basically a negation (= it contains only key-value pair(s) with the `!=` operator), it is perceived as a generic requirement and is considered before the rest of the rules. You can make any other rule a requirement by prepending `@`. Multiple requirement rules are combined by the logical AND. 
+Usually, rules are grouped by the logical OR. That is, if there are several rules, the tool will be attached to a field if at least one of the rules is satisfied. However, if a rule is basically a negation (= it contains only key-value pair(s) with the `!=` operator), it is perceived as a _requirement_ and is considered before the rest of the rules. 
+
+You can make any other rule behave as a _requirement_ by prepending `@`. Multiple requirement rules are combined by the logical AND. 
 
 Example: consider the following group of rules:
 1) component != "Anchor"
@@ -60,7 +63,7 @@ Example: consider the following group of rules:
 4) name=description, 
 5) name = keywords.
 
-This group of rules contains two requirements: one saying that the component name should not contain the word "Anchor", and another saying that the UI must be of component dialog type. Also, the group contains three alternative options, each saying about a possible field name. _Insider_ will attach the current tool to all dialog fields with the name "title" or "description", or "keywords" except those in the dialogs of "Anchor", "New Anchor" or "Anchor Nav" components.
+This group of rules contains two requirements: one saying that the component name should not contain the word "Anchor", and another saying that the UI must be a component dialog. Also, the group contains three alternative options, each saying about a possible field name. _Insider_ will attach the current tool to all dialog fields with the name "title" or "description", or "keywords" except those in the dialogs of "Anchor", "New Anchor" or "Anchor Nav" components.
 
 Here are some valid examples of "Field selection" rules:
 ```
@@ -74,14 +77,14 @@ component *= "Anchor" field=title           // Will match a field with name "tit
                                     
 ui = dialog href *= "/we-retail/"|"/wknd"   // Will match all fields in dialogs of components located within pages
                                             // under "/we-retail/" or "/wknd/" section of the site. 
-                                            // But NOT in page properties.
+                                            // But NOT in page properties, and NOT in an in-place editor.
 ```
 
 If the "Field selection" multifield is left empty, the tool is attached to all available text fields and RTEs.
 
 #### Setting up prompt
 
-Some of the tools would allow modifying the LLM prompt. If the label for the prompt textbox says that it supports user input templates, you can make _Insider_ ask for more info before prompting an LLM. An input template is a string enclosed in `{{ }}` brackets. Inside the template, you put the title of dialog and, optionally, the variants to select from. E.g., the prompt `Modify the text to {{ How do you want your text to be modified? }}` will make _Insider_ display an input dialog entitled "How you want your text to be modified?" If a user then enters a text like "comply with standards", the actual prompt sent to an LLM will be "Modify the text to comply with standards".
+Some tools would allow modifying the LLM prompt. If the label for the prompt textbox says that it supports user input templates, you can make _Insider_ ask for more info before prompting an LLM. An input template is a string enclosed in `{{ }}` brackets. Inside the template, you put the title of dialog and, optionally, the variants to select from. E.g., the prompt `Modify the text to {{ How do you want your text to be modified? }}` will make _Insider_ display an input dialog entitled "How you want your text to be modified?" If a user then enters a text like "comply with standards", the actual prompt sent to an LLM will be "Modify the text to comply with standards".
 
 There is a way to display a select list instead of a text input. To do this, you need to put inside the brackets several variants separated by `|`. E.g., the prompt `Modify the text to {{ How do you want your text to be modified? | comply with standards | be more concise | be more engaging }}` will make _Insider_ display a select list with three options.
 
@@ -95,11 +98,7 @@ You can specify the filter and a pair of "min width and height - max width and h
 
 If there are several image renditions that fall into the filter, _Insider_ will select the one with the smallest byte size.
 
-Since not all image formats are currently supported by OpenAI and similar LLMs, _Insider_ will try to convert an incompatible format (that is, not one of "jpeg", "png", "gif", or "webp") to PNG. The conversion is done by the AEM instance itself. It may fail if a required image codec is not installed on the server.
-
-#### Adding a new dialog tool
-
-Click the "Add tool" button to add another template-based tool (or "variation"). Select the template in the dialog that opens, and wait for the complete tool properties dialog to appear. After submitting the dialog, drag the newly created tool variation to a desired position in the list. 
+Since not all image formats are currently supported by OpenAI and similar LLMs, _Insider_ will try to convert an incompatible format (that is, not one of "jpeg", "png", "gif", or "webp") to PNG. The conversion is done by the AEM instance itself. It might fail if a required image codec is not installed on the server.
 
 ### Providers
 
@@ -130,4 +129,4 @@ If a tool introduces multiple requirements, a provider must match _all_ of them 
 
 #### Adding a new provider
 
-Click the "Add provider" button to add a new provider. Select the provider type in the dialog that opens, and wait for the complete provider properties dialog to appear. After submitting the dialog, drag the newly created provider to a desired position in the list.
+Click the "Add provider" button to add a new provider. Select the provider type (or a previously deactivated singular provider instance: same as with _tools_) in the dialog that opens. Wait for the provider properties dialog to appear. After submitting the dialog, drag the newly created provider to a desired position in the list.

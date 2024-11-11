@@ -20,7 +20,7 @@
 
 .coral-FixedColumn-column {
   min-width: 40rem;
-  width: 40%;
+  width: 35%;
 }
 
 // Toolbar
@@ -51,24 +51,38 @@ coral-dialog-footer {
   margin-bottom: 0.3125rem;
 }
 
-.horizontal-1-2, .horizontal-2-1 {
+.horizontal-2-1 {
   display: flex;
   gap: 1rem;
-}
-
-.horizontal-1-2 {
-  & > div:last-child {
-    flex: 1;
-  }
-}
-
-.horizontal-2-1 {
   & > div:first-child {
     flex: 0.6;
   }
   & > div:last-child {
     flex: 0.4;
   }
+}
+
+.coral-Form-fieldwrapper:has(.subscript) {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  gap: 0.2rem;
+  font-style: italic;
+  margin: -0.3125rem 0 0.75rem 0;
+
+  label {
+    line-height: unset;
+  }
+}
+
+.coral-Form-field.coral3-Textfield.subscript {
+  background: none;
+  border: none;
+  font-style: italic;
+  height: unset;
+  margin: 0;
+  padding: 0;
+  width: unset;
 }
 
 // Multifield
@@ -166,11 +180,6 @@ coral-dialog-footer {
   font-size: 0.85rem;
   padding: 0 0 0.2rem 0;
   height: 0.85rem;
-}
-.no-label {
-  label {
-    display: none;
-  }
 }
 
 .no-wrap {

@@ -18,13 +18,12 @@
     const DEFAULT_PROPS = ['enabled', 'icon', 'title', 'type'];
 
     const DEBOUNCE_DELAY = 750;
-    const debouncedSubmit = Utils.debounce(onAutoSubmit, DEBOUNCE_DELAY);
+    const onAutoSubmitDebounce = Utils.debounce(onAutoSubmit, DEBOUNCE_DELAY);
 
-    let lastAddedItemId = false;
+    let lastModifiedMultifieldId = false;
 
     $(document)
         .on('ready', onDocumentReady)
-        .on('change', '.autosubmit', debouncedSubmit)
         .on('click', '#item-properties [variant="primary"]', onPropertiesSave)
         .on('click', '[data-adds-to]', onAddEntryClick)
         .on('click', '.delete', onDeleteEntryClick)
@@ -49,7 +48,7 @@
             await submitAllData();
         }
         // This hook is added apart from the rest to avoid "autosubmit" handler running unconditionally upon a page load
-        $(document).on('change', '.autosubmit-defer', debouncedSubmit);
+        $(document).on('change', '.autosubmit-defer', onAutoSubmitDebounce);
 
         const hash = window.location.hash;
         const targetId = hash && hash.substring(1);
@@ -64,13 +63,14 @@
     }
 
     async function onAddEntryClick(e) {
-        const targetId = e.target.closest('[data-adds-to]').dataset.addsTo;
-        await addMultifieldItem(targetId);
+        const button = e.target.closest('[data-adds-to]');
+        const targetId = button.dataset.addsTo;
+        const title = button.innerText;
+        await addMultifieldItem(targetId, title);
     }
 
     async function onDeleteEntryClick(e) {
-        const operation = e.target.closest('[title]').getAttribute('title');
-        const confirmation = await ns.ui.prompt(operation, `${operation} this item?`, 'notice');
+        const confirmation = await ns.ui.prompt('Delete', 'Delete this item?', 'notice');
         if (!confirmation) {
             return;
         }
@@ -134,6 +134,7 @@
             if (!newMultifield) {
                 continue;
             }
+            updateMultifieldGraphics(newMultifield);
             multifield.replaceWith(newMultifield);
             const changeEventFired = await updateMultifieldContent(newMultifield);
             if (!changeEventFired) {
@@ -150,9 +151,9 @@
             ns.ui.notify(null, 'Settings saved', 'success');
             await quietReload();
 
-            if (lastAddedItemId) {
-                const multifield = document.getElementById(lastAddedItemId);
-                lastAddedItemId = null;
+            if (lastModifiedMultifieldId) {
+                const multifield = document.getElementById(lastModifiedMultifieldId);
+                lastModifiedMultifieldId = null;
                 multifield.items.getAll().slice(-1)[0].querySelector('.properties').click();
             }
         } catch (error) {
@@ -180,15 +181,16 @@
        Multifield logic
        ---------------- */
 
-    async function addMultifieldItem(targetId) {
-        let collection = targetId === 'providers' ? ns.providers.getModels() : ns.tools.getModels();
-        collection = collection.filter(model => model.isTemplate);
-        const title = targetId === 'providers' ? 'Select provider model' : 'Select tool model';
+    async function addMultifieldItem(targetId, title) {
+        let collection = ns[targetId].getModels();
+        const disabledItemsHolder = document.querySelector(`[name="./disabled${targetId[0].toUpperCase() + targetId.substring(1)}"]`);
+        const disabledItems = disabledItemsHolder.value.split(';').filter(Boolean);
+        collection = collection.filter(model => model.isTemplate || disabledItems.includes(model.id));
 
         const modelId = await ns.ui.inputDialog({
             title,
             fields: [{
-                type: 'select',
+                type: 'selectlist',
                 options: collection
             }]
         });
@@ -202,25 +204,39 @@
         multifield.items.add(newMultifieldItem);
         await whenReady(multifield);
 
+        if (disabledItems.includes(modelId)) {
+            disabledItems.splice(disabledItems.indexOf(modelId), 1);
+            disabledItemsHolder.value = disabledItems.join(';');
+        }
+
         updateMultifieldItemContent(newMultifieldItem, model);
-        lastAddedItemId = targetId;
+        lastModifiedMultifieldId = targetId;
+
         multifield.trigger('coral-multifield:itemorder');
         multifield.trigger('change');
     }
 
     async function deleteMultifieldItem(item) {
         const multifield = item.closest('coral-multifield');
+        const typeField = item.querySelector('[name$="type"]');
+        const modelId = typeField && typeField.value;
+        const matchedModel = ns[multifield.id].getModels().find((item) => item.id === modelId);
+        const shouldDisable = !matchedModel || !matchedModel.isTemplate;
+
         item.remove();
-        const changeEventFired = await updateMultifieldContent(multifield);
-        if (!changeEventFired) {
-            await submitAllData();
+        if (shouldDisable) {
+            const disabledItemsHolder = multifield.parentElement.querySelector('.disabled-items');
+            const disabledItems = new Set(disabledItemsHolder.value.split(';').filter(Boolean));
+            disabledItems.add(modelId);
+            disabledItemsHolder.value = Array.from(disabledItems).join(';');
         }
+        await submitAllData();
     }
 
     async function updateMultifieldContent(multifield) {
         await whenReady(multifield);
 
-        const models = multifield.id === 'providers' ? ns.providers.getModels() : ns.tools.getModels();
+        const models = ns[multifield.id].getModels();
         const matchedModels = new Set();
         const redundantItems = [];
 
@@ -230,7 +246,6 @@
             const matchedModel = models.find((item) => item.id === modelId);
             if (matchedModel) {
                 matchedModels.add(matchedModel);
-                updateMultifieldItemActions(item, matchedModel);
                 updateMultifieldItemIcon(item, matchedModel);
             } else {
                 redundantItems.push(item);
@@ -238,49 +253,58 @@
         }
         matchedModels.forEach((model) => models.splice(models.indexOf(model), 1));
 
-        if (models.length === 0 && redundantItems.length === 0) {
-            return false;
+        let hasChanges = false;
+        if (redundantItems.length > 0) {
+            redundantItems.forEach((item) => multifield.items.remove(item));
+            hasChanges = true;
+        }
+        if (models.length > 0) {
+            const disabledItemsHolder = multifield.parentElement.querySelector('.disabled-items');
+            const disabledItems = new Set(disabledItemsHolder.value.split(';').filter(Boolean));
+
+            for (const missedModel of models) {
+                if (disabledItems.has(missedModel.id)) {
+                    continue;
+                }
+                const newMultifieldItem = new Coral.Multifield.Item();
+                multifield.items.add(newMultifieldItem);
+                await whenReady(multifield);
+                updateMultifieldItemContent(newMultifieldItem, missedModel);
+                hasChanges = true;
+            }
         }
 
-        redundantItems.forEach((item) => multifield.items.remove(item));
-
-        for (const missedModel of models) {
-            const newMultifieldItem = new Coral.Multifield.Item();
-            multifield.items.add(newMultifieldItem);
-            await whenReady(multifield);
-            updateMultifieldItemContent(newMultifieldItem, missedModel);
+        if (hasChanges) {
+            multifield.trigger('coral-multifield:itemorder');
+            multifield.trigger('change');
         }
-
-        multifield.trigger('coral-multifield:itemorder');
-        multifield.trigger('change');
-        return true;
+        return hasChanges;
     }
 
     function updateMultifieldItemContent(item, model) {
         item.querySelector('[name$="type"]').value = model.id;
         item.querySelector('[name$="title"]').value = model.title;
-        updateMultifieldItemActions(item, model);
         updateMultifieldItemIcon(item, model);
     }
 
-    function updateMultifieldItemActions(item, model) {
-        let isDeletable = model.isTemplate;
-        if (isDeletable) {
-            const typeField = item.querySelector('.type');
-            isDeletable = typeField.value &&
-                item.closest('coral-multifield').querySelectorAll(`.type[value="${typeField.value}"]`).length > 1;
-        }
-        if (!isDeletable) {
-            const deleteButton = item.querySelector('.delete');
-            deleteButton.setAttribute('aria-label', 'Clear');
-            deleteButton.setAttribute('title', 'Clear');
-            deleteButton.querySelector('coral-icon').classList.replace('coral3-Icon--delete', 'coral3-Icon--deleteOutline');
+    function updateMultifieldGraphics(multifield) {
+        const models = ns[multifield.id].getModels();
+        for (const item of multifield.querySelectorAll('coral-multifield-item')) {
+            const typeField = item.querySelector('[name$="type"]');
+            const modelId = typeField && typeField.value;
+            const matchedModel = models.find((item) => item.id === modelId);
+            if (matchedModel) {
+                updateMultifieldItemIcon(item, matchedModel);
+            }
         }
     }
 
     function updateMultifieldItemIcon(item, model) {
         const iconField = item.querySelector('[name$="icon"]');
         const iconHolder = item.querySelector('.icon-holder');
+        if (!iconHolder.classList.contains('default')) {
+            return;
+        }
         iconHolder.innerHTML = ns.icons.getHtml(iconField.value || model.icon, model.title);
         iconHolder.classList.remove('default');
     }
@@ -330,7 +354,7 @@
        ------------ */
 
     async function openPropertiesDialog(item, namespace) {
-        const models = namespace === 'providers' ? ns.providers.getModels() : ns.tools.getModels();
+        const models = ns[namespace].getModels();
         const modelId = item.querySelector('[name$="type"]').value;
         const model = models.find((item) => item.id === modelId);
         if (!model) {
@@ -355,7 +379,12 @@
 
         const dialog = $(dialogContent).appendTo(document.body).get(0);
         Coral.commons.ready(dialog, function () {
-            dialog.set({ closable: Coral.Dialog.closable.ON });
+            dialog.set({
+                header: {
+                    innerHTML: namespace === 'tools' ? 'Tool settings' : 'Provider settings'
+                },
+                closable: Coral.Dialog.closable.ON
+            });
             dialog.on('coral-overlay:close', () => dialog.remove());
             dialog.show();
         });
