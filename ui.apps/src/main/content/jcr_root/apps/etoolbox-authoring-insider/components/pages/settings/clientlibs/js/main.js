@@ -368,10 +368,15 @@
             nodePath;
         const dialogData = JSON.stringify(model.settings || []);
 
+        const sanitizeHtml = (Utils.XSS && Utils.XSS.sanitizeHtml) ?
+            Utils.XSS.sanitizeHtml :
+            Utils.sanitizeHtml;
         let dialogContent;
         try {
             dialogContent = await ns.http.post(dialogSrc, { body: dialogData });
-            dialogContent = Utils.sanitizeHtml(dialogContent);
+            if (ns.utils.isFunction(sanitizeHtml)) {
+                dialogContent = sanitizeHtml(dialogContent);
+            }
         } catch (error) {
             ns.ui.alert('Failed to load dialog', error.message, 'error');
             return;
