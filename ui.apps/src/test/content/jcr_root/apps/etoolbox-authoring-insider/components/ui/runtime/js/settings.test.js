@@ -41,14 +41,14 @@ const SETTINGS = {
     }]
 };
 
-let cachedFetch;
+let cachedAjax;
 
 beforeAll(() => {
-    cachedFetch = global.fetch;
+    cachedAjax = global.Granite.$.ajax;
 });
 
 afterAll(() => {
-    global.fetch = cachedFetch;
+    global.Granite.$.ajax = cachedAjax;
 });
 
 beforeEach(() => {
@@ -56,7 +56,7 @@ beforeEach(() => {
 });
 
 test('Should load settings', async () => {
-    global.fetch = successfulFetch;
+    global.Granite.$.ajax = successfulAjax;
 
     let toolSettings = await ns.settings.getToolSettings();
     const providerSettings = await ns.settings.getProviderSettings();
@@ -69,7 +69,7 @@ test('Should load settings', async () => {
 });
 
 test('Should handle a failed settings loading', async () => {
-    global.fetch = failedFetch;
+    global.Granite.$.ajax = failedAjax;
     const consoleErrorMock = jest.spyOn(console, 'error').mockImplementation();
 
     let toolSettings = await ns.settings.getToolSettings();
@@ -81,17 +81,12 @@ test('Should handle a failed settings loading', async () => {
     consoleErrorMock.mockRestore();
 });
 
-function successfulFetch() {
-    return Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve(SETTINGS)
-    });
+function successfulAjax(url, options) {
+    const { success } = options;
+    success(SETTINGS);
 }
 
-function failedFetch() {
-    return Promise.resolve({
-        ok: false,
-        status: 403,
-        text: () => Promise.resolve('403 Forbidden')
-    });
+function failedAjax(url, options) {
+    const { error } = options;
+    error({ responseText: 'Forbidden' }, 'error', '403 Forbidden');
 }

@@ -11,10 +11,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-(function (document, ns) {
+(function (document, $, ns) {
     'use strict';
 
-    const JSON = 'application/json';
+    const CONTENT_TYPE_JSON = 'application/json; charset=utf-8';
 
     /**
      * Contains utility methods for working with HTTP requests
@@ -28,13 +28,7 @@
      * @returns {Promise<undefined|*>}
      */
     ns.http.getJson = async function (url, options = {}) {
-        if (!options.headers) {
-            options.headers = {};
-        }
-        options.headers['Content-Type'] = JSON;
-        options.expects = JSON;
-
-        return await ajax(url, options);
+        return await ajax(url, options, CONTENT_TYPE_JSON);
     };
 
     /**
@@ -44,15 +38,6 @@
      * @returns {Promise<undefined|*>}
      */
     ns.http.getText = async function (url, options = {}) {
-        return await ajax(url, options);
-    };
-
-    ns.http.postJson = async function (url, options = {}) {
-        options.method = 'POST';
-        if (!options.headers) {
-            options.headers = {};
-        }
-        options.headers['Content-Type'] = JSON;
         return await ajax(url, options);
     };
 
@@ -67,38 +52,57 @@
         return await ajax(url, options);
     };
 
-    async function ajax(url, options) {
-        const expects = options.expects;
-        delete options.expects;
-        let response;
-        try {
-            response = await fetch(url, options);
-        } catch (e) {
-            if (e.name === 'AbortError') {
-                return;
+    async function ajax(url, options, format) {
+        return new Promise((resolve, reject) => {
+            const ajaxOptions = Object.assign({}, options);
+            if (options.body && !options.data) {
+                ajaxOptions.data = options.body;
+                delete ajaxOptions.body;
             }
-            throw new Error(`Request to ${url} failed: ${e.message}`);
-        }
-        if (!response.ok) {
-            let text = extractFromHtml(await response.text());
-            if (text) {
-                text = ` and text "${truncate(text, 100)}"`;
+            if (ajaxOptions.data && !ns.utils.isString(ajaxOptions.data) && !isFormData(ajaxOptions.data)) {
+                ajaxOptions.data = JSON.stringify(ajaxOptions.data);
+                ajaxOptions.contentType = CONTENT_TYPE_JSON;
+            } else if (isFormData(options.data)) {
+                ajaxOptions.contentType = false;
+                ajaxOptions.processData = false;
             }
-            throw new Error(`Request to ${url} failed with status "${response.statusText || response.status}"${text}`);
-        }
-        if (expects === JSON) {
-            try {
-                return await response.json();
-            } catch (e) {
-                throw new Error('The output is not a valid JSON. Probably the service returned an error message.');
-            }
-        } else {
-            try {
-                return await response.text();
-            } catch (e) {
-                throw new Error('Could not extract response text');
-            }
-        }
+            ajaxOptions.beforeSend = function (xhr) {
+                if (options.signal) {
+                    options.signal.addEventListener('abort', () => {
+                        xhr.abort();
+                        resolve(null);
+                    });
+                }
+            };
+            ajaxOptions.success = function (data) {
+                if (ns.utils.isString(data) && !ns.utils.isBlank(data) && format === CONTENT_TYPE_JSON) {
+                    try {
+                        resolve(JSON.parse(data));
+                    } catch (e) {
+                        reject(new Error('The output is not a valid JSON. Probably the service returned an error message.'));
+                    }
+                } else {
+                    resolve(data);
+                }
+            };
+            ajaxOptions.error = function (xhr, status, error) {
+                if (status === 'abort') {
+                    console.warn(`Request to ${url} was aborted`);
+                    resolve(null);
+                    return;
+                }
+                let message = `with status "${error.message || error || status}"`;
+                if (xhr.responseText) {
+                    message += ` and text "${truncate(extractFromHtml(xhr.responseText), 100)}"`;
+                }
+                reject(new Error(`Request to ${url} failed ${message}`));
+            };
+            $.ajax(url, ajaxOptions);
+        });
+    }
+
+    function isFormData(data) {
+        return data instanceof FormData;
     }
 
     function extractFromHtml(value) {
@@ -115,4 +119,4 @@
         return result.length > maxLength ? result.substring(0, maxLength).trim() + '...' : result;
     }
 
-})(document, window.eai = window.eai || {});
+})(document, Granite.$, window.eai = window.eai || {});
