@@ -14,16 +14,39 @@
 'use strict';
 
 // noinspection JSFileReferences
+require('#commons/utils.js');
+// noinspection JSFileReferences
 require('#commons/http.js');
 
 const ns = window.eai;
 
+beforeAll(() => {
+    Granite.$.ajax = function(url, options) {
+        const { beforeSend, success, error } = options;
+        if (url.includes('error')) {
+            return error({ }, 'error', new Error('Network error'));
+        }
+        if (url.includes('not-found')) {
+            return error({ responseText: '404 Not found' }, 'error', new Error('Not Found'));
+        }
+        if (url.includes('invalid-json')) {
+            return success('Not a JSON', 'success', { responseText: 'Not a JSON' });
+        }
+        if (url.includes('abort')) {
+            const xhr = { abort: options.abortFunction };
+            beforeSend(xhr);
+            return xhr;
+        }
+        if (url.includes('json')) {
+            return success({ key: 'value' }, 'success', { responseText: '{"key":"value"}' });
+        }
+        return success('Lorem ipsum dolor sit amet', 'success', { responseText: 'Lorem ipsum dolor sit amet' });
+    }
+});
+
 test('Should retrieve JSON response', async () => {
     let result = await ns.http.getJson('/test-json');
     expect(result).toEqual({ key: 'value' });
-
-    result = await ns.http.postJson('/test-text', { body: JSON.stringify({ data: 'test' }) });
-    expect(result).toEqual('Lorem ipsum dolor sit amet');
 
     await expect(ns.http.getJson('/invalid-json')).rejects.toThrow('The output is not a valid JSON. Probably the service returned an error message.');
 });
@@ -38,5 +61,14 @@ test('Should throw an error upon a non-OK response', async () => {
 });
 
 test('Should handle network error', async () => {
-    await expect(ns.http.getJson('/error')).rejects.toThrow('Request to /error failed: Network error');
+    await expect(ns.http.getJson('/error')).rejects.toThrow('Request to /error failed with status "Network error"');
+});
+
+test('Should abort the request', async () => {
+    const abortController = new AbortController();
+    const abortFunction = jest.fn();
+    const request = ns.http.getJson('/abort', { signal: abortController.signal, abortFunction });
+    abortController.abort();
+    await expect(request).resolves.toBe(null);
+    expect(abortFunction).toHaveBeenCalledTimes(1);
 });
