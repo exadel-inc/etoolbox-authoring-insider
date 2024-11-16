@@ -246,9 +246,6 @@
       &:last-of-type [data-action] {
         display: none;
       }
-      &:has(.preview) {
-        overflow: hidden;
-      }
     }
     &.error {
       .rounded;
@@ -274,6 +271,9 @@
     &.initial .content {
       .line-clamp;
       padding: 0.125rem 0;
+    }
+    &:has(.preview) {
+      overflow: hidden;
     }
 
     del {
