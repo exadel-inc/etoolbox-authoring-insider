@@ -44,13 +44,14 @@
         if (this.selectors && this.selectors.length) {
             return this.selectors.some(selector => field.matches(selector));
         }
-        if ((field.getAttribute('name') || '').toLowerCase().includes('alttext')) {
+        const fieldName = (field.getAttribute('name') || '').toLowerCase();
+        if (fieldName.includes('alttext') || fieldName === './alt') {
             return true;
         }
         const fieldWrapper = field.closest('.coral-Form-fieldwrapper');
         const label = fieldWrapper && fieldWrapper.querySelector('label');
         const labelText = label ? label.innerText.toLowerCase() : '';
-        return labelText.includes('alt text');
+        return labelText.includes('alt text') || labelText.includes('alternative text');
     }
 
     async function handle(field, providerId) {
