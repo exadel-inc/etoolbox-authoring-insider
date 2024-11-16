@@ -145,6 +145,8 @@
   img.preview {
     border-radius: 0.25rem;
     height: 140px;
+    max-height: 200px;
+    max-width: 478px;
     width: auto;
   }
 }
@@ -243,6 +245,9 @@
       }
       &:last-of-type [data-action] {
         display: none;
+      }
+      &:has(.preview) {
+        overflow: hidden;
       }
     }
     &.error {
