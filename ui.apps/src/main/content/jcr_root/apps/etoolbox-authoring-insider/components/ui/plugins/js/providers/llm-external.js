@@ -80,9 +80,11 @@
         }
         endpoint += '?' + searchParams.toString();
 
-        const body = JSON.stringify(prepareRequestBody(options));
-
-        const response = await ns.http.getJson(endpoint, { method: 'POST', body, signal: options.signal });
+        const response = await ns.http.getJson(endpoint, {
+            method: 'POST',
+            body: prepareRequestBody(options),
+            signal: options.signal
+        });
         if (!response) {
             return '';
         }

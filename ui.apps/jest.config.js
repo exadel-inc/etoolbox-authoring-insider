@@ -30,35 +30,6 @@ function adaptTo(src, adapter) {
     return null;
 }
 
-function fetch(url) {
-    if (url.includes('error')) {
-        return Promise.reject(new Error('Network error'));
-    }
-    if (url.includes('not-found')) {
-        return Promise.resolve({
-            ok: false,
-            statusText: 'Not Found',
-            text: () => Promise.resolve('404 Not found'),
-        });
-    }
-    if (url.includes('invalid-json')) {
-        return Promise.resolve({
-            ok: true,
-            json: () => Promise.reject(new Error('Invalid JSON')),
-        });
-    }
-    if (url.includes('json')) {
-        return Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve({ key: 'value' }),
-        });
-    }
-    return Promise.resolve({
-        ok: true,
-        text: () => Promise.resolve('Lorem ipsum dolor sit amet')
-    });
-}
-
 const config = {
     testEnvironment: 'jsdom',
     globals: {

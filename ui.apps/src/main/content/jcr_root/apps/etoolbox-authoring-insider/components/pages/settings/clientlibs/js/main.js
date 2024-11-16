@@ -147,7 +147,7 @@
     async function submitAllData() {
         const form = document.getElementById('settings');
         try {
-            await ns.http.post(form.action, { body: new FormData(form) });
+            await ns.http.post(form.action, { data: new FormData(form) });
             ns.ui.notify(null, 'Settings saved', 'success');
             await quietReload();
 
@@ -167,9 +167,9 @@
             return;
         }
         dialog.open = false;
-        const body = packDetails(new FormData(dialogForm));
+        const data = packDetails(new FormData(dialogForm));
         try {
-            await ns.http.post(dialogForm.action, { body });
+            await ns.http.post(dialogForm.action, { data });
             ns.ui.notify(null, 'Settings saved', 'success');
             await quietReload();
         } catch (error) {
@@ -366,14 +366,13 @@
         const dialogSrc = '/mnt/overlay' +
             '/etoolbox-authoring-insider/components/pages/settings/properties.eai.html' +
             nodePath;
-        const dialogData = JSON.stringify(model.settings || []);
 
         const sanitizeHtml = (Utils.XSS && Utils.XSS.sanitizeHtml) ?
             Utils.XSS.sanitizeHtml :
             Utils.sanitizeHtml;
         let dialogContent;
         try {
-            dialogContent = await ns.http.post(dialogSrc, { body: dialogData });
+            dialogContent = await ns.http.post(dialogSrc, { data: model.settings || [] });
             if (ns.utils.isFunction(sanitizeHtml)) {
                 dialogContent = sanitizeHtml(dialogContent);
             }
