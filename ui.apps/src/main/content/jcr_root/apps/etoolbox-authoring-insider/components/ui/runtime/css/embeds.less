@@ -43,12 +43,11 @@
 }
 
 .coral-Form-fieldwrapper {
-  &[disabled] {
-    .eai-tool-button {
-      pointer-events: none;
-      filter: grayscale(100%);
-      opacity: 0.6;
-    }
+  &[disabled] .eai-tool-button,
+  [disabled]+.eai-tool-button {
+    pointer-events: none;
+    filter: grayscale(100%);
+    opacity: 0.6;
   }
   &:has(.cq-msm-lockable-field) {
     .eai-field-wrapper {
