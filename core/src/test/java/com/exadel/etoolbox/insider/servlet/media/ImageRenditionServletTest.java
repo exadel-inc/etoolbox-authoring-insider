@@ -22,6 +22,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 
 @ExtendWith({AemContextExtension.class})
 public class ImageRenditionServletTest {
@@ -36,19 +37,26 @@ public class ImageRenditionServletTest {
                 "/com/exadel/etoolbox/insider/servlet/media/content.json",
                 "/content/dam");
         context.load().binaryFile(
-                "/com/exadel/etoolbox/insider/servlet/media/original.png",
+                "/com/exadel/etoolbox/insider/servlet/media/image.png",
                 "/content/dam/image.png/jcr:content/renditions/original");
+        context.load().binaryFile(
+                "/com/exadel/etoolbox/insider/servlet/media/image.bmp",
+                "/content/dam/image.bmp/jcr:content/renditions/original");
+
         servlet = context.registerInjectActivateService(new ImageRenditionServlet());
     }
 
     @Test
     public void shouldReturnBase64EncodedImage() throws IOException {
-        context.request().setResource(context.resourceResolver().getResource("/content/dam/image.png"));
+        loadRenditions();
+        for (String path : new String[]{"/content/dam/image.png", "/content/dam/image.bmp"}) {
+            context.request().setResource(context.resourceResolver().getResource(path));
 
-        servlet.doGet(context.request(), context.response());
-        String output = context.response().getOutputAsString();
+            servlet.doGet(context.request(), context.response());
+            String output = context.response().getOutputAsString();
 
-        Assertions.assertTrue(output.contains("data:image/png;base64"));
+            Assertions.assertTrue(output.contains("data:image/png;base64"));
+        }
     }
 
     @Test
@@ -60,6 +68,12 @@ public class ImageRenditionServletTest {
 
         Assertions.assertTrue(context.response().containsHeader("X-Rendition"));
         Assertions.assertEquals("cq5dam.thumbnail.140.100.png", context.response().getHeader("X-Rendition"));
+
+        context.request().setParameterMap(Collections.singletonMap("size", new String[]{"200x200"}));
+        servlet.doGet(context.request(), context.response());
+
+        Assertions.assertTrue(context.response().containsHeader("X-Rendition"));
+        Assertions.assertEquals("cq5dam.thumbnail.319.319.png", context.response().getHeader("X-Rendition"));
     }
 
     @Test
@@ -71,6 +85,19 @@ public class ImageRenditionServletTest {
         Assertions.assertEquals("original", context.response().getHeader("X-Rendition"));
     }
 
+    @Test
+    public void shouldCreateRenditionOnTheFly() throws IOException {
+        context.request().setResource(context.resourceResolver().getResource("/content/dam/image.bmp"));
+        context.request().setParameterMap(Collections.singletonMap("size", new String[]{"> 200x200"}));
+
+        servlet.doGet(context.request(), context.response());
+        String output = context.response().getOutputAsString();
+
+        Assertions.assertTrue(context.response().containsHeader("X-Rendition"));
+        Assertions.assertEquals("original", context.response().getHeader("X-Rendition"));
+        Assertions.assertTrue(output.contains("data:image/png;base64"));
+    }
+
     private void loadRenditions() {
         Arrays.asList(
                         "cq5dam.thumbnail.48.48.png",
@@ -80,5 +107,8 @@ public class ImageRenditionServletTest {
                 .forEach(rendition -> context.load().binaryFile(
                         "/com/exadel/etoolbox/insider/servlet/media/thumbnail.png",
                         "/content/dam/image.png/jcr:content/renditions/" + rendition));
+        context.load().binaryFile(
+                "/com/exadel/etoolbox/insider/servlet/media/thumbnail.png",
+                "/content/dam/image.svg/jcr:content/renditions/cq5dam.thumbnail.140.100.png");
     }
 }

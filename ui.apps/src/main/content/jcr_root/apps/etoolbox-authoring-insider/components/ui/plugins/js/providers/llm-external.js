@@ -124,7 +124,7 @@
                 content: [{ type: 'text', text: source.text || source }]
             };
             if (i === 0 && options.image) {
-                newMessage.content.push({ type: 'image_url', image_url: { url: options.image, detail: 'low' } });
+                newMessage.content.push({ type: 'image_url', image_url: { url: options.image, detail: options.imageDetail || 'low' } });
             }
             messages.push(newMessage);
         }
