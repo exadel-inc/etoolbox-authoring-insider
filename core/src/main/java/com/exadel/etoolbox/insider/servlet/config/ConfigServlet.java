@@ -15,7 +15,7 @@ package com.exadel.etoolbox.insider.servlet.config;
 
 import com.exadel.etoolbox.insider.util.Constants;
 import com.exadel.etoolbox.insider.util.JsonUtil;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHeaders;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
@@ -29,14 +29,17 @@ import org.osgi.service.component.annotations.Component;
 
 import javax.servlet.Servlet;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -53,13 +56,17 @@ import java.util.stream.StreamSupport;
 )
 public class ConfigServlet extends SlingSafeMethodsServlet {
 
-    private static final String SLASH = "/";
-
-    private static final String CONFIG_ROOT = "/conf/etoolbox/authoring-insider/";
+    private static final String CONFIG_ROOT = "/conf/etoolbox/authoring-insider";
     private static final String NODE_PROVIDERS = "providers";
     private static final String NODE_TOOLS = "tools";
 
     private static final String PROP_ENABLED = "enabled";
+    private static final String PROP_ORDINAL = "ordinal";
+    private static final String PROP_TYPE = "type";
+
+    private static final String SLASH = "/";
+
+    private static final Pattern SEMICOLON = Pattern.compile(";");
 
     /**
      * Processes a GET request targeted at a configuration resource
@@ -74,40 +81,55 @@ public class ConfigServlet extends SlingSafeMethodsServlet {
 
         response.setHeader(HttpHeaders.CACHE_CONTROL, "no-cache");
         Map<String, Object> config = new HashMap<>();
-        config.put(
-                NODE_TOOLS,
-                createEntries(request.getResourceResolver().getResource(CONFIG_ROOT + NODE_TOOLS)));
-        config.put(
-                NODE_PROVIDERS,
-                createEntries(request.getResourceResolver().getResource(CONFIG_ROOT + NODE_PROVIDERS)));
+        Resource configRoot = request.getResourceResolver().getResource(CONFIG_ROOT);
+        config.put(NODE_TOOLS, createEntries(configRoot, NODE_TOOLS));
+        config.put(NODE_PROVIDERS, createEntries(configRoot, NODE_PROVIDERS));
         JsonUtil.writeTo(response, config);
     }
 
-    private static List<Map<String, Object>> createEntries(Resource resource) {
-        if (resource == null) {
+    private static List<Map<String, Object>> createEntries(Resource configRoot, String key) {
+        Resource childrenRoot = configRoot != null ? configRoot.getChild(key) : null;
+        if (childrenRoot == null) {
             return Collections.emptyList();
         }
-        Spliterator<Resource> spliterator = Spliterators.spliteratorUnknownSize(resource.listChildren(), 0);
+
+        String disabledItemsString = configRoot.getValueMap().get(
+                "disabled" + StringUtils.capitalize(key),
+                StringUtils.EMPTY);
+        Set<String> disabledItems = SEMICOLON.splitAsStream(disabledItemsString)
+                .filter(StringUtils::isNotBlank)
+                .collect(Collectors.toSet());
+        Spliterator<Resource> spliterator = Spliterators.spliteratorUnknownSize(childrenRoot.listChildren(), 0);
         AtomicInteger index = new AtomicInteger(0);
-        return StreamSupport.stream(spliterator, false)
-                .map(child -> createEntry(child, index))
-                .collect(Collectors.toList());
+
+        List<Map<String, Object>> result = StreamSupport.stream(spliterator, false)
+                .map(child -> createEntry(child, index, disabledItems))
+                .collect(Collectors.toCollection(ArrayList::new));
+
+        for (String disabledItem : disabledItems) {
+            Map<String, Object> disabledEntry = new HashMap<>();
+            disabledEntry.put(Constants.PROP_PATH, key + "/item" + index.getAndIncrement());
+            disabledEntry.put(PROP_TYPE, disabledItem);
+            disabledEntry.put(PROP_ENABLED, false);
+            result.add(disabledEntry);
+        }
+        return result;
     }
 
-    private static Map<String, Object> createEntry(Resource resource, AtomicInteger index) {
+    private static Map<String, Object> createEntry(Resource resource, AtomicInteger index, Set<String> exclusions) {
         ValueMap source = ResourceUtil.getValueMap(resource);
-        Map<String, Object> target = new LinkedHashMap<>();
+        String type = source.get(PROP_TYPE, StringUtils.EMPTY);
 
+        Map<String, Object> target = new LinkedHashMap<>();
         target.put(Constants.PROP_PATH, getLastTwoChunks(resource.getPath()));
-        putNonEmptyValue(source, "type", target);
-        putNonEmptyValue(source, "id", target);
-        target.put(PROP_ENABLED, source.get(PROP_ENABLED, true));
+        target.put(PROP_TYPE, type);
+        target.put(PROP_ENABLED, !exclusions.contains(type));
         putNonEmptyValue(source, "title", target);
         putNonEmptyValue(source, "icon", target);
-        target.put("ordinal", index.getAndIncrement());
-
+        target.put(PROP_ORDINAL, index.getAndIncrement());
         unpackDetails(source.get(Constants.PROP_DETAILS, StringUtils.EMPTY), target);
 
+        exclusions.remove(type);
         return target;
     }
 
