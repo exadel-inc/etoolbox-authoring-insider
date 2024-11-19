@@ -80,9 +80,11 @@
         }
         endpoint += '?' + searchParams.toString();
 
-        const body = JSON.stringify(prepareRequestBody(options));
-
-        const response = await ns.http.getJson(endpoint, { method: 'POST', body, signal: options.signal });
+        const response = await ns.http.getJson(endpoint, {
+            method: 'POST',
+            body: prepareRequestBody(options),
+            signal: options.signal
+        });
         if (!response) {
             return '';
         }
@@ -124,7 +126,7 @@
                 content: [{ type: 'text', text: source.text || source }]
             };
             if (i === 0 && options.image) {
-                newMessage.content.push({ type: 'image_url', image_url: { url: options.image, detail: 'low' } });
+                newMessage.content.push({ type: 'image_url', image_url: { url: options.image, detail: options.imageDetail || 'low' } });
             }
             messages.push(newMessage);
         }

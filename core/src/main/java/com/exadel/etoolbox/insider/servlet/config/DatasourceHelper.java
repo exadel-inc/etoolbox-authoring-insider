@@ -20,6 +20,7 @@ import com.exadel.etoolbox.insider.util.JsonUtil;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.resource.Resource;
@@ -47,6 +48,7 @@ class DatasourceHelper {
     private static final String PROP_LABEL = "fieldLabel";
     private static final String PROP_NAME = "name";
     private static final String PROP_REQUIRED = "required";
+    private static final String PROP_TEXT = "text";
     private static final String PROP_TITLE = "title";
     private static final String PROP_TYPE = "type";
     private static final String PROP_VALUE = "value";
@@ -56,7 +58,7 @@ class DatasourceHelper {
     private static final String RESTYPE_MULTIFIELD = "granite/ui/components/coral/foundation/form/multifield";
     private static final String RESTYPE_TEXT_FIELD = "granite/ui/components/coral/foundation/form/textfield";
 
-    private static final List<String> DEFAULT_FIELDS  = Arrays.asList("enabled", PROP_TYPE, "title", "icon");
+    private static final List<String> DEFAULT_FIELDS  = Arrays.asList("enabled", PROP_TYPE, PROP_TITLE, PROP_ICON);
 
     /**
      * Processes a {@link SlingHttpServletRequest} object to build a {@link DataSource} object
@@ -97,32 +99,6 @@ class DatasourceHelper {
             ResourceResolver resolver,
             String rootPath) {
 
-        Resource enabled = VirtualResourceHelper.newResource(
-                resolver,
-                rootPath + "/enabled",
-                JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY, RESTYPE_CHECKBOX,
-                PROP_NAME, "enabled",
-                PROP_CLASS, "no-wrap",
-                "text", "Enabled",
-                "checked", Boolean.TRUE.toString(),
-                "deleteHint", Boolean.FALSE.toString(),
-                PROP_VALUE, Boolean.TRUE.toString(),
-                "uncheckedValue", Boolean.FALSE.toString());
-
-        Resource type = VirtualResourceHelper.newResource(
-                resolver,
-                rootPath + "/type",
-                JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY, RESTYPE_TEXT_FIELD,
-                PROP_NAME, PROP_TYPE,
-                "disabled", Boolean.TRUE.toString());
-
-        Resource enabledAndType = VirtualResourceHelper.newContainer(
-                resolver,
-                rootPath + "/enabledAndType",
-                Collections.singletonMap(PROP_CLASS, "horizontal-1-2"),
-                enabled, type);
-        collection.add(enabledAndType);
-
         Resource title = VirtualResourceHelper.newResource(
                 resolver,
                 rootPath + "/title",
@@ -145,6 +121,16 @@ class DatasourceHelper {
                 Collections.singletonMap(PROP_CLASS, "horizontal-2-1"),
                 title, icon);
         collection.add(titleAndIcon);
+
+        Resource type = VirtualResourceHelper.newResource(
+                resolver,
+                rootPath + "/type",
+                JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY, RESTYPE_TEXT_FIELD,
+                PROP_NAME, PROP_TYPE,
+                "disabled", Boolean.TRUE.toString(),
+                PROP_LABEL, "Type:",
+                PROP_CLASS, "subscript");
+        collection.add(type);
     }
 
     /**
@@ -155,11 +141,13 @@ class DatasourceHelper {
     private static class FieldDefinition {
 
         private static final String TYPE_ENCRYPTED = "encrypted";
+        private static final String TYPE_SELECT = "select";
 
         private String defaultValue;
         private boolean multi;
         private String name;
         private String placeholder;
+        private String[] options;
         private boolean required;
         private String title;
         private String type;
@@ -176,7 +164,19 @@ class DatasourceHelper {
                 collection.add(VirtualResourceHelper.newResource(resolver, path, properties, fieldResource));
             } else {
                 populateCasualProperties(properties);
-                collection.add(VirtualResourceHelper.newResource(resolver, path, properties));
+                if (TYPE_SELECT.equals(type) && ArrayUtils.isNotEmpty(options)) {
+                    Resource[] optionsItems = new Resource[options.length];
+                    for (int i = 0; i < options.length; i++) {
+                        optionsItems[i] = VirtualResourceHelper.newResource(
+                                resolver,
+                                path + "/items/item" + i,
+                                PROP_TEXT, options[i],
+                                PROP_VALUE, options[i]);
+                    }
+                    collection.add(VirtualResourceHelper.newContainer(resolver, path, properties, optionsItems));
+                } else {
+                    collection.add(VirtualResourceHelper.newResource(resolver, path, properties));
+                }
             }
 
             if (TYPE_ENCRYPTED.equals(type)) {
@@ -205,7 +205,9 @@ class DatasourceHelper {
                     return RESTYPE_CHECKBOX;
                 case TYPE_ENCRYPTED:
                     return "granite/ui/components/coral/foundation/form/password";
-                case "text":
+                case TYPE_SELECT:
+                    return "granite/ui/components/coral/foundation/form/select";
+                case PROP_TEXT:
                 case "textarea":
                     return "granite/ui/components/coral/foundation/form/textarea";
                 default:

@@ -15,7 +15,7 @@
     'use strict';
 
     const ATTR_ACTION = 'data-eai-action';
-    const SELECTOR_TOOLS = '.eai-tool-button'
+    const SELECTOR_TOOLS = '.eai-tool-button';
 
     /**
      * Contains utility methods for working with Authoring Insider controls
