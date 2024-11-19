@@ -28,6 +28,7 @@ import org.osgi.service.component.annotations.Component;
 
 import javax.servlet.Servlet;
 import javax.servlet.http.HttpServletResponse;
+import java.awt.Color;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -50,10 +51,12 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ImageRenditionServlet extends SlingSafeMethodsServlet {
 
-    private static final String COMPATIBLE_MIME_TYPE = "image/png";
+    private static final String MIME_TYPE_PNG = "image/png";
+    private static final String MIME_TYPE_JPEG = "image/jpeg";
+
     private static final List<String> SUPPORTED_MIME_TYPES = Arrays.asList(
-            COMPATIBLE_MIME_TYPE,
-            "image/jpeg",
+            MIME_TYPE_PNG,
+            MIME_TYPE_JPEG,
             "image/webp",
             "image/gif");
 
@@ -81,11 +84,15 @@ public class ImageRenditionServlet extends SlingSafeMethodsServlet {
         byte[] payload;
         String payloadMimeType = rendition.getMimeType();
         if (SUPPORTED_MIME_TYPES.contains(rendition.getMimeType())) {
-            payload = IOUtils.toByteArray(rendition.getStream());
+            if (MIME_TYPE_JPEG.equals(rendition.getMimeType())) {
+                payload = IOUtils.toByteArray(rendition.getStream());
+            } else {
+                payload = getOpaqueRendition(rendition);
+            }
         } else {
             try {
-                payload = createCompatiblePayload(rendition, boundaries);
-                payloadMimeType = COMPATIBLE_MIME_TYPE;
+                payload = createFitRendition(rendition, boundaries);
+                payloadMimeType = MIME_TYPE_PNG;
             } catch (IOException e) {
                 log.error("Could not create on-the-fly rendition for asset {}", request.getResource().getPath(), e);
                 response.setStatus(HttpServletResponse.SC_NOT_FOUND);
@@ -97,6 +104,19 @@ public class ImageRenditionServlet extends SlingSafeMethodsServlet {
         response.setContentType("text/plain");
         response.setHeader("X-Rendition", rendition.getName());
         response.getWriter().write("data:" + payloadMimeType + ";base64," + encodedPayload);
+    }
+
+    private static byte[] getOpaqueRendition(Rendition rendition) throws IOException {
+        try (InputStream input = rendition.getStream(); ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+            if (input == null) {
+                throw new IOException("Could not read rendition stream");
+            }
+            Layer foreground = new Layer(input);
+            Layer background = new Layer(foreground.getWidth(), foreground.getHeight(), Color.WHITE);
+            background.merge(foreground);
+            background.write(MIME_TYPE_PNG, 1.0d, output);
+            return output.toByteArray();
+        }
     }
 
     private static Rendition getFitRendition(Asset asset, BoundariesPredicate predicate) {
@@ -124,30 +144,42 @@ public class ImageRenditionServlet extends SlingSafeMethodsServlet {
                 .orElse(asset.getOriginal());
     }
 
-    private static byte[] createCompatiblePayload(Rendition rendition, BoundariesPredicate boundaries) throws IOException {
-        BoundariesPredicate.Size size = boundaries.getTargetSize();
+    private static byte[] createFitRendition(Rendition rendition, BoundariesPredicate predicate) throws IOException {
         try (InputStream input = rendition.getStream(); ByteArrayOutputStream output = new ByteArrayOutputStream()) {
             if (input == null) {
                 throw new IOException("Could not read rendition stream");
             }
-            Layer layer = new Layer(input);
-            float scale = getScale(layer, size);
+            Layer foreground = new Layer(input);
+            float scale = getScale(foreground, predicate.getBoundaries());
+            int targetWidth = (int) (foreground.getWidth() * scale);
+            int targetHeight = (int) (foreground.getHeight() * scale);
+            foreground.resize(targetWidth, targetHeight);
 
-            layer.resize((int) (layer.getWidth() * scale), (int) (layer.getHeight() * scale));
-            layer.write(COMPATIBLE_MIME_TYPE,  1.0d, output);
+            Layer background = new Layer(targetWidth, targetHeight, Color.WHITE);
+            background.merge(foreground);
+
+            background.write(MIME_TYPE_PNG,  1.0d, output);
             return output.toByteArray();
         }
     }
 
-    private static float getScale(Layer layer, BoundariesPredicate.Size targetSize) {
+    private static float getScale(Layer layer, BoundariesPredicate.Boundaries boundaries) {
         int targetWidth = layer.getWidth();
         int targetHeight = layer.getHeight();
         int greaterTargetDimension = Math.max(targetWidth, targetHeight);
         float scale = 1.0f;
-        if (greaterTargetDimension == targetWidth && greaterTargetDimension > targetSize.getWidth()) {
-            scale = (float) targetSize.getWidth() / greaterTargetDimension;
-        } else if (greaterTargetDimension == targetHeight && greaterTargetDimension > targetSize.getHeight()) {
-            scale = (float) targetSize.getHeight() / greaterTargetDimension;
+        if (greaterTargetDimension == targetWidth) {
+            if (greaterTargetDimension > boundaries.getMaxWidth()) {
+                scale = (float) greaterTargetDimension / boundaries.getMaxWidth();
+            } else if (greaterTargetDimension < boundaries.getMinWidth()) {
+                scale = (float) boundaries.getMinWidth() / greaterTargetDimension;
+            }
+        } else {
+            if (greaterTargetDimension > boundaries.getMaxHeight()) {
+                scale = (float) greaterTargetDimension / boundaries.getMaxHeight();
+            } else if (greaterTargetDimension < boundaries.getMinHeight()) {
+                scale = (float) boundaries.getMinHeight() / greaterTargetDimension;
+            }
         }
         return scale;
     }

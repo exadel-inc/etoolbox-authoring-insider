@@ -15,13 +15,18 @@ package com.exadel.etoolbox.insider.servlet.media;
 
 import io.wcm.testing.mock.aem.junit5.AemContext;
 import io.wcm.testing.mock.aem.junit5.AemContextExtension;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collections;
 
 @ExtendWith({AemContextExtension.class})
@@ -83,6 +88,36 @@ public class ImageRenditionServletTest {
         servlet.doGet(context.request(), context.response());
 
         Assertions.assertEquals("original", context.response().getHeader("X-Rendition"));
+    }
+
+    @Test
+    public void shouldAddOpaqueBackground() throws IOException {
+        context.request().setResource(context.resourceResolver().getResource("/content/dam/image.png"));
+
+        servlet.doGet(context.request(), context.response());
+
+        String encodedImage = context.response().getOutputAsString();
+        Base64.Decoder decoder = Base64.getDecoder();
+        byte[] bytes = decoder.decode(StringUtils.substringAfter(encodedImage, "base64,"));
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
+        BufferedImage image = ImageIO.read(inputStream);
+
+        Assertions.assertNotNull(image);
+        int rgbValueLT = image.getRGB(0, 0);
+        int rgbValueRT = image.getRGB(image.getWidth() - 1, 0);
+        int rgbValueLB = image.getRGB(0, image.getHeight() - 1);
+        int rgbValueRB = image.getRGB(image.getWidth() - 1, image.getHeight() - 1);
+
+        for (int rgbValue : new int[]{rgbValueLT, rgbValueRT, rgbValueLB, rgbValueRB}) {
+            int alpha = (rgbValue >> 24) & 0xFF;
+            int red = (rgbValue >> 16) & 0xFF;
+            int green = (rgbValue >> 8) & 0xFF;
+            int blue = rgbValue & 0xFF;
+            Assertions.assertEquals(255, alpha);
+            Assertions.assertEquals(255, red);
+            Assertions.assertEquals(255, green);
+            Assertions.assertEquals(255, blue);
+        }
     }
 
     @Test

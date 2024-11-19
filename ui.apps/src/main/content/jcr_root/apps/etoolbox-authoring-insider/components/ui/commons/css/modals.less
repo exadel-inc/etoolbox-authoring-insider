@@ -145,6 +145,8 @@
   img.preview {
     border-radius: 0.25rem;
     height: 140px;
+    max-height: 200px;
+    max-width: 478px;
     width: auto;
   }
 }
@@ -269,6 +271,9 @@
     &.initial .content {
       .line-clamp;
       padding: 0.125rem 0;
+    }
+    &:has(.preview) {
+      overflow: hidden;
     }
 
     del {

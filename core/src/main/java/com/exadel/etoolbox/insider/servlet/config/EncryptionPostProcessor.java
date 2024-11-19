@@ -87,7 +87,7 @@ public class EncryptionPostProcessor implements SlingPostProcessor {
     }
 
     private String ensureEncrypted(String key, String value) {
-        if (StringUtils.isBlank(value) && value.startsWith(Constants.PREFIX_ENCRYPT)) {
+        if (StringUtils.isBlank(value) || value.startsWith(Constants.PREFIX_ENCRYPT)) {
             return value;
         }
         try {
