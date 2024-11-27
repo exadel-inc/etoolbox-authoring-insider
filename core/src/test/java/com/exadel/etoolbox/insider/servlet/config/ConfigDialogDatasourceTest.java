@@ -41,7 +41,8 @@ public class ConfigDialogDatasourceTest {
     static final String FIELDS = "[" +
             "{\"name\":\"url\",\"title\":\"Url\",\"required\":true}," +
             "{\"name\":\"models\",\"title\":\"Models\",\"multi\":true}," +
-            "{\"name\":\"details\",\"title\":\"Details level\",\"type\":\"select\", \"options\":[\"low\", \"high\"]}" +
+            "{\"name\":\"details\",\"title\":\"Details level\",\"type\":\"select\", \"options\":[\"low\", \"high\"]}," +
+            "{\"name\":\"optional\",\"title\":\"Optional flag\",\"type\":\"checkbox\", \"defaultValue\": true}" +
             "]";
 
     private final AemContext context = new AemContext();
@@ -96,7 +97,7 @@ public class ConfigDialogDatasourceTest {
                 })
                 .collect(Collectors.toList());
 
-        Assertions.assertEquals(6, dialogFields.size());
+        Assertions.assertEquals(7, dialogFields.size());
 
         ValueMap dialogFieldProperties = dialogFields.get(0).getValueMap();
         Assertions.assertEquals(
@@ -157,5 +158,16 @@ public class ConfigDialogDatasourceTest {
         dialogFieldProperties = item1.getValueMap();
         Assertions.assertEquals("high", dialogFieldProperties.get("text", String.class));
         Assertions.assertEquals("high", dialogFieldProperties.get("value", String.class));
+
+        dialogField = dialogFields.get(6);
+        Assertions.assertEquals(
+                "granite/ui/components/coral/foundation/form/checkbox",
+                dialogField.getValueMap().get(JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY, String.class));
+        Assertions.assertEquals("Optional flag", dialogField.getValueMap().get("fieldLabel", String.class));
+        dialogFieldProperties = dialogField.getValueMap();
+        Assertions.assertEquals("optional", dialogFieldProperties.get("name", String.class));
+        Assertions.assertTrue(dialogFieldProperties.get("checked", false));
+        Assertions.assertEquals("{Boolean}true", dialogFieldProperties.get("value", String.class));
+        Assertions.assertEquals("{Boolean}false", dialogFieldProperties.get("uncheckedValue", String.class));
     }
 }
