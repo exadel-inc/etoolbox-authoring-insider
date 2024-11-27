@@ -15,8 +15,22 @@
     'use strict';
 
     const ID = 'text.translate';
-    const PROMPT = 'Translate the next message into {{lang}}. Respond with only the translation. Give exactly one variant.';
-    const REPETITION_PROMPT = 'Provide another variant of how you translate the given message. Respond with only the translation. Give exactly one variant.';
+
+    const PROMPT = `
+        Translate the next message into {{lang}}. 
+        Respond with only the translation. Give exactly one variant.
+    `;
+    const REPETITION_PROMPT = `
+        Provide another variant of how you translate the given message. 
+        Respond with only the translation. Give exactly one variant.
+    `;
+    const VERIFICATION_PROMPT = `
+        The next two messages contain a text in English and then its translation into {{lang}}. Please verify that
+        the translation is accurate, complete, and grammatically correct. If the translation is correct, respond with
+        just the translation. If not, make any changes needed and respond with the corrected text. Do not add any
+        introductory words or comments.
+    `;
+
     const DEFAULT_LANGUAGES = ['French', 'German'];
 
     ns.tools.register({
@@ -26,11 +40,13 @@
 
         requires: [
             ID,
-            'textToText'
+            'textToText',
+            'translate'
         ],
         settings: [
             { name: 'selectors', type: 'textfield', title: 'Field selection (if not specified, will match all text fields)', multi: true },
             { name: 'languages', type: 'textfield', title: 'Languages', multi: true },
+            { name: 'verify', type: 'checkbox', title: 'Verify translation before output', defaultValue: true },
         ],
 
         handle,
@@ -49,6 +65,21 @@
             initialContent = { text: ns.fields.getSelectedContent(field) };
         }
 
+        const responses = [{
+                icon: 'scribble',
+                title: 'Send your own message',
+                action: 'message',
+                style: 'icon'
+            }];
+        if (!this.verify) {
+            responses.unshift({
+                icon: 'plus-one',
+                title: 'Another variant',
+                message: preparePrompt(REPETITION_PROMPT),
+                style: 'icon'
+            });
+        }
+
         ns.ui.chatDialog({
             id: ID + '.dialog',
             title: this.title,
@@ -57,14 +88,7 @@
             intro: initialContent,
             providers: this.providers,
             providerId,
-            responses: [
-                {
-                    icon: 'plus-one',
-                    title: 'Another variant',
-                    message: REPETITION_PROMPT,
-                    style: 'icon'
-                },
-            ],
+            responses,
             onStart: async(context) => {
                 return await inputAndRun(this, context, provider, initialContent);
             },
@@ -116,17 +140,40 @@
             if (!language) {
                 return context.close();
             }
-            prompt = PROMPT.replace('{{lang}}', language);
+            prompt = preparePrompt(PROMPT, language);
             context.setPrompt(prompt);
         }
 
-        const messages = [
-            { type: 'user', text: prompt },
-            { type: 'user', text },
-        ];
+        context.wait(self.verify ? 'Translating...' : '');
+        let result = await provider.textToText({
+            messages: [
+                { type: 'user', text: prompt },
+                { type: 'user', text }
+            ],
+            signal: context.signal
+        });
 
-        const result = await provider.textToText({ messages, signal: context.signal });
+        if (context.aborted || !result) {
+            return null;
+        }
+        if (!self.verify) {
+            return result;
+        }
+
+        context.wait('Verifying translation...');
+        result = await provider.textToText({
+            messages: [
+                { type: 'user', text: preparePrompt(VERIFICATION_PROMPT, self.language) },
+                { type: 'user', text },
+                { type: 'user', text: result }
+            ],
+            signal: context.signal
+        });
         return !context.aborted ? result : '';
+    }
+
+    function preparePrompt(text, language) {
+        return text.replace(/\s+/g, ' ').trim().replace('{{lang}}', language || '');
     }
 
 })(window.eai = window.eai || {});
