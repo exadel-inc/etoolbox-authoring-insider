@@ -116,7 +116,7 @@
                 signal: context.signal
             }),
             onReload: (newProviderId) => this.handle(field, newProviderId || providerId),
-            onResponse: (response) => (response || '').replace(/^[\s"'*]+|[\s"'.*]+$/g, ''),
+            onResponse: (response) => ns.text.stripSpacesAndPunctuation(response),
             onAccept: (result) => storeMetadata(field, result, sourceValue),
         });
     }

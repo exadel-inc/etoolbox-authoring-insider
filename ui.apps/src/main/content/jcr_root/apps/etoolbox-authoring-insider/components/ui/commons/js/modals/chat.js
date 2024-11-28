@@ -424,7 +424,7 @@
     }
 
     function addMessage(message, type, atStart = false) {
-        if (isBlank(message)) {
+        if (ns.text.isBlank(message)) {
             return;
         }
         let anchorButton = null;
@@ -444,10 +444,10 @@
         const messageContent = document.createElement('span');
         messageContent.classList.add(CLS_CONTENT);
         if (ns.utils.isObjectWithProperty(message, 'type', 'html')) {
-            messageContent.innerHTML = message.text;
+            messageContent.innerHTML = message.html;
             messageDiv.classList.add('html');
         } else if (ns.utils.isObjectWithProperty(message, 'type', 'info')) {
-            messageContent.innerText = message.text;
+            messageContent.innerText = message.text || message.value;
             messageDiv.classList.add('info');
         } else {
             messageContent.innerText = message;
@@ -554,24 +554,6 @@
         }
 
         dialog.classList.toggle('no-footer', frame.id === 'chat');
-    }
-
-    /* --------------
-       Misc utilities
-       -------------- */
-
-    function isBlank(value) {
-        if (!value) {
-            return true;
-        }
-        if (ns.utils.isObject(value)) {
-            return isBlank(value.text);
-        }
-        return ns.utils.isBlank(value);
-    }
-
-    function isNotBlank(value) {
-        return !isBlank(value);
     }
 
 })(document, window.eai = window.eai || {});

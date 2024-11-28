@@ -79,18 +79,6 @@
         },
 
         /**
-         * Checks if a value is falsy or else represents a blank string
-         * @param value - The value to check
-         * @returns {boolean}
-         */
-        isBlank: function (value) {
-            if (!value) {
-                return true;
-            }
-            return value.toString().trim().length === 0;
-        },
-
-        /**
          * Checks if a value is a function
          * @param value - The value to check
          * @returns {boolean}

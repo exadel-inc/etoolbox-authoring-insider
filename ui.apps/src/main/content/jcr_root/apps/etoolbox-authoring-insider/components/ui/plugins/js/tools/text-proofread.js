@@ -68,6 +68,7 @@
                 }
                 this.handle(field, newProviderId, { text: sourceValue });
             },
+            onResponse: (response) => ns.text.stripSpacesAndPunctuation(response),
             onAccept: (result) => {
                 if (result.includes('<del>')) {
                     result = result.replace(/<del>[^<]*<\/del>/g, '');
