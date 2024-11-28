@@ -30,5 +30,8 @@ public class Constants {
 
     public static final String PREFIX_ENCRYPT = "enc_";
 
+    public static final String SEPARATOR_COLON = ":";
+    public static final String SEPARATOR_PIPE = "|";
+
     public static final String SUFFIX_ENCRYPT = "@encrypt";
 }

@@ -168,11 +168,21 @@ class DatasourceHelper {
                 if (TYPE_SELECT.equals(type) && ArrayUtils.isNotEmpty(options)) {
                     Resource[] optionsItems = new Resource[options.length];
                     for (int i = 0; i < options.length; i++) {
+                        String optionContent = options[i];
+                        String optionLabel = optionContent.trim();
+                        String optionValue = optionContent.trim();
+                        if (StringUtils.contains(optionContent, Constants.SEPARATOR_COLON)) {
+                            optionLabel = StringUtils.substringBefore(optionContent, Constants.SEPARATOR_COLON).trim();
+                            optionValue = StringUtils.substringAfter(optionContent, Constants.SEPARATOR_COLON).trim();
+                        } else if (StringUtils.contains(optionContent, Constants.SEPARATOR_PIPE)) {
+                            optionLabel = StringUtils.substringBefore(optionContent, Constants.SEPARATOR_PIPE).trim();
+                            optionValue = StringUtils.substringAfter(optionContent, Constants.SEPARATOR_PIPE).trim();
+                        }
                         optionsItems[i] = VirtualResourceHelper.newResource(
                                 resolver,
                                 path + "/items/item" + i,
-                                PROP_TEXT, options[i],
-                                PROP_VALUE, options[i]);
+                                PROP_TEXT, optionLabel,
+                                PROP_VALUE, optionValue);
                     }
                     collection.add(VirtualResourceHelper.newContainer(resolver, path, properties, optionsItems));
                 } else {

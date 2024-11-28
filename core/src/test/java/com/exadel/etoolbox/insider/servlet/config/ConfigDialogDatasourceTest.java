@@ -41,7 +41,7 @@ public class ConfigDialogDatasourceTest {
     static final String FIELDS = "[" +
             "{\"name\":\"url\",\"title\":\"Url\",\"required\":true}," +
             "{\"name\":\"models\",\"title\":\"Models\",\"multi\":true}," +
-            "{\"name\":\"details\",\"title\":\"Details level\",\"type\":\"select\", \"options\":[\"low\", \"high\"]}," +
+            "{\"name\":\"details\",\"title\":\"Details level\",\"type\":\"select\", \"options\":[\"low\", \"Medium: medium\", \"High|high\"]}," +
             "{\"name\":\"optional\",\"title\":\"Optional flag\",\"type\":\"checkbox\", \"defaultValue\": true}" +
             "]";
 
@@ -156,7 +156,12 @@ public class ConfigDialogDatasourceTest {
         Resource item1 = items.getChild("item1");
         Assertions.assertNotNull(item1);
         dialogFieldProperties = item1.getValueMap();
-        Assertions.assertEquals("high", dialogFieldProperties.get("text", String.class));
+        Assertions.assertEquals("Medium", dialogFieldProperties.get("text", String.class));
+        Assertions.assertEquals("medium", dialogFieldProperties.get("value", String.class));
+        Resource item2 = items.getChild("item2");
+        Assertions.assertNotNull(item2);
+        dialogFieldProperties = item2.getValueMap();
+        Assertions.assertEquals("High", dialogFieldProperties.get("text", String.class));
         Assertions.assertEquals("high", dialogFieldProperties.get("value", String.class));
 
         dialogField = dialogFields.get(6);
