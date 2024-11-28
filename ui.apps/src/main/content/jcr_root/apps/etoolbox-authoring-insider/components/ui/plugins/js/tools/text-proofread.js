@@ -73,7 +73,7 @@
                     result = result.replace(/<del>[^<]*<\/del>/g, '');
                 }
                 result = result.replace(/<\/?ins>/g, '');
-                ns.fields.setSelectedContent(field, result);
+                ns.fields.setSelectedContent(field, result, true);
             },
         });
     }

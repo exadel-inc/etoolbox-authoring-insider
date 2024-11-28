@@ -49,11 +49,7 @@
          */
         getSelectedContent(isHtml = false) {
             if (this.hasSelectedText()) {
-                let windowSelection = this._plugin.editorKernel.editContext.win.getSelection();
-                if (!windowSelection.toString().length && this._storedRange) {
-                    this.renewSelection();
-                    windowSelection = this._plugin.editorKernel.editContext.win.getSelection();
-                }
+                const windowSelection = this._plugin.editorKernel.editContext.win.getSelection();
                 if (isHtml) {
                     const document = this._plugin.editorKernel.editContext.doc;
                     const container = document.createElement('div');
@@ -79,33 +75,24 @@
         /**
          * Stores the selection range of the current RTE field for later retrieval
          */
-        preserveSelectionRange() {
-            delete this._storedRange;
-            const currentRange = this.getSelectionRange();
-            const noSelection = !currentRange ||
-                !currentRange.startNode ||
-                (ns.utils.isNumber(currentRange.startOffset) && !currentRange.endNode);
+        preserveSelection() {
+            delete this._selectionBookmark;
+            const selection = RTE.Selection.createProcessingSelection(this._plugin.editorKernel.editContext);
+            const noSelection = !selection ||
+                !selection.startNode ||
+                (ns.utils.isNumber(selection.startOffset) && !selection.endNode);
             if (noSelection) {
                 return;
             }
-            if (!currentRange.endNode) {
-                currentRange.endNode = currentRange.startNode;
-            }
-            if (!ns.utils.isNumber(currentRange.startOffset)) {
-                currentRange.startOffset = 0;
-            }
-            if (!ns.utils.isNumber(currentRange.endOffset)) {
-                currentRange.endOffset = currentRange.endNode.textContent.length;
-            }
-            this._storedRange = currentRange;
+            this._selectionBookmark = RTE.Selection.createSelectionBookmark(this._plugin.editorKernel.editContext);
         }
 
         /**
          * Sets focus on the target RTE field
          */
         setFocus() {
-            this._plugin.editorKernel.focus(this._plugin.editorKernel.editContext);
-            this.renewSelection();
+            this._plugin.editorKernel.focus();
+            this.refreshSelection();
         }
 
         /**
@@ -114,10 +101,10 @@
          * @param {boolean=} isHtml - Indicates whether the content should be set as HTML when possible
          */
         setSelectedContent(value, isHtml = false) {
-            if (!this.renewSelection()) {
+            this._plugin.editorKernel.focus();
+            if (!this.hasSelectedText()) {
                 this._plugin.editorKernel.relayCmd('clear');
             }
-            this._plugin.editorKernel.focus();
             const pasteRange = this._plugin.editorKernel.createQualifiedRangeBookmark(this._plugin.editorKernel.editContext);
             if (isHtml) {
                 this._plugin.editorKernel.relayCmd('paste', {
@@ -136,7 +123,7 @@
                     text: value
                 });
             }
-            delete this._storedRange;
+            delete this._selectionBookmark;
         }
 
         /**
@@ -151,41 +138,28 @@
         /**
          * @private
          */
-        getSelectionRange() {
-            if (this._storedRange) {
-                return this._storedRange;
-            }
-            return RTE.Selection.createProcessingSelection(this._plugin.editorKernel.editContext);
-        }
-
-        /**
-         * @private
-         */
         hasSelectedText() {
-            const range = this.getSelectionRange();
-            if (!range) {
+            this.refreshSelection();
+            const selection = RTE.Selection.createProcessingSelection(this._plugin.editorKernel.editContext);
+            if (!selection) {
                 return false;
             }
-            if (range.startNode && range.endNode && range.startNode !== range.endNode) {
+            if (selection.startNode && selection.endNode && selection.startNode !== selection.endNode) {
                 return true;
             }
-            return ns.utils.isNumber(range.startOffset) &&
-                ns.utils.isNumber(range.endOffset) &&
-                (range.startOffset < range.endOffset);
+            return ns.utils.isNumber(selection.startOffset) &&
+                ns.utils.isNumber(selection.endOffset) &&
+                (selection.startOffset < selection.endOffset);
         }
 
         /**
          * @private
          */
-        renewSelection() {
-            if (!this.hasSelectedText() || !this._storedRange) {
-                return false;
+        refreshSelection() {
+            if (!this._selectionBookmark) {
+                return;
             }
-            const bookmark = RTE.Selection.bookmarkFromProcessingSelection(
-                this._plugin.editorKernel.editContext,
-                this._storedRange);
-            RTE.Selection.selectBookmark(this._plugin.editorKernel.editContext, bookmark);
-            return true;
+            RTE.Selection.selectBookmark(this._plugin.editorKernel.editContext, this._selectionBookmark);
         }
     };
 
@@ -209,7 +183,7 @@
             span: ['class']
         },
         list: { allow: true },
-        table: {  allow: true },
+        table: { allow: true },
         linkRemoveRegEx: null
     };
 
