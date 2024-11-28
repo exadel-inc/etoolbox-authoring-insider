@@ -62,7 +62,7 @@
         }
 
         if (!ns.utils.isObject(initialContent)) {
-            initialContent = { text: ns.fields.getSelectedContent(field) };
+            initialContent = { text: ns.fields.getSelectedContent(field, true) };
         }
 
         const responses = [{
@@ -106,7 +106,7 @@
                 });
             },
             onResponse: (response) => (response || '').replace(/^[\s"']+|[\s"']+$/g, ''),
-            onAccept: (result) => ns.fields.setSelectedContent(field, result),
+            onAccept: (result) => ns.fields.setSelectedContent(field, result, true),
         });
     }
 

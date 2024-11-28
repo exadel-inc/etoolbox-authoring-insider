@@ -63,7 +63,9 @@
             setTimeout(() => {
                 options.signal.removeEventListener('abort', abort);
                 const userMessage = options.messages.findLast(msg => msg.type === 'local' || msg.type === 'user' || msg.type === 'initial');
-                resolve(userMessage ? userMessage.text.toUpperCase() : this.title);
+                resolve(userMessage ?
+                    userMessage.text.toUpperCase().replace(/HTTPS?:\/\//g, 'https://') :
+                    this.title);
             }, 500);
         });
     }
