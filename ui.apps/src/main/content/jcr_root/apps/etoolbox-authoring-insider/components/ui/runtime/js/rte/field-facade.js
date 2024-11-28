@@ -45,17 +45,26 @@
         /**
          * Retrieves the selection content of the target field
          * @returns {string}
+         * @param {boolean=} isHtml - Indicates whether the content should be returned as HTML when possible
          */
-        getSelectedContent() {
+        getSelectedContent(isHtml = false) {
             if (this.hasSelectedText()) {
-                let windowSelection = this._plugin.editorKernel.editContext.win.getSelection().toString();
-                if (!windowSelection && this._storedRange) {
+                let windowSelection = this._plugin.editorKernel.editContext.win.getSelection();
+                if (!windowSelection.toString().length && this._storedRange) {
                     this.renewSelection();
-                    windowSelection = this._plugin.editorKernel.editContext.win.getSelection().toString();
+                    windowSelection = this._plugin.editorKernel.editContext.win.getSelection();
                 }
-                return windowSelection;
+                if (isHtml) {
+                    const document = this._plugin.editorKernel.editContext.doc;
+                    const container = document.createElement('div');
+                    container.appendChild(windowSelection.getRangeAt(0).cloneContents());
+                    return container.innerHTML;
+                }
+                return windowSelection.toString();
             }
-            return this._plugin.editorKernel.editContext.root.innerText;
+            return isHtml ?
+                this._plugin.editorKernel.editContext.root.innerHTML :
+                this._plugin.editorKernel.editContext.root.innerText;
         }
 
         /**
@@ -102,12 +111,31 @@
         /**
          * Sets the selected content of the target RTE field
          * @param {string} value - The text to set
+         * @param {boolean=} isHtml - Indicates whether the content should be set as HTML when possible
          */
-        setSelectedContent(value) {
+        setSelectedContent(value, isHtml = false) {
             if (!this.renewSelection()) {
                 this._plugin.editorKernel.relayCmd('clear');
             }
-            this._plugin.editorKernel.relayCmd('inserthtml', RTE.Utils.htmlEncode(value));
+            this._plugin.editorKernel.focus();
+            const pasteRange = this._plugin.editorKernel.createQualifiedRangeBookmark(this._plugin.editorKernel.editContext);
+            if (isHtml) {
+                this._plugin.editorKernel.relayCmd('paste', {
+                    pasteRange,
+                    mode: 'wordhtml',
+                    html: value,
+                    dom: new DOMParser().parseFromString(value, 'text/html').body,
+                    stripHtmlTags: false,
+                    htmlRules: this._plugin.editorKernel.htmlRules,
+                    pasteRules: HTML_PASTE_RULES
+                });
+            } else {
+                this._plugin.editorKernel.relayCmd('paste', {
+                    pasteRange,
+                    mode: 'plaintext',
+                    text: value
+                });
+            }
             delete this._storedRange;
         }
 
@@ -159,6 +187,30 @@
             RTE.Selection.selectBookmark(this._plugin.editorKernel.editContext, bookmark);
             return true;
         }
+    };
+
+    const HTML_PASTE_RULES = {
+        allowBasics: {
+            bold: true,
+            italic: true,
+            underline: true,
+            anchor: true,
+            image: true,
+            subscript: true,
+            superscript: true
+        },
+        allowBlockTags: ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
+        allowedAttributes: {
+            '*': ['class'],
+            table: ['width', 'height', 'cellspacing', 'cellpadding', 'border'],
+            td: ['width', 'height', 'colspan', 'rowspan', 'valign'],
+            a: ['href', 'name', 'title', 'alt'],
+            img: ['src', 'title', 'alt', 'width', 'height'],
+            span: ['class']
+        },
+        list: { allow: true },
+        table: {  allow: true },
+        linkRemoveRegEx: null
     };
 
 })(window.CUI.rte, window.eai = window.eai || {});
