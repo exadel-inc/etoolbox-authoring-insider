@@ -135,7 +135,17 @@
 
     function createContent(options) {
         let startMessage;
-        if (options.intro && options.intro.image) {
+        if (ns.utils.isObjectWithProperty(options.intro, 'prompt')) {
+            startMessage = startMessage ? [startMessage] : [];
+            startMessage.unshift(ns.ui.createElement({
+                class: 'message local prompt hidden',
+                children: {
+                    class: CLS_CONTENT,
+                    innerText: options.intro.prompt
+                }
+            }));
+        }
+        if (ns.utils.isObjectWithProperty(options.intro, 'image')) {
             startMessage = ns.ui.createElement({
                 class: 'message initial no-grow',
                 children: {
@@ -146,7 +156,7 @@
                 }
             });
         }
-        if (options.intro && isNotBlank(options.intro.text)) {
+        if (ns.utils.isObjectWithProperty(options.intro, 'text')) {
             startMessage = ns.ui.createElement({
                 class: 'message initial',
                 children: {
@@ -155,16 +165,14 @@
                 }
             });
         }
-
-        if (options.intro && options.intro.prompt) {
-            startMessage = startMessage ? [startMessage] : [];
-            startMessage.unshift(ns.ui.createElement({
-                class: 'message local prompt hidden',
+        if (ns.utils.isObjectWithProperty(options.intro, 'html') && !ns.text.isBlank(options.intro)) {
+            startMessage = ns.ui.createElement({
+                class: 'message initial',
                 children: {
                     class: CLS_CONTENT,
-                    innerText: options.intro.prompt
+                    innerHtml: options.intro.html
                 }
-            }));
+            });
         }
 
         const responsesDefs = [];

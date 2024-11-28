@@ -15,9 +15,10 @@
     'use strict';
 
     const ID = 'text.proofread';
-    const PROMPT = 'Proofread the text in the next message. If there are no mistakes, output the same text. ' +
-        'If you do any corrections, enclose the wrong text in the pair of tags <del></del>, ' +
-        'and next to it place the correction enclosed in tags <ins></ins>. Do not add any other markup or extra text';
+    const PROMPT = `Proofread the text in the next message. If there are no mistakes, output the same text. 
+        If you do any corrections, enclose the wrong text in the pair of tags <del></del>, 
+        and next to it place the correction enclosed in tags <ins></ins>. If the message contains HTML tags, leave 
+        them exactly as they are. Do not add any extra HTML markup, introductory words, or comments.`;
 
     ns.tools.register({
         icon: 'spellcheck',
@@ -44,8 +45,8 @@
             return ns.ui.alert(this.title, `Could not find a provider for action ${providerId}`, 'error');
         }
 
-        const sourceValue = initialContent ? initialContent.text : ns.fields.getSelectedContent(field);
-        if (!sourceValue) {
+        const sourceValue = initialContent ? initialContent.text : ns.fields.getSelectedContent(field, true);
+        if (ns.text.isBlank(sourceValue)) {
             return ns.ui.alert(this.title, 'No text to proofread', 'error');
         }
 
@@ -90,14 +91,11 @@
             return '';
         }
         if (result.includes('<del>') || result.includes('<ins>')) {
-            return {
-                type: 'html',
-                text: result
-            };
+            return { type: 'html', html: result };
         }
         return {
             type: 'info',
-            text: 'No changes required'
+            value: 'No changes required'
         };
     }
 
