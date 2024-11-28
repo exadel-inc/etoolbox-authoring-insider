@@ -17,19 +17,30 @@
     const ID = 'text.translate';
 
     const PROMPT = `
-        Translate the next message into {{lang}}. 
-        Respond with only the translation. Give exactly one variant.
-    `;
+        Translate the next message into {{lang}}. If the message contains any HTML tags, keep them exactly as they are. 
+        Respond with only the translation. Do not add any extra HTML markup, introductory words, or comments. 
+        Give exactly one variant of translation.`;
+
     const REPETITION_PROMPT = `
-        Provide another variant of how you translate the given message. 
-        Respond with only the translation. Give exactly one variant.
-    `;
-    const VERIFICATION_PROMPT = `
+        Provide another variant of how you translate the given message. If the message contains any HTML tags, keep them 
+        exactly as they are. Respond with only the translation. Give exactly one variant.`;
+
+    const VALIDATION_PROMPT = `
         The next two messages contain a text in English and then its translation into {{lang}}. Please verify that
-        the translation is accurate, complete, and grammatically correct. If the translation is correct, respond with
-        just the translation. If not, make any changes needed and respond with the corrected text. Do not add any
-        introductory words or comments.
-    `;
+        the translation is accurate, complete, easy to read, and grammatically correct. If the translation is correct, 
+        respond with just the translation. If not, make any changes needed and respond with the corrected text. 
+        Do not add any introductory words or comments.`;
+
+    const PROOFREADING_PROMPT = `
+        Please proofread the following text in {{lang}}. Make sure that it is free of errors and uses
+        modern real-world language. If you find any issues, correct them and respond with the corrected text. 
+        If the text is already perfect, respond with the same text. Keep as close to the original text as possible 
+        and do not make any arbitrary changes. Do not add any introductory words or comments.`;
+
+    const PAGEANT_PROMPT = `
+        The next three messages contain a text in English and then three variants of translation into {{lang}}. 
+        Please select of the three translations the one that is the most accurate, has the most correct spelling and 
+        grammar, and is easy to read. Respond with just the number of the selected translation: 1, 2, or 3.`;
 
     const DEFAULT_LANGUAGES = ['French', 'German'];
 
@@ -46,7 +57,17 @@
         settings: [
             { name: 'selectors', type: 'textfield', title: 'Field selection (if not specified, will match all text fields)', multi: true },
             { name: 'languages', type: 'textfield', title: 'Languages', multi: true },
-            { name: 'verify', type: 'checkbox', title: 'Verify translation before output', defaultValue: true },
+            {
+                name: 'validation',
+                type: 'select',
+                title: 'Validation',
+                options: [
+                    'None:none',
+                    'Second opinion:extra',
+                    'Second opinion plus proofreading:extra-proofread',
+                    'Pageant:pageant',
+                ]
+            },
         ],
 
         handle,
@@ -62,15 +83,15 @@
         }
 
         if (!ns.utils.isObject(initialContent)) {
-            initialContent = { text: ns.fields.getSelectedContent(field, true) };
+            initialContent = { html: ns.fields.getSelectedContent(field, true) };
         }
 
         const responses = [{
-                icon: 'scribble',
-                title: 'Send your own message',
-                action: 'message',
-                style: 'icon'
-            }];
+            icon: 'scribble',
+            title: 'Send your own message',
+            action: 'message',
+            style: 'icon'
+        }];
         if (!this.verify) {
             responses.unshift({
                 icon: 'plus-one',
@@ -105,14 +126,15 @@
                     text: history.initial,
                 });
             },
-            onResponse: (response) => (response || '').replace(/^[\s"']+|[\s"']+$/g, ''),
+            onResponse: (response) => ns.text.stripSpacesAndPunctuation(response),
             onAccept: (result) => ns.fields.setSelectedContent(field, result, true),
         });
     }
 
     async function inputAndRun(self, context, provider, initialContent) {
-        let text = initialContent.text;
-        if (!text) {
+        // Prompt for user input if the original field is empty
+        let text = initialContent.text || initialContent.html;
+        if (ns.text.isBlank(text)) {
             text = await ns.ui.inputDialog({
                 title: 'Enter your content',
                 parent: context.dom
@@ -123,6 +145,7 @@
             context.appendMessage(text, 'local initial');
         }
 
+        // Ask user to select a language if it was not provided
         let prompt = initialContent.prompt;
         if (!prompt) {
             const language = await ns.ui.inputDialog({
@@ -144,8 +167,9 @@
             context.setPrompt(prompt);
         }
 
-        context.wait(self.verify ? 'Translating...' : '');
-        let result = await provider.textToText({
+        // Translate the text
+        context.wait(self.validation !== 'none' ? 'Translating...' : '');
+        const translation = await provider.textToText({
             messages: [
                 { type: 'user', text: prompt },
                 { type: 'user', text }
@@ -153,23 +177,104 @@
             signal: context.signal
         });
 
-        if (context.aborted || !result) {
+        if (context.aborted || !translation) {
             return null;
         }
-        if (!self.verify) {
-            return result;
-        }
 
-        context.wait('Verifying translation...');
-        result = await provider.textToText({
+        // Perform validation step(s) if needed
+        if (self.validation && self.validation.includes('extra')) {
+            const language = prompt.match(/into ([^.]+)/i)[1];
+            return await performValidation(
+                context,
+                provider,
+                { text, translation, language, doProofread: self.validation.includes('proofread') });
+
+        } else if (self.validation && self.validation === 'pageant') {
+            const language = prompt.match(/into ([^.]+)/i)[1];
+            return await performPageant(
+                context,
+                provider,
+                { text, translation, prompt, language });
+
+        } else {
+            return /<\w+|<\/\w+>/g.test(translation) ?
+                { type: 'html', html: translation, } :
+                translation;
+        }
+    }
+
+    async function performValidation(context, provider, params) {
+        context.wait('Validating translation...');
+        let result = await provider.textToText({
             messages: [
-                { type: 'user', text: preparePrompt(VERIFICATION_PROMPT, self.language) },
-                { type: 'user', text },
-                { type: 'user', text: result }
+                { type: 'user', text: preparePrompt(VALIDATION_PROMPT, params.language) },
+                { type: 'user', text: params.text },
+                { type: 'user', text: params.translation }
             ],
             signal: context.signal
         });
-        return !context.aborted ? result : '';
+        if (context.aborted || !result) {
+            return null;
+        }
+
+        if (params.doProofread) {
+            context.wait('Proofreading...');
+            result = await provider.textToText({
+                messages: [
+                    { type: 'user', text: preparePrompt(PROOFREADING_PROMPT, params.language) },
+                    { type: 'user', text: result }
+                ],
+                signal: context.signal
+            });
+        }
+        if (context.aborted || !result) {
+            return null;
+        }
+        return /<\w+|<\/\w+>/g.test(result) ?
+            { type: 'html', html: result, } :
+            result;
+    }
+
+    async function performPageant(context, provider, params) {
+        const allTranslations = [params.translation];
+        for (let i = 0; i < 2; i++) {
+            context.wait(`Translating (step ${i + 2})...`);
+            const anotherTranslation = await provider.textToText({
+                messages: [
+                    { type: 'user', text: params.prompt },
+                    { type: 'user', text: params.text }
+                ],
+                signal: context.signal
+            }) || 'no translation';
+            if (context.aborted) {
+                return null;
+            }
+            allTranslations.push(anotherTranslation);
+        }
+
+        const result = await provider.textToText({
+            messages: [
+                { type: 'user', text: preparePrompt(PAGEANT_PROMPT, params.language) },
+                { type: 'user', text: params.text },
+                { type: 'user', text: allTranslations[0] },
+                { type: 'user', text: allTranslations[1] },
+                { type: 'user', text: allTranslations[2] }
+            ],
+            signal: context.signal
+        });
+
+        if (context.aborted || !result) {
+            return null;
+        }
+        let index = Number.parseInt(result, 10);
+        if (isNaN(index) || index < 1 || index > 3) {
+            index = 1;
+        }
+        const selectedTranslation = allTranslations[index - 1];
+
+        return /<\w+|<\/\w+>/g.test(selectedTranslation) ?
+            { type: 'html', html: selectedTranslation } :
+            selectedTranslation;
     }
 
     function preparePrompt(text, language) {
