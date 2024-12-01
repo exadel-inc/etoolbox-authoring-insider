@@ -17,19 +17,28 @@
     const ID = 'text.translate';
 
     const PROMPT = `
-        Translate the next message into {{lang}}. If the message contains any HTML tags, keep them exactly as they are. 
-        Respond with only the translation. Do not add any extra HTML markup, introductory words, or comments. 
-        Give exactly one variant of translation.`;
+        You are a proficient Translator, specialized in translating documents from English into various languages. 
+        Your main goals are to ensure grammatically correct translations and deliver text that feels natural 
+        and human-oriented. 
+        Instructions:
+        1. Translate the next message to {{lang}}. 
+        2. Ensure that the translation maintains the meaning and context of the original text. 
+        3. Use appropriate grammar, syntax, and idiomatic expressions to make the translation sound natural.
+        4. Avoid literal translations unless necessary to preserve the meaning.
+        5. If the message contains any HTML tags, keep them exactly as they are. 
+        6. Review the translation for any errors or awkward phrasing before finalizing.
+        7. Respond with only the translation. Do not add any extra HTML markup, introductory words, or comments.`;
 
     const REPETITION_PROMPT = `
         Provide another variant of how you translate the given message. If the message contains any HTML tags, keep them 
-        exactly as they are. Respond with only the translation. Give exactly one variant.`;
+        exactly as they are. Respond with only the translation.`;
 
     const VALIDATION_PROMPT = `
         The next two messages contain a text in English and then its translation into {{lang}}. Please verify that
-        the translation is accurate, complete, easy to read, and grammatically correct. If the translation is correct, 
-        respond with just the translation. If not, make any changes needed and respond with the corrected text. 
-        Do not add any introductory words or comments.`;
+        the translation is accurate, complete, easy to read, and grammatically correct. Make sure that there are no
+        grammatical errors, misspellings, or any awkward phasing. 
+        If the translation is correct, respond with just the translation. If not, make any changes needed and respond 
+        with the corrected text. Do not add any introductory words or comments.`;
 
     const PROOFREADING_PROMPT = `
         Please proofread the following text in {{lang}}. Make sure that it is free of errors and uses
@@ -38,9 +47,19 @@
         and do not make any arbitrary changes. Do not add any introductory words or comments.`;
 
     const PAGEANT_PROMPT = `
-        The next three messages contain a text in English and then three variants of translation into {{lang}}. 
-        Please select of the three translations the one that is the most accurate, has the most correct spelling and 
-        grammar, and is easy to read. Respond with just the number of the selected translation: 1, 2, or 3.`;
+        You are a high-class multilingual Web journalist and editor. Your main goal is to deliver content that reads
+        easily, feels natural, spelled correctly and is human-oriented.
+        The following messages contain a text in English and then {{count}} variants of how it is translated into {{lang}}. 
+        Instructions:
+        1. Carefully select the translation that is the most accurate, has the most correct spelling and grammar, 
+        and is easy to read. 
+        2. Combine different translations if each of them has better spots. 
+        3. Make sure that the resulting translation maintains the meaning and context of the original text. 
+        4. Review the resulting text. Make sure that it is free of errors and uses modern real-world language.
+        5. Preserve all the original formatting and HTML tags. Respond with only the translation. Do not add any 
+        extra HTML markup, introductory words, or comments.`;
+
+    const PAGEANT_COUNT = 3;
 
     const DEFAULT_LANGUAGES = ['French', 'German'];
 
@@ -184,14 +203,14 @@
         // Perform validation step(s) if needed
         if (self.validation && self.validation.includes('extra')) {
             const language = prompt.match(/into ([^.]+)/i)[1];
-            return await performValidation(
+            return await runValidation(
                 context,
                 provider,
                 { text, translation, language, doProofread: self.validation.includes('proofread') });
 
         } else if (self.validation && self.validation === 'pageant') {
             const language = prompt.match(/into ([^.]+)/i)[1];
-            return await performPageant(
+            return await runPageant(
                 context,
                 provider,
                 { text, translation, prompt, language });
@@ -203,7 +222,7 @@
         }
     }
 
-    async function performValidation(context, provider, params) {
+    async function runValidation(context, provider, params) {
         context.wait('Validating translation...');
         let result = await provider.textToText({
             messages: [
@@ -235,46 +254,38 @@
             result;
     }
 
-    async function performPageant(context, provider, params) {
+    async function runPageant(context, provider, params) {
         const allTranslations = [params.translation];
-        for (let i = 0; i < 2; i++) {
-            context.wait(`Translating (step ${i + 2})...`);
+        for (let i = 1; i < PAGEANT_COUNT; i++) {
+            context.wait(`Translating (step ${i + 1})...`);
             const anotherTranslation = await provider.textToText({
                 messages: [
                     { type: 'user', text: params.prompt },
                     { type: 'user', text: params.text }
                 ],
                 signal: context.signal
-            }) || 'no translation';
+            }) || '';
             if (context.aborted) {
                 return null;
             }
-            allTranslations.push(anotherTranslation);
+            if (anotherTranslation.length > 0) {
+                allTranslations.push(anotherTranslation);
+            }
         }
-
-        const result = await provider.textToText({
-            messages: [
-                { type: 'user', text: preparePrompt(PAGEANT_PROMPT, params.language) },
-                { type: 'user', text: params.text },
-                { type: 'user', text: allTranslations[0] },
-                { type: 'user', text: allTranslations[1] },
-                { type: 'user', text: allTranslations[2] }
-            ],
-            signal: context.signal
-        });
+        context.wait('Finalizing translation...');
+        const messages = [
+            { type: 'user', text: preparePrompt(PAGEANT_PROMPT, params.language).replace('{{count}}', allTranslations.length) },
+            { type: 'user', text: params.text },
+        ];
+        allTranslations.forEach((translation) => messages.push({ type: 'user', text: translation }));
+        const result = await provider.textToText({ messages, signal: context.signal });
 
         if (context.aborted || !result) {
             return null;
         }
-        let index = Number.parseInt(result, 10);
-        if (isNaN(index) || index < 1 || index > 3) {
-            index = 1;
-        }
-        const selectedTranslation = allTranslations[index - 1];
-
-        return /<\w+|<\/\w+>/g.test(selectedTranslation) ?
-            { type: 'html', html: selectedTranslation } :
-            selectedTranslation;
+        return /<\w+|<\/\w+>/g.test(result) ?
+            { type: 'html', html: result, } :
+            result;
     }
 
     function preparePrompt(text, language) {
