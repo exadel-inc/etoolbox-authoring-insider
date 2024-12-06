@@ -14,7 +14,7 @@
 package com.exadel.etoolbox.insider.service.impl;
 
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;
@@ -24,17 +24,34 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HttpContext;
 
-@RequiredArgsConstructor
+import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
+
 @SuppressWarnings("deprecation")
 class MockHttpClient extends CloseableHttpClient {
 
     private final CloseableHttpResponse response;
+    private final Queue<IOException> exceptions;
+
+    MockHttpClient(CloseableHttpResponse response, List<IOException> exceptions) {
+        this.response = response;
+        this.exceptions = new LinkedList<>(exceptions);
+    }
 
     @Getter
     private Header[] requestHeaders;
 
     @Override
-    protected CloseableHttpResponse doExecute(HttpHost httpHost, HttpRequest httpRequest, HttpContext httpContext) {
+    protected CloseableHttpResponse doExecute(
+            HttpHost httpHost,
+            HttpRequest httpRequest,
+            HttpContext httpContext) throws IOException {
+
+        if (CollectionUtils.isNotEmpty(exceptions)) {
+            throw exceptions.remove();
+        }
         requestHeaders = httpRequest.getAllHeaders();
         return response;
     }

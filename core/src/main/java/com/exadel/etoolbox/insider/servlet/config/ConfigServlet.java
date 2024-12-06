@@ -64,8 +64,6 @@ public class ConfigServlet extends SlingSafeMethodsServlet {
     private static final String PROP_ORDINAL = "ordinal";
     private static final String PROP_TYPE = "type";
 
-    private static final String SLASH = "/";
-
     private static final Pattern SEMICOLON = Pattern.compile(";");
 
     /**
@@ -79,7 +77,7 @@ public class ConfigServlet extends SlingSafeMethodsServlet {
             @NotNull SlingHttpServletRequest request,
             @NotNull SlingHttpServletResponse response) throws IOException {
 
-        response.setHeader(HttpHeaders.CACHE_CONTROL, "no-cache");
+        response.setHeader(HttpHeaders.CACHE_CONTROL, Constants.HEADER_NO_CACHE);
         Map<String, Object> config = new HashMap<>();
         Resource configRoot = request.getResourceResolver().getResource(CONFIG_ROOT);
         config.put(NODE_TOOLS, createEntries(configRoot, NODE_TOOLS));
@@ -154,7 +152,7 @@ public class ConfigServlet extends SlingSafeMethodsServlet {
     }
 
     private static String getLastTwoChunks(String value) {
-        String[] chunks = value.split(SLASH);
-        return chunks.length > 1 ? chunks[chunks.length - 2] + SLASH + chunks[chunks.length - 1] : value;
+        String[] chunks = value.split(Constants.SEPARATOR_SLASH);
+        return chunks.length > 1 ? chunks[chunks.length - 2] + Constants.SEPARATOR_SLASH + chunks[chunks.length - 1] : value;
     }
 }

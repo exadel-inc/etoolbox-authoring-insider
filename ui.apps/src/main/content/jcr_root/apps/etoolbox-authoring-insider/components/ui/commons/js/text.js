@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-(function (ns) {
+(function (document, ns) {
     'use strict';
 
     /**
@@ -104,7 +104,29 @@
      * Contains utility logic for working with text
      */
     ns.text = {
-        TextBuilder
+        TextBuilder,
+
+        /**
+         * Gets whether the provided value is falsy or else represents a blank string
+         * @param value - The value to check
+         * @returns {boolean}
+         */
+        isBlank,
+
+        /**
+         * Strips spaces and punctuation from the provided value
+         * @param value {string|object} - The value to process. Can be a string or an object with an 'html' property
+         * @returns {string|object}
+         */
+        stripSpacesAndPunctuation,
+
+        /**
+         * Given an HTML string, returns the text content without any HTML tags. If a falsy value is provided,
+         * an empty string is returned
+         * @param {string} html - The HTML string to process
+         * @returns {string}
+         */
+        stripTags
     };
 
     function parsePlaceholder(value) {
@@ -141,4 +163,42 @@
         return { title: titlePart.trim(), options };
     }
 
-})(window.eai = window.eai || {});
+    function isBlank(value) {
+        if (!value) {
+            return true;
+        }
+        if (ns.utils.isObject(value)) {
+            return isBlank(value.html);
+        }
+        if (ns.utils.isHtmlElement(value)) {
+            return isBlank(value.innerText);
+        }
+        if (ns.utils.isString(value)) {
+            const textContent = /<\/?\w+/.test(value) ? stripTags(value) : value;
+            return textContent.trim().length === 0;
+        }
+        return value.toString().trim().length === 0;
+    }
+
+    function stripSpacesAndPunctuation(value) {
+        const pattern = /^[\s.,'"`*]+|[\s.,'"`*]+$/g;
+        if (ns.utils.isObjectWithProperty(value, 'html')) {
+            value.html = value.html.replace(pattern, '');
+            return value;
+        }
+        if (ns.utils.isString(value)) {
+            return value.replace(pattern, '');
+        }
+        return '';
+    }
+
+    function stripTags(html) {
+        if (!html) {
+            return '';
+        }
+        const container = document.createElement('div');
+        container.innerHTML = html;
+        return container.textContent;
+    }
+
+})(document, window.eai = window.eai || {});

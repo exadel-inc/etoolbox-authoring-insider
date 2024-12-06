@@ -22,6 +22,8 @@
     const MODELS = {};
     MODELS[DEFAULT_SERVICE] = DEFAULT_MODEL;
 
+    const RESPONSE_WAIT_INTERVAL = 5000;
+
     ns.providers.register({
         icon: 'openai',
         id: 'llm.external',
@@ -80,11 +82,15 @@
         }
         endpoint += '?' + searchParams.toString();
 
-        const response = await ns.http.getJson(endpoint, {
+        let response = await ns.http.getJson(endpoint, {
             method: 'POST',
             body: prepareRequestBody(options),
             signal: options.signal
         });
+        while (ns.utils.isObjectWithProperty(response, 'task')) {
+            await wait(RESPONSE_WAIT_INTERVAL);
+            response = await ns.http.getJson(RELAY_ENDPOINT + '/task/' + response.task, { signal: options.signal });
+        }
         if (!response) {
             return '';
         }
@@ -135,6 +141,10 @@
             model: options.llm,
             messages,
         };
+    }
+
+    function wait(interval) {
+        return new Promise((resolve) => setTimeout(resolve, interval));
     }
 
 })(Granite.$, window.eai = window.eai || {});

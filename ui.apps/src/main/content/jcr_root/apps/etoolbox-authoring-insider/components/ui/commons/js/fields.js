@@ -51,14 +51,15 @@
         /**
          * Returns the selected content of the specified input field or field facade
          * @param {*|Element} field - The target field
-         * @returns {*|string|string}
+         * @param {boolean=} isHtml - Indicates whether the content should be returned as HTML when possible
+         * @returns {string}
          */
-        getSelectedContent: function (field) {
+        getSelectedContent: function (field, isHtml = false) {
             if (!field) {
                 return '';
             }
             if (ns.utils.isFunction(field.getSelectedContent)) {
-                return field.getSelectedContent();
+                return field.getSelectedContent(isHtml);
             }
             if ('selectionStart' in field && 'selectionEnd' in field) {
                 const selectionStart = field.selectionStart;
@@ -75,7 +76,7 @@
          * element specified by the selector
          * @param {*|Element} field - The target field
          * @param {string=} selector - The selector to use to find the descendant element
-         * @returns {*|string}
+         * @returns {string}
          */
         getValue: function (field, selector) {
             if (selector) {
@@ -110,13 +111,14 @@
          * text at the current cursor position or to replace the selected text
          * @param {*|Element} field - The target field
          * @param {string} value - The text to set
+         * @param {boolean=} isHtml - Indicates whether the content should be set as HTML when possible
          */
-        setSelectedContent: function (field, value) {
+        setSelectedContent: function (field, value, isHtml = false) {
             if (!field) {
                 return;
             }
             if (ns.utils.isFunction(field.setSelectedContent)) {
-                field.setSelectedContent(value);
+                field.setSelectedContent(value, isHtml);
                 return;
             }
             if ('selectionStart' in field && 'selectionEnd' in field) {

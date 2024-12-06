@@ -98,8 +98,7 @@
                     prompt: history.prompt,
                 });
             },
-            onResponse: (response) =>
-                (response || '').replace(/^[\s"']+|[\s"']+$/g, ''),
+            onResponse: (response) => ns.text.stripSpacesAndPunctuation(response),
             onAccept: (result) =>
                 ns.fields.setSelectedContent(field, result),
         });
@@ -107,7 +106,7 @@
 
     async function inputAndRun(context, provider, initialContent) {
         // Ask for the source text if the original field was empty
-        if (ns.utils.isBlank(initialContent.text)) {
+        if (ns.text.isBlank(initialContent.text)) {
             initialContent.text = await ns.ui.inputDialog({
                 title: 'Enter your content',
                 parent: context.dom

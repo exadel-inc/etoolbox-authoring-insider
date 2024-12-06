@@ -140,6 +140,7 @@ class DatasourceHelper {
     @SuppressWarnings("unused")
     private static class FieldDefinition {
 
+        private static final String TYPE_CHECKBOX = "checkbox";
         private static final String TYPE_ENCRYPTED = "encrypted";
         private static final String TYPE_SELECT = "select";
 
@@ -167,11 +168,21 @@ class DatasourceHelper {
                 if (TYPE_SELECT.equals(type) && ArrayUtils.isNotEmpty(options)) {
                     Resource[] optionsItems = new Resource[options.length];
                     for (int i = 0; i < options.length; i++) {
+                        String optionContent = options[i];
+                        String optionLabel = optionContent.trim();
+                        String optionValue = optionContent.trim();
+                        if (StringUtils.contains(optionContent, Constants.SEPARATOR_COLON)) {
+                            optionLabel = StringUtils.substringBefore(optionContent, Constants.SEPARATOR_COLON).trim();
+                            optionValue = StringUtils.substringAfter(optionContent, Constants.SEPARATOR_COLON).trim();
+                        } else if (StringUtils.contains(optionContent, Constants.SEPARATOR_PIPE)) {
+                            optionLabel = StringUtils.substringBefore(optionContent, Constants.SEPARATOR_PIPE).trim();
+                            optionValue = StringUtils.substringAfter(optionContent, Constants.SEPARATOR_PIPE).trim();
+                        }
                         optionsItems[i] = VirtualResourceHelper.newResource(
                                 resolver,
                                 path + "/items/item" + i,
-                                PROP_TEXT, options[i],
-                                PROP_VALUE, options[i]);
+                                PROP_TEXT, optionLabel,
+                                PROP_VALUE, optionValue);
                     }
                     collection.add(VirtualResourceHelper.newContainer(resolver, path, properties, optionsItems));
                 } else {
@@ -189,11 +200,18 @@ class DatasourceHelper {
         }
 
         private void populateCasualProperties(Map<String, Object> properties) {
-            properties.put(JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY, getResourceType(type));
+            String resourceType = getResourceType(this.type);
+            properties.put(JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY, resourceType);
             properties.put(PROP_EMPTY_TEXT, placeholder);
             properties.put(PROP_NAME, name);
             properties.put(PROP_REQUIRED, required);
             properties.put(PROP_VALUE, defaultValue);
+            if (RESTYPE_CHECKBOX.equals(resourceType)) {
+                properties.put(PROP_TEXT, title);
+                properties.put("checked", Boolean.parseBoolean(defaultValue));
+                properties.put(PROP_VALUE, "{Boolean}" + Boolean.TRUE);
+                properties.put("uncheckedValue", "{Boolean}" + Boolean.FALSE);
+            }
         }
 
         private static String getResourceType(String type) {
@@ -201,7 +219,7 @@ class DatasourceHelper {
                 return RESTYPE_TEXT_FIELD;
             }
             switch (type) {
-                case "checkbox":
+                case TYPE_CHECKBOX:
                     return RESTYPE_CHECKBOX;
                 case TYPE_ENCRYPTED:
                     return "granite/ui/components/coral/foundation/form/password";

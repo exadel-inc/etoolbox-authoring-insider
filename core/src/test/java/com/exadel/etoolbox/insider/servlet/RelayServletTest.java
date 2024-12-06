@@ -15,14 +15,22 @@ package com.exadel.etoolbox.insider.servlet;
 
 import io.wcm.testing.mock.aem.junit5.AemContext;
 import io.wcm.testing.mock.aem.junit5.AemContextExtension;
+import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpHeaders;
+import org.apache.http.HttpStatus;
 import org.apache.sling.testing.mock.sling.servlet.MockRequestPathInfo;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import javax.servlet.ServletException;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 @ExtendWith({AemContextExtension.class})
 public class RelayServletTest {
@@ -39,7 +47,11 @@ public class RelayServletTest {
 
         context.registerService(new MockServiceProvider());
         context.registerService(new MockFailingServiceProvider());
-        servlet = context.registerInjectActivateService(new RelayServlet());
+
+        Map<String, Object> relayServletProperties = new HashMap<>();
+        relayServletProperties.put("waitTimeout", 100);
+        relayServletProperties.put("cacheKeepAlive", 200);
+        servlet = context.registerInjectActivateService(new RelayServlet(), relayServletProperties);
     }
 
     @Test
@@ -48,16 +60,89 @@ public class RelayServletTest {
 
         servlet.doPost(context.request(), context.response());
 
-        Assertions.assertEquals(200, context.response().getStatus());
+        Assertions.assertEquals(HttpStatus.SC_OK, context.response().getStatus());
         Assertions.assertTrue(context.response().getHeader(HttpHeaders.CACHE_CONTROL).contains("no-cache"));
         Assertions.assertEquals("Lorem ipsum", context.response().getOutputAsString());
+    }
+
+    @Test
+    public void shouldReport202IfSlow() throws IOException {
+        context.request().setParameterMap(Collections.singletonMap("slow", Boolean.TRUE.toString()));
+        ((MockRequestPathInfo) context.request().getRequestPathInfo()).setSuffix("/mock");
+
+        servlet.doPost(context.request(), context.response());
+
+        Assertions.assertEquals(HttpStatus.SC_ACCEPTED, context.response().getStatus());
+        String output = context.response().getOutputAsString();
+        Assertions.assertTrue(output.contains("\"task\":"));
+    }
+
+    @Test
+    public void shouldHandleFutureTaskWhenSlow() throws IOException {
+        context.request().setParameterMap(Collections.singletonMap("slow", Boolean.TRUE.toString()));
+        ((MockRequestPathInfo) context.request().getRequestPathInfo()).setSuffix("/mock");
+
+        servlet.doPost(context.request(), context.response());
+
+        String taskId = StringUtils.substringBetween(context.response().getOutputAsString(), "\"task\":\"", "\"");
+        Assertions.assertTrue(StringUtils.isNotBlank(taskId));
+
+        Executors.newSingleThreadScheduledExecutor().schedule(
+                () -> {
+                    ((MockRequestPathInfo) context.request().getRequestPathInfo()).setSuffix("/task/" + taskId);
+                    try {
+                        servlet.doGet(context.request(), context.response());
+                        Assertions.assertEquals(HttpStatus.SC_OK, context.response().getStatus());
+                        Assertions.assertEquals("Lorem ipsum", context.response().getOutputAsString());
+                        // Task future is only memoized for a single request
+                        servlet.doGet(context.request(), context.response());
+                        Assertions.assertEquals(HttpStatus.SC_NOT_FOUND, context.response().getStatus());
+                    } catch (ServletException | IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                },
+                200,
+                TimeUnit.MILLISECONDS);
+    }
+
+    @Test
+    public void shouldForgetFutureTaskIfNotRequested() throws IOException {
+        context.request().setParameterMap(Collections.singletonMap("slow", Boolean.TRUE.toString()));
+        ((MockRequestPathInfo) context.request().getRequestPathInfo()).setSuffix("/mock");
+
+        servlet.doPost(context.request(), context.response());
+
+        String taskId = StringUtils.substringBetween(context.response().getOutputAsString(), "\"task\":\"", "\"");
+        Assertions.assertTrue(StringUtils.isNotBlank(taskId));
+
+        Executors.newSingleThreadScheduledExecutor().schedule(
+                () -> {
+                    ((MockRequestPathInfo) context.request().getRequestPathInfo()).setSuffix("/task/" + taskId);
+                    try {
+                        servlet.doGet(context.request(), context.response());
+                        Assertions.assertEquals(HttpStatus.SC_NOT_FOUND, context.response().getStatus());
+                    } catch (ServletException | IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                },
+                300,
+                TimeUnit.MILLISECONDS);
     }
 
     @Test
     public void shouldReport400IfNoSuffix() throws IOException {
         servlet.doPost(context.request(), context.response());
 
-        Assertions.assertEquals(400, context.response().getStatus());
+        Assertions.assertEquals(HttpStatus.SC_BAD_REQUEST, context.response().getStatus());
+    }
+
+    @Test
+    public void shouldReport400IfNoTaskSuffix() throws IOException, ServletException {
+        servlet.doGet(context.request(), context.response());
+        Assertions.assertEquals(HttpStatus.SC_BAD_REQUEST, context.response().getStatus());
+
+        ((MockRequestPathInfo) context.request().getRequestPathInfo()).setSuffix("/task");
+        servlet.doGet(context.request(), context.response());
     }
 
     @Test
@@ -66,7 +151,16 @@ public class RelayServletTest {
 
         servlet.doPost(context.request(), context.response());
 
-        Assertions.assertEquals(404, context.response().getStatus());
+        Assertions.assertEquals(HttpStatus.SC_NOT_FOUND, context.response().getStatus());
+    }
+
+    @Test
+    public void shouldReport404IfNoTaskFound() throws IOException, ServletException {
+        ((MockRequestPathInfo) context.request().getRequestPathInfo()).setSuffix("/task/dummy");
+
+        servlet.doGet(context.request(), context.response());
+
+        Assertions.assertEquals(HttpStatus.SC_NOT_FOUND, context.response().getStatus());
     }
 
     @Test
@@ -75,7 +169,7 @@ public class RelayServletTest {
 
         servlet.doPost(context.request(), context.response());
 
-        Assertions.assertEquals(500, context.response().getStatus());
+        Assertions.assertEquals(HttpStatus.SC_INTERNAL_SERVER_ERROR, context.response().getStatus());
         Assertions.assertEquals("{\"error\":\"Dolor sit amet\"}", context.response().getOutputAsString());
     }
 }
