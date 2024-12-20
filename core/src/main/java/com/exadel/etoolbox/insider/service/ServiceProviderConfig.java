@@ -24,7 +24,7 @@ import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 public @interface ServiceProviderConfig {
 
     int DEFAULT_ATTEMPTS = 3;
-    int DEFAULT_TIMEOUT = 20000;
+    int DEFAULT_TIMEOUT = 60000;
 
     @AttributeDefinition(
             name = "Name (ID)",

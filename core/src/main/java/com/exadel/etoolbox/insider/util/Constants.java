@@ -24,11 +24,17 @@ public class Constants {
 
     public static final String EMPTY_JSON = "{}";
 
+    public static final String HEADER_NO_CACHE = "no-cache";
+
     public static final String PROP_DETAILS = "details";
     public static final String PROP_FIELDS = "fields";
     public static final String PROP_PATH = "_path";
 
     public static final String PREFIX_ENCRYPT = "enc_";
+
+    public static final String SEPARATOR_COLON = ":";
+    public static final String SEPARATOR_PIPE = "|";
+    public static final String SEPARATOR_SLASH = "/";
 
     public static final String SUFFIX_ENCRYPT = "@encrypt";
 }

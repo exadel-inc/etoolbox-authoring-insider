@@ -75,7 +75,7 @@
                 }
             };
             ajaxOptions.success = function (data) {
-                if (ns.utils.isString(data) && !ns.utils.isBlank(data) && format === CONTENT_TYPE_JSON) {
+                if (ns.utils.isString(data) && !ns.text.isBlank(data) && format === CONTENT_TYPE_JSON) {
                     try {
                         resolve(JSON.parse(data));
                     } catch (e) {
@@ -93,7 +93,7 @@
                 }
                 let message = `with status "${error.message || error || status}"`;
                 if (xhr.responseText) {
-                    message += ` and text "${truncate(extractFromHtml(xhr.responseText), 100)}"`;
+                    message += ` and text "${truncate(ns.text.stripTags(xhr.responseText), 100)}"`;
                 }
                 reject(new Error(`Request to ${url} failed ${message}`));
             };
@@ -103,15 +103,6 @@
 
     function isFormData(data) {
         return data instanceof FormData;
-    }
-
-    function extractFromHtml(value) {
-        if (!value || !/<\/[\w-]+>/.test(value)) {
-            return (value || '').trim();
-        }
-        const html = document.createElement('div');
-        html.innerHTML = value;
-        return html.textContent;
     }
 
     function truncate(str, maxLength) {

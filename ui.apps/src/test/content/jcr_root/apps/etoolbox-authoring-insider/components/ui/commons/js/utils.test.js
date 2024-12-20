@@ -51,15 +51,6 @@ test('Should detect a function', () => {
     expect(ns.utils.isFunction(123)).toBe(false);
 });
 
-test('Should report a blank vallue', () => {
-    expect(ns.utils.isBlank('')).toBe(true);
-    expect(ns.utils.isBlank(' ')).toBe(true);
-    expect(ns.utils.isBlank('test')).toBe(false);
-    expect(ns.utils.isBlank(123)).toBe(false);
-    expect(ns.utils.isBlank(null)).toBe(true);
-    expect(ns.utils.isBlank(undefined)).toBe(true);
-});
-
 test('Should detect a jQuery object', () => {
     const jqueryObj = $(document);
     expect(ns.utils.isJquery(jqueryObj)).toBe(true);

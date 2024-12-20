@@ -84,7 +84,10 @@ test('Should set selected content', () => {
         value: 'test'
     };
     ns.fields.setSelectedContent(field, 'value');
-    expect(field.setSelectedContent).toHaveBeenCalledWith('value');
+    expect(field.setSelectedContent).toHaveBeenCalledWith('value', false);
+
+    ns.fields.setSelectedContent(field, 'value', true);
+    expect(field.setSelectedContent).toHaveBeenCalledWith('value', true);
 
     delete field.setSelectedContent;
     field['foundation-field-value'] = null;

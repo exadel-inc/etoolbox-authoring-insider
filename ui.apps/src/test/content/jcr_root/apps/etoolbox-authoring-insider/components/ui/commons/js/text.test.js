@@ -78,3 +78,38 @@ test('Should parse text with unpaired brackets', () => {
     expect(textBuilder.build()).toBe('Lorem FILL dolor {{sit amet}');
 });
 
+
+test('Should report a blank value', () => {
+    expect(ns.text.isBlank('')).toBe(true);
+    expect(ns.text.isBlank(' ')).toBe(true);
+    expect(ns.text.isBlank('<p> <br> <br/></p>')).toBe(true);
+    expect(ns.text.isBlank({  html: '' })).toBe(true);
+    expect(ns.text.isBlank({  foo: 'bar' })).toBe(true);
+    expect(ns.text.isBlank(null)).toBe(true);
+    expect(ns.text.isBlank(undefined)).toBe(true);
+    expect(ns.text.isBlank('test')).toBe(false);
+    expect(ns.text.isBlank(123)).toBe(false);
+    expect(ns.text.isBlank({  html: 'foo' })).toBe(false);
+});
+
+test('Should strip text from spaces and punctuation', () => {
+    let text = '  Lorem ipsum dolor sit amet  ';
+    expect(ns.text.stripSpacesAndPunctuation(text)).toBe('Lorem ipsum dolor sit amet');
+
+    text = '*"Lorem ipsum dolor sit amet."';
+    expect(ns.text.stripSpacesAndPunctuation(text)).toBe('Lorem ipsum dolor sit amet');
+
+    text = { html: ' <p>Lorem ipsum dolor sit amet.</p> ' };
+    expect(ns.text.stripSpacesAndPunctuation(text)).toHaveProperty('html', '<p>Lorem ipsum dolor sit amet.</p>');
+});
+
+test('Should strip text from HTML tags', () => {
+    let text = ' Lorem ipsum dolor sit amet ';
+    expect(ns.text.stripTags(text)).toBe(' Lorem ipsum dolor sit amet ');
+
+    text = '<p>Lorem ipsum <b>dolor</b> sit amet</p>';
+    expect(ns.text.stripTags(text)).toBe('Lorem ipsum dolor sit amet');
+
+    text = '<br/>';
+    expect(ns.text.stripTags(text)).toBe('');
+});
