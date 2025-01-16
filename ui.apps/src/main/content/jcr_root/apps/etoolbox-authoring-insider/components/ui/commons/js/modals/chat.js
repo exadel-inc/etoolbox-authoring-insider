@@ -156,7 +156,7 @@
                 }
             });
         }
-        if (ns.utils.isObjectWithProperty(options.intro, 'text')) {
+        if (ns.utils.isObjectWithProperty(options.intro, 'text') && !ns.text.isBlank(options.intro.text)) {
             startMessage = ns.ui.createElement({
                 class: 'message initial',
                 children: {
@@ -165,7 +165,7 @@
                 }
             });
         }
-        if (ns.utils.isObjectWithProperty(options.intro, 'html') && !ns.text.isBlank(options.intro)) {
+        if (ns.utils.isObjectWithProperty(options.intro, 'html') && !ns.text.isBlank(options.intro.html)) {
             startMessage = ns.ui.createElement({
                 class: 'message initial',
                 children: {
