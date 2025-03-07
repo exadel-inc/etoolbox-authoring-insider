@@ -135,16 +135,6 @@
 
     function createContent(options) {
         let startMessage;
-        if (ns.utils.isObjectWithProperty(options.intro, 'prompt')) {
-            startMessage = startMessage ? [startMessage] : [];
-            startMessage.unshift(ns.ui.createElement({
-                class: 'message local prompt hidden',
-                children: {
-                    class: CLS_CONTENT,
-                    innerText: options.intro.prompt
-                }
-            }));
-        }
         if (ns.utils.isObjectWithProperty(options.intro, 'image')) {
             startMessage = ns.ui.createElement({
                 class: 'message initial no-grow',
@@ -155,6 +145,16 @@
                     alt: 'Source image'
                 }
             });
+        }
+        if (ns.utils.isObjectWithProperty(options.intro, 'prompt')) {
+            startMessage = startMessage ? [startMessage] : [];
+            startMessage.unshift(ns.ui.createElement({
+                class: 'message local prompt hidden',
+                children: {
+                    class: CLS_CONTENT,
+                    innerText: options.intro.prompt
+                }
+            }));
         }
         if (ns.utils.isObjectWithProperty(options.intro, 'text') && !ns.text.isBlank(options.intro.text)) {
             startMessage = ns.ui.createElement({
