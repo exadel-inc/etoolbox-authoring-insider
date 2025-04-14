@@ -59,10 +59,10 @@
                 ajaxOptions.data = options.body;
                 delete ajaxOptions.body;
             }
-            if (ajaxOptions.data && !ns.utils.isString(ajaxOptions.data) && !isFormData(ajaxOptions.data)) {
+            if (ajaxOptions.data && !ns.utils.isString(ajaxOptions.data) && !isFormContent(ajaxOptions.data)) {
                 ajaxOptions.data = JSON.stringify(ajaxOptions.data);
                 ajaxOptions.contentType = CONTENT_TYPE_JSON;
-            } else if (isFormData(options.data)) {
+            } else if (isFormContent(options.data)) {
                 ajaxOptions.contentType = false;
                 ajaxOptions.processData = false;
             }
@@ -101,8 +101,8 @@
         });
     }
 
-    function isFormData(data) {
-        return data instanceof FormData;
+    function isFormContent(data) {
+        return data instanceof FormData || data instanceof URLSearchParams;
     }
 
     function truncate(str, maxLength) {
