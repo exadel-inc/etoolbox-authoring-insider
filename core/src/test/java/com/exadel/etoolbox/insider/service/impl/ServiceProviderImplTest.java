@@ -15,6 +15,7 @@ package com.exadel.etoolbox.insider.service.impl;
 
 import com.adobe.granite.crypto.CryptoException;
 import com.adobe.granite.crypto.CryptoSupport;
+import com.exadel.etoolbox.insider.LoggerExtension;
 import com.exadel.etoolbox.insider.service.ServiceException;
 import com.exadel.etoolbox.insider.util.Constants;
 import com.google.gson.JsonElement;
@@ -29,16 +30,24 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import java.io.IOException;
+import java.net.SocketTimeoutException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @ExtendWith({AemContextExtension.class})
 public class ServiceProviderImplTest {
+
+    @RegisterExtension
+    public final LoggerExtension loggerExtension = new LoggerExtension();
 
     private final AemContext context = new AemContext();
 
@@ -56,6 +65,7 @@ public class ServiceProviderImplTest {
 
         Map<String, Object> serviceProviderProperties = new HashMap<>();
         serviceProviderProperties.put("url", "http://localhost:4502");
+        serviceProviderProperties.put("connectionTimeout", 100);
         serviceProvider = context.registerInjectActivateService(new ServiceProviderImpl(), serviceProviderProperties);
     }
 
@@ -101,7 +111,42 @@ public class ServiceProviderImplTest {
         }
     }
 
+    @Test
+    public void shouldRetryRequestOnException() throws ServiceException {
+        context.request().setContent(Constants.EMPTY_JSON.getBytes());
+        HttpClientFactory.Builder builder = prepareHttpClientBuilder(
+                "{\"lorem\": \"ipsum\"}",
+                Arrays.asList(new SocketTimeoutException(), new IOException()));
+        try (MockedStatic<HttpClientFactory> ignored = prepareHttpClientFactory(builder)) {
+            String result = serviceProvider.getResponse(context.request());
+            JsonElement jsonElement = JsonParser.parseString(result);
+            Assertions.assertEquals("ipsum", jsonElement.getAsJsonObject().get("lorem").getAsString());
+        }
+        List<String> messages = loggerExtension.getMessages();
+        Assertions.assertTrue(messages.stream().anyMatch(m -> m.contains("Connection to http://localhost:4502 timed out after 100 ms")));
+        Assertions.assertTrue(messages.stream().anyMatch(m -> m.contains("Request to http://localhost:4502 failed")));
+        Assertions.assertTrue(messages.stream().anyMatch(m -> m.contains("Request to http://localhost:4502 succeeded")));
+    }
+
+    @Test
+    public void shouldFailAfterMaxAttempts() {
+        context.request().setContent(Constants.EMPTY_JSON.getBytes());
+        HttpClientFactory.Builder builder = prepareHttpClientBuilder(
+                Constants.EMPTY_JSON,
+                Arrays.asList(new SocketTimeoutException(), new IOException(), new IOException()));
+        try (MockedStatic<HttpClientFactory> ignored = prepareHttpClientFactory(builder)) {
+            Assertions.assertThrows(ServiceException.class, () -> serviceProvider.getResponse(context.request()));
+        }
+        List<String> messages = loggerExtension.getMessages();
+        Assertions.assertTrue(messages.stream().anyMatch(m -> m.contains("Connection to http://localhost:4502 timed out after 100 ms")));
+        Assertions.assertEquals(2, messages.stream().filter(m -> m.contains("Request to http://localhost:4502 failed")).count());
+    }
+
     private static HttpClientFactory.Builder prepareHttpClientBuilder(String response) {
+        return prepareHttpClientBuilder(response, Collections.emptyList());
+    }
+
+    private static HttpClientFactory.Builder prepareHttpClientBuilder(String response, List<IOException> exceptions) {
         CloseableHttpResponse mockHttpResponse = Mockito.mock(CloseableHttpResponse.class);
         Mockito.when(mockHttpResponse.getEntity()).thenReturn(new StringEntity(response, StandardCharsets.UTF_8));
 
@@ -109,7 +154,7 @@ public class ServiceProviderImplTest {
         Mockito.when(mockHttpClientBuilder.proxy(Mockito.any())).thenReturn(mockHttpClientBuilder);
         Mockito.when(mockHttpClientBuilder.skipSsl(Mockito.anyBoolean())).thenReturn(mockHttpClientBuilder);
         Mockito.when(mockHttpClientBuilder.timeout(Mockito.anyInt())).thenReturn(mockHttpClientBuilder);
-        Mockito.when(mockHttpClientBuilder.get()).thenReturn(new MockHttpClient(mockHttpResponse));
+        Mockito.when(mockHttpClientBuilder.get()).thenReturn(new MockHttpClient(mockHttpResponse, exceptions));
 
         return mockHttpClientBuilder;
     }

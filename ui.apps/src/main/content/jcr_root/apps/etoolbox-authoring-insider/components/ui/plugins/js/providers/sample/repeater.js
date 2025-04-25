@@ -62,10 +62,25 @@
             }
             setTimeout(() => {
                 options.signal.removeEventListener('abort', abort);
+                const prompt = options.messages.find(msg => msg.type === 'local' || msg.type === 'user' || msg.type === 'initial');
                 const userMessage = options.messages.findLast(msg => msg.type === 'local' || msg.type === 'user' || msg.type === 'initial');
-                resolve(userMessage ? userMessage.text.toUpperCase() : this.title);
+                if (!prompt || !userMessage) {
+                    resolve(this.title);
+                } else {
+                    resolve(getTextAccordingToPrompt(prompt.text, userMessage.text));
+                }
             }, 500);
         });
+    }
+
+    function getTextAccordingToPrompt(prompt, content) {
+        if (prompt.startsWith('Proofread')) {
+            return content.replace(/\b\w+\b(?!>)/, (match) => `<del>${match}</del><ins>Corrected ${match}</ins>`);
+        }
+        return content
+            .toUpperCase()
+            .replace(/HTTPS?:\/\//g, 'https://')
+            .replace(/&[A-Z]+;/, (match) => match.toLowerCase());
     }
 
 })(Granite.$, window.eai = window.eai || {});

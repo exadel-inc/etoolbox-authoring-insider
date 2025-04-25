@@ -14,6 +14,7 @@
 package com.exadel.etoolbox.insider.servlet.media;
 
 import com.day.cq.dam.api.Rendition;
+import com.exadel.etoolbox.insider.util.Constants;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +36,6 @@ class BoundariesPredicate implements Predicate<Rendition> {
     private static final Pattern SIZE_PATTERN = Pattern.compile("(\\d+)\\.(\\d+)(?=\\.\\w+$)");
 
     private static final String SEPARATOR_X = "x";
-    private static final String SEPARATOR_COLON = ":";
     private static final String SEPARATOR_DASH = "-";
 
     @Getter(value = AccessLevel.PACKAGE)
@@ -47,20 +47,6 @@ class BoundariesPredicate implements Predicate<Rendition> {
      */
     BoundariesPredicate(String value) {
         boundaries = getBoundaries(value);
-    }
-
-    /**
-     * Get the passable target size for a synthetic rendition based on the user constraints
-     * @return A {@link Size} object
-     */
-    Size getTargetSize() {
-        if (boundaries.getMinWidth() > 0 && boundaries.getMinHeight() > 0) {
-            return new Size(boundaries.getMinWidth(), boundaries.getMinHeight());
-        }
-        if (boundaries.getMaxWidth() < Integer.MAX_VALUE && boundaries.getMaxHeight() < Integer.MAX_VALUE) {
-            return new Size(boundaries.getMaxWidth(), boundaries.getMaxHeight());
-        }
-        return Size.DEFAULT;
     }
 
     /**
@@ -100,8 +86,8 @@ class BoundariesPredicate implements Predicate<Rendition> {
         String[] parts;
         int correction = 0;
 
-        if (source.contains(SEPARATOR_COLON)) {
-            parts = source.split(SEPARATOR_COLON);
+        if (source.contains(Constants.SEPARATOR_COLON)) {
+            parts = source.split(Constants.SEPARATOR_COLON);
         } else if (source.contains(SEPARATOR_DASH)) {
             parts = source.split(SEPARATOR_DASH);
         } else if (source.startsWith(">=")) {

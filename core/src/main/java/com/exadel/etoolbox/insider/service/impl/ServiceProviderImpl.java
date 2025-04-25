@@ -146,14 +146,9 @@ public class ServiceProviderImpl implements ServiceProvider {
         throw new ServiceException("Request to " + url + " failed", lastException);
     }
 
-    private static String extractPayload(SlingHttpServletRequest request) {
-        try {
-            return IOUtils.toString(request.getInputStream(), StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            log.error("Failed to extract request payload", e);
-        }
-        return StringUtils.EMPTY;
-    }
+    /* -----------
+       Token logic
+       ----------- */
 
     private String getToken(SlingHttpServletRequest request) {
         String path = request.getParameter(Constants.PROP_PATH);
@@ -180,6 +175,19 @@ public class ServiceProviderImpl implements ServiceProvider {
             log.error("Failed to decrypt token", e);
             return new String(decoded, StandardCharsets.UTF_8);
         }
+    }
+
+    /* ---------------------
+       Request payload logic
+       --------------------- */
+
+    private static String extractPayload(SlingHttpServletRequest request) {
+        try {
+            return IOUtils.toString(request.getInputStream(), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            log.error("Failed to extract request payload", e);
+        }
+        return StringUtils.EMPTY;
     }
 
     private static boolean isDryRun(SlingHttpServletRequest request) {

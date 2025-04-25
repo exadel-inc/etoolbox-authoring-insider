@@ -147,7 +147,9 @@
     async function submitAllData() {
         const form = document.getElementById('settings');
         try {
-            await ns.http.post(form.action, { data: new FormData(form) });
+            // Wrap the form data in URLSearchParams to avoid sending as a multipart attachment
+            // because in the latter case a Sling restrictuin on the number of fields may apply
+            await ns.http.post(form.action, { data: new URLSearchParams(new FormData(form)) });
             ns.ui.notify(null, 'Settings saved', 'success');
             await quietReload();
 
@@ -167,7 +169,9 @@
             return;
         }
         dialog.open = false;
-        const data = packDetails(new FormData(dialogForm));
+        // Wrap the form data in URLSearchParams to avoid sending as a multipart attachment
+        // because in the latter case a Sling restrictuin on the number of fields may apply
+        const data = new URLSearchParams(packDetails(new FormData(dialogForm)));
         try {
             await ns.http.post(dialogForm.action, { data });
             ns.ui.notify(null, 'Settings saved', 'success');

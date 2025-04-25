@@ -14,6 +14,8 @@
 'use strict';
 
 // noinspection JSFileReferences
+require('#commons/text.js');
+// noinspection JSFileReferences
 require('#commons/utils.js');
 // noinspection JSFileReferences
 require('#commons/http.js');

@@ -77,7 +77,7 @@
                     text: history.initial,
                 });
             },
-            onResponse: (response) => (response || '').replace(/^[\s"']+|[\s"']+$/g, ''),
+            onResponse: (response) => ns.text.stripSpacesAndPunctuation(response),
             onAccept: (result) => ns.fields.setSelectedContent(field, result),
         });
     }

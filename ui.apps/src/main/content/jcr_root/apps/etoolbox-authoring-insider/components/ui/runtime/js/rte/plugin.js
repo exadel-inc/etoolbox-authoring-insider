@@ -120,7 +120,7 @@
             adjustSelection(this.editorKernel.getEditContext());
             // Ensure the dropdown is closed
             this.editorKernel.fireUIEvent('updatestate', { origin: 'command', cmd: '', value: false, ret: null });
-            this._field.preserveSelectionRange();
+            this._field.preserveSelection();
             await ns.controls.execute(action, this._field);
         },
 

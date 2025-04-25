@@ -86,7 +86,7 @@ public class JsonUtil {
     /**
      * Serializes an object into a JSON string
      * @param value An object to serialize
-     * @return A JSON string. If the objects is null or otherwise cannot be serialized, a string representing an empty
+     * @return A JSON string. If the object is null or otherwise cannot be serialized, a string representing an empty
      * JSON object is returned
      */
     public static String toJson(Object value) {
