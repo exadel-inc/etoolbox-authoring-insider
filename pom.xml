@@ -6,7 +6,7 @@
     <groupId>com.exadel.etoolbox</groupId>
     <artifactId>etoolbox-authoring-insider</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0</version>
     <description>EToolbox Authoring Insider</description>
 
     <modules>
