@@ -24,6 +24,7 @@
 @fg-dark: #323232;
 @fg-error: #721c24;
 @fg-medium: #666;
+@fg-white: #FFF;
 
 .flex-column {
   display: flex;
@@ -174,7 +175,8 @@
     }
 
     .coral3-SelectList.is-focused {
-      .is-selected, .is-highlighted {
+      .is-highlighted {
+        color: @fg-white;
         .icon {
           filter: brightness(100);
         }
@@ -432,9 +434,11 @@
       .font-large;
       border: 1px solid @border-dark;
       flex-grow: 1;
-      .coral3-SelectList-item:not([disabled]).is-selected {
-        background-color: @bg-selection;
-        color: #FFF;
+      .coral3-SelectList-item:not([disabled]) {
+        &.is-selected, &.is-highlighted {
+          background-color: @bg-selection;
+          color: @fg-white;
+        }
       }
     }
 
