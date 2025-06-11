@@ -141,17 +141,14 @@
             if (!field) {
                 return false;
             }
-            if (ns.utils.isFunction(this._isMatch)) {
-                return this._isMatch(field);
-            }
             let selectors = this['selectors'];
             if (!selectors) {
-                return true;
+                return ns.utils.isFunction(this._isMatch) ? this._isMatch(field) : true;
             }
             if (ns.utils.isString(selectors)) {
                 selectors = [selectors];
             } else if (!Array.isArray(selectors) || selectors.length === 0) {
-                return true;
+                return ns.utils.isFunction(this._isMatch) ? this._isMatch(field) : true;
             }
             if (isStringArray(selectors)) {
                 selectors = selectors.map((selector) => new ns.fields.Matcher(selector));
@@ -161,7 +158,9 @@
             const options = selectors.filter((selector) => !selector.isRequirement);
             const allRequirementsMatched = requirements.every((requirement) => requirement.matches(field));
             const someOptionsMatched = options.length === 0 || options.some((option) => option.matches(field));
-            return allRequirementsMatched && someOptionsMatched;
+            const resultBySelectors = allRequirementsMatched && someOptionsMatched;
+
+            return resultBySelectors || (ns.utils.isFunction(this._isMatch) && this._isMatch(field));
         }
     }
 
