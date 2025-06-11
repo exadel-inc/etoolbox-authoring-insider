@@ -22,15 +22,6 @@
 
     let lastModifiedMultifieldId = false;
 
-    $(document)
-        .on('ready', onDocumentReady)
-        .on('click', '#item-properties [variant="primary"]', onPropertiesSave)
-        .on('click', '[data-adds-to]', onAddEntryClick)
-        .on('click', '.delete', onDeleteEntryClick)
-        .on('click', '.properties', onPropertiesOpen)
-        .on('coral-tablist:change', onActiveTabChange)
-        .on('keydown', '.foundation-toggleable', onKeyDownInDialog);
-
     /* --------------
        Event handlers
        -------------- */
@@ -48,7 +39,7 @@
             await submitAllData();
         }
         // This hook is added apart from the rest to avoid "autosubmit" handler running unconditionally upon a page load
-        $(document).on('change', '.autosubmit-defer', onAutoSubmitDebounce);
+        $(document).on('change.eai', '.autosubmit-defer', onAutoSubmitDebounce);
 
         const hash = window.location.hash;
         const targetId = hash && hash.substring(1);
@@ -449,4 +440,17 @@
         });
     }
 
+    /* --------------
+       Initialization
+       -------------- */
+
+    $(document)
+        .off('eai')
+        .on('ready.eai', onDocumentReady)
+        .on('click.eai', '#item-properties [variant="primary"]', onPropertiesSave)
+        .on('click.eai', '[data-adds-to]', onAddEntryClick)
+        .on('click.eai', '.delete', onDeleteEntryClick)
+        .on('click.eai', '.properties', onPropertiesOpen)
+        .on('coral-tablist:change.eai', onActiveTabChange)
+        .on('keydown.eai', '.foundation-toggleable', onKeyDownInDialog);
 })(window, document, Granite.$, Granite.UI.Foundation.Utils, window.eai = window.eai || {});

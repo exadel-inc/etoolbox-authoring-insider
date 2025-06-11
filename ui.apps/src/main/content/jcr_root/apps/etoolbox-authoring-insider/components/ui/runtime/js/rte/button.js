@@ -34,12 +34,14 @@
             }
 
             const plugin = this.plugin;
-            $tbContainer.on('click.rte-handler', '[data-eai-action]', async function (e) {
-                e.preventDefault();
-                e.stopPropagation();
-                const action = e.target.closest('[data-eai-action]').dataset.eaiAction;
-                await plugin.execute('run', action);
-            });
+            $tbContainer
+                .off('.eai')
+                .on('click.rte-handler.eai', '[data-eai-action]', async function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const action = e.target.closest('[data-eai-action]').dataset.eaiAction;
+                    await plugin.execute('run', action);
+                });
         }
     });
 
