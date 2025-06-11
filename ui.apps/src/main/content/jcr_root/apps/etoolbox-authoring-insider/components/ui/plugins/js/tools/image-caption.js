@@ -29,7 +29,7 @@
             'imageToText'
         ],
         settings: [
-            { name: 'selectors', type: 'text', title: 'Field selection (if not specified, default will apply)', multi: true },
+            { name: 'selectors', type: 'textfield', title: 'Field selection (if not specified, default will apply)', multi: true },
             { name: 'imageSize', type: 'textfield', title: 'Image size filter (if not specified, default will apply)', placeholder: 'E.g.: 100x100 - 600x600' },
             { name: 'imageDetail', type: 'select', title: 'Image detail', options: ['low', 'high'] },
             { name: 'prompt', type: 'text', title: 'Prompt', defaultValue: DEFAULT_PROMPT },
@@ -41,9 +41,6 @@
     });
 
     function isMatch(field) {
-        if (this.selectors && this.selectors.length) {
-            return this.selectors.some(selector => field.matches(selector));
-        }
         const fieldName = (field.getAttribute('name') || '').toLowerCase();
         if (fieldName.includes('alttext') || fieldName === './alt') {
             return true;
