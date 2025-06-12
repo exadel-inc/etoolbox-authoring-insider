@@ -175,7 +175,9 @@
     }
 
     .coral3-SelectList.is-focused {
-      .is-highlighted {
+      .is-selected, .is-highlighted {
+        background-color: @bg-selection;
+        border: none;
         color: @fg-white;
         .icon {
           filter: brightness(100);
@@ -437,6 +439,7 @@
       .coral3-SelectList-item:not([disabled]) {
         &.is-selected, &.is-highlighted {
           background-color: @bg-selection;
+          border: none;
           color: @fg-white;
         }
       }
