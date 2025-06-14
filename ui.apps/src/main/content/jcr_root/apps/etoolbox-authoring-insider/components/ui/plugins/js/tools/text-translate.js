@@ -133,13 +133,13 @@
                 return await inputAndRun(this, context, provider, initialContent);
             },
             onInput: async(msg, context) => {
-                return await provider.textToText({ messages: context.getHistory().messages, signal: context.signal });
+                return await provider.textToText({ messages: context.messages, signal: context.signal });
             },
             onReload: (newProviderId, context) => {
                 if (context.isRefresh) {
                     return this.handle(field, newProviderId);
                 }
-                const history = context.getHistory();
+                const history = context.history;
                 this.handle(field, newProviderId, {
                     prompt: history.prompt,
                     text: history.initial,
@@ -183,7 +183,7 @@
                 return context.close();
             }
             prompt = preparePrompt(PROMPT, language);
-            context.setPrompt(prompt);
+            context.prompt = prompt;
         }
 
         // Translate the text

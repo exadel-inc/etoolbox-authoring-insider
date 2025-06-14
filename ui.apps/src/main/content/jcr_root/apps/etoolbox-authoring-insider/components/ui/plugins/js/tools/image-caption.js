@@ -109,7 +109,7 @@
             onInput: async(msg, context) => provider.imageToText({
                 image: encodedImage,
                 imageDetail: this.imageDetail,
-                messages: context.getHistory().messages,
+                messages: context.messages,
                 signal: context.signal
             }),
             onReload: (newProviderId) => this.handle(field, newProviderId || providerId),

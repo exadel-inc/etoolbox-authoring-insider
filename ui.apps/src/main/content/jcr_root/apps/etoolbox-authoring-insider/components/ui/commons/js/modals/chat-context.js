@@ -69,7 +69,7 @@
          * Retrieves the message history from the chat dialog
          * @returns {{messages: *[]}}
          */
-        getHistory() {
+        get history() {
             const messages = this.dom.querySelectorAll(SELECTOR_MESSAGE);
             const result = { messages: [] };
             for (const message of messages) {
@@ -95,16 +95,19 @@
         }
 
         /**
-         * Sets the prompt string in the chat dialog
-         * @param {string} value - The prompt string
+         * Gets the messages from the chat dialog history
+         * @returns {*[]}
          */
-        setPrompt(value) {
-            const existingPrompt = this.dom.querySelector('.local.prompt .content');
-            if (existingPrompt) {
-                existingPrompt.innerText = value;
-            } else {
-                this.dom.addMessage(value, 'local prompt hidden', true);
-            }
+        get messages() {
+            return this.history.messages || [];
+        }
+
+        /**
+         * Gets the prompt string from the chat dialog history
+         * @returns {string}
+         */
+        get prompt() {
+            return this.history.prompt || '';
         }
 
         /**
@@ -121,6 +124,19 @@
          */
         get title() {
             return this.dom.querySelector('.title').innerText;
+        }
+
+        /**
+         * Sets the prompt string in the chat dialog
+         * @param {string} value - The prompt string
+         */
+        set prompt(value) {
+            const existingPrompt = this.dom.querySelector('.local.prompt .content');
+            if (existingPrompt) {
+                existingPrompt.innerText = value;
+            } else {
+                this.dom.addMessage(value, 'local prompt hidden', true);
+            }
         }
 
         /**

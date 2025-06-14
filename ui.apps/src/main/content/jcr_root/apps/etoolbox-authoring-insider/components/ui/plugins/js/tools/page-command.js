@@ -78,14 +78,13 @@
             ],
             onStart: async(context) => await doTask(context, provider, initialContent),
             onInput: async(msg, context) =>
-                provider.textToText({ messages: context.getHistory().messages, signal: context.signal }),
+                provider.textToText({ messages: context.messages, signal: context.signal }),
             onReload: (newProviderId, context) => {
                 if (context.isRefresh) {
                     return this.handle(field, newProviderId);
                 }
-                const history = context.getHistory();
                 this.handle(field, newProviderId, {
-                    prompt: history.prompt,
+                    prompt: context.prompt,
                 });
             },
             onResponse: (response) => ns.text.stripSpacesAndPunctuation(response),
@@ -109,7 +108,7 @@
             textBuilder.fillIn(placeholder, completion);
         }
         initialContent.prompt = textBuilder.build();
-        context.setPrompt(initialContent.prompt);
+        context.prompt = initialContent.prompt;
 
         // Collect the page content
         context.wait('Collecting page info...');
