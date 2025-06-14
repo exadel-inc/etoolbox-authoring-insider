@@ -92,10 +92,9 @@
                 if (context.isRefresh) {
                     return this.handle(field, newProviderId);
                 }
-                const history = context.history;
                 this.handle(field, newProviderId, {
-                    text: history.initial,
-                    prompt: history.prompt,
+                    text: context.initialContent,
+                    prompt: context.prompt,
                 });
             },
             onResponse: (response) => ns.text.stripSpacesAndPunctuation(response),
