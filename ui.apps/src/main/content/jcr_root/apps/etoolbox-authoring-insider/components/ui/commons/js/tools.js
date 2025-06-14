@@ -142,13 +142,14 @@
                 return false;
             }
             let selectors = this['selectors'];
+            const isTextField = !field.matches('.cq-ui-tagfield');
             if (!selectors) {
-                return ns.utils.isFunction(this._isMatch) ? this._isMatch(field) : true;
+                return ns.utils.isFunction(this._isMatch) ? this._isMatch(field) : isTextField;
             }
             if (ns.utils.isString(selectors)) {
                 selectors = [selectors];
             } else if (!Array.isArray(selectors) || selectors.length === 0) {
-                return ns.utils.isFunction(this._isMatch) ? this._isMatch(field) : true;
+                return ns.utils.isFunction(this._isMatch) ? this._isMatch(field) : isTextField;
             }
             if (isStringArray(selectors)) {
                 selectors = selectors.map((selector) => new ns.fields.Matcher(selector));
