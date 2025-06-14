@@ -386,6 +386,7 @@
             console.error('The onReload handler is missing');
             return;
         }
+        dialog.abortController.abort();
         dialog.open = false;
         onReload(ns.fields.getValue(event.target), new ns.ui.DialogContext(dialog));
     }
