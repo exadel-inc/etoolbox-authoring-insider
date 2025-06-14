@@ -182,8 +182,8 @@
                 return context.close();
             }
             prompt = preparePrompt(PROMPT, language);
-            context.prompt = prompt;
         }
+        context.prompt = prompt;
 
         // Translate the text
         context.wait(self.validation !== 'none' ? 'Translating...' : '');
