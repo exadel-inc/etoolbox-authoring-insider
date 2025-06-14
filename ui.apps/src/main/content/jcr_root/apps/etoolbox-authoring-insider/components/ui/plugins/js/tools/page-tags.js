@@ -17,7 +17,7 @@
     const ID = 'page.tags';
     const PROMPT = `/no_think Given the list of tags below, choose tags that best describe content of the web page 
     in the next message. If the next message is HTML-formatted, analyze the HTML markup to detect the most important 
-    parts of the text to be tagged. The number of tags should not exceed {count}. You may choose fewer tags if you 
+    parts of the text to be tagged. The number of tags should not exceed {{count}}. You may choose fewer tags if you 
     cannot find enough relevant tags, but not less than 1. Answer with a comma-separated list of tags, without any 
     additional text.`;
 
@@ -109,7 +109,7 @@
 
         let prompt = context.prompt;
         if (!prompt) {
-            prompt = PROMPT.replace(/[\n\r\s]+/g, ' ').replace('{count}', context.count) +
+            prompt = PROMPT.replace(/[\n\r\s]+/g, ' ').replace('{{count}}', context.count) +
             `\n<tags>\n${context.tagList.map((t) => t.title).join('\n')}\n</tags>`;
             context.prompt = prompt;
         }
