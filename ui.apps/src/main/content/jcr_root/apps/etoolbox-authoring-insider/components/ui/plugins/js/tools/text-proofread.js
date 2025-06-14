@@ -61,7 +61,7 @@
                 return await doTask(context, provider, sourceValue);
             },
             onInput: async(msg, context) => {
-                return await provider.textToText({ messages: context.getHistory().messages, signal: context.signal });
+                return await provider.textToText({ messages: context.messages, signal: context.signal });
             },
             onReload: (newProviderId, context) => {
                 if (context.isRefresh) {

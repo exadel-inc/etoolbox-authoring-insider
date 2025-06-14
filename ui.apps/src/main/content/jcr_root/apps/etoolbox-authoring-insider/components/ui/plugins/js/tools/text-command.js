@@ -87,12 +87,12 @@
             onStart: async(context) =>
                 await inputAndRun(context, provider, initialContent),
             onInput: async(msg, context) =>
-                provider.textToText({ messages: context.getHistory().messages, signal: context.signal }),
+                provider.textToText({ messages: context.messages, signal: context.signal }),
             onReload: (newProviderId, context) => {
                 if (context.isRefresh) {
                     return this.handle(field, newProviderId);
                 }
-                const history = context.getHistory();
+                const history = context.history;
                 this.handle(field, newProviderId, {
                     text: history.initial,
                     prompt: history.prompt,
@@ -132,7 +132,7 @@
             textBuilder.fillIn(placeholder, completion);
         }
         initialContent.prompt = textBuilder.build();
-        context.setPrompt(initialContent.prompt);
+        context.prompt = initialContent.prompt;
 
         // Perform the inference
         const messages = [
