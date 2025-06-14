@@ -5,43 +5,49 @@
     <tools jcr:primaryType="nt:unstructured">
         <item0
                 jcr:primaryType="nt:unstructured"
-                details="\{&quot;selectors&quot;:[&quot;ui=properties name=metaDescription|jcr:description&quot;],&quot;prompt&quot;:&quot;Provide a summary of the webpage content given in the following message. If the message is HTML-formatted, analyze the HTML markup to detect most important parts of the text. The summary must contain up to 50 words. Do not include any HTML tags. Respond with only the summary text.&quot;}"
+                details="\{&quot;selectors&quot;:[&quot;ui=properties name=metaDescription|jcr:description&quot;],&quot;prompt&quot;:&quot;Provide a summary of the webpage content given in the following message. If the message is HTML-formatted, analyze the HTML markup to detect the most important parts of the text. The summary must contain up to 50 words. Do not include any HTML tags. Respond with only the summary text.&quot;}"
                 icon="summarize"
                 title="Page summary"
                 type="page.command"/>
         <item1
                 jcr:primaryType="nt:unstructured"
-                details="\{&quot;selectors&quot;:[&quot;ui=properties name=metaKeywords&quot;],&quot;prompt&quot;:&quot;Provide SEO keywords for the web page content in the following message. If the message is HTML-formatted, analyze the HTML markup to detect most important parts of the text. Give up to 10 keywords. Keywords must start with a capital letter and be separated by comma and a space. Respond with only the keywords. &quot;}"
+                details="\{&quot;selectors&quot;:[&quot;ui=properties name=metaKeywords&quot;],&quot;prompt&quot;:&quot;Provide SEO keywords for the web page content in the following message. If the message is HTML-formatted, analyze the HTML markup to detect the most important parts of the text. Give up to 10 keywords. Keywords must start with a capital letter and be separated by comma and a space. Respond with only the keywords. &quot;}"
                 icon="viewList"
                 title="Page keywords"
                 type="page.command"/>
         <item2
                 jcr:primaryType="nt:unstructured"
+                details="\{&quot;selectors&quot;:[&quot;ui=properties name=cq:tags&quot;],&quot;source&quot;:&quot;/content/cq:tags&quot;,&quot;count&quot;:10}"
+                icon="pageTag"
+                title="Page tags"
+                type="page.tags"/>
+        <item3
+                jcr:primaryType="nt:unstructured"
                 details="\{&quot;prompt&quot;:&quot;Provide the phrase that can be used as the title and/or alt text for the given image&quot;,&quot;repeatPrompt&quot;:&quot;Provide another variant of the phrase that can be used as the title and/or alt text for the given image. &quot;}"
                 title="Image caption (alt text)"
                 type="image.caption"/>
-        <item3
+        <item4
                 jcr:primaryType="nt:unstructured"
                 details="\{&quot;prompt&quot;:&quot;Expand the given text.&quot;,&quot;repeatPrompt&quot;:&quot;Provide another variant of how to expand the given text. &quot;}"
                 icon="expand"
                 title="Expand"
                 type="text.modify.command"/>
-        <item4
+        <item5
                 jcr:primaryType="nt:unstructured"
                 details="\{&quot;prompt&quot;:&quot;Make this text shorter and more precise&quot;,&quot;repeatPrompt&quot;:&quot;Provide another variant of how you make this text shorter and more precise. &quot;}"
                 icon="shrink"
                 title="Shorten"
                 type="text.modify.command"/>
-        <item5
+        <item6
                 jcr:primaryType="nt:unstructured"
                 details="\{&quot;languages&quot;:[&quot;Dutch&quot;,&quot;French&quot;,&quot;German&quot;,&quot;Italian&quot;,&quot;Polish&quot;,&quot;Spanish&quot;]}"
                 title="Translate"
                 type="text.translate"/>
-        <item6
+        <item7
                 jcr:primaryType="nt:unstructured"
                 title="Proofread"
                 type="text.proofread"/>
-        <item7
+        <item8
                 jcr:primaryType="nt:unstructured"
                 title="Rewrite with a free prompt"
                 type="text.modify.free"/>
