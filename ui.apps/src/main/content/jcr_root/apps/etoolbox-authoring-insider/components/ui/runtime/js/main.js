@@ -17,7 +17,7 @@
     const CLS_MANAGED = 'js-eai-managed';
 
     const FRAGMENT_TEMPLATES = '[coral-multifield-template]';
-    const INSTRUMENTATION_HOOKS = '.coral-Form-field[type="text"][name], textarea[name]';
+    const INSTRUMENTATION_HOOKS = '.coral-Form-field[type="text"][name], textarea[name], .cq-ui-tagfield';
 
     /* --------------
        Event handlers
