@@ -145,6 +145,18 @@
                 this.dom.querySelector(ns.ui.SELECTOR_WAIT).dataset.message = message;
             }
         }
+
+        /**
+         * Assigns metadata to the dialog context. The metadata can be used later in the dialog event handlers
+         * @param {Object} options - Object containing the metadata to assign
+         * @returns {ns.ui.DialogContext}
+         */
+        with(options) {
+            if (ns.utils.isObject(options)) {
+                Object.assign(this, options);
+            }
+            return this;
+        }
     };
 
 })(window.eai = window.eai || {});
