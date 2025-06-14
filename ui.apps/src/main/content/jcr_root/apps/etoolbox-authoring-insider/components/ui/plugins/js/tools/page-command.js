@@ -16,9 +16,6 @@
 
     const ID = 'page.command';
 
-    const NON_CONTENT_TAGS = ['script', 'style', 'link', 'iframe', 'object', 'embed'];
-    const NON_EMPTY_TAGS = ['div', 'span', 'section', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'];
-
     ns.tools.register({
         icon: 'page',
         id: ID,
@@ -26,7 +23,7 @@
         isTemplate: true,
 
         requires: [
-            ID,
+            'page',
             'textToText',
         ],
         settings: [
@@ -112,55 +109,21 @@
 
         // Collect the page content
         context.wait('Collecting page info...');
-
-        const url = new URL(window.location.href);
-        url.pathname = url.pathname.replace('/editor.html', '');
-        if (url.pathname.startsWith('/mnt/overlay') && url.searchParams.has('item')) {
-            url.pathname = url.searchParams.get('item') + '.html';
-            url.searchParams.delete('item');
-        }
-        url.searchParams.set('wcmmode', 'disabled');
-
-        const html = await ns.http.getText(url.toString());
-
-        const dom = new DOMParser().parseFromString(html, 'text/html');
-        const main = dom.querySelector('main') || dom.querySelector('body');
+        const pageContent = await ns.pages.extractContent(window.location.href);
 
         // Feed page content to the provider
         context.wait('Processing content...');
+        if (!pageContent) {
+            return ns.ui.alert('Error', 'Failed to extract page content', 'error');
+        }
 
         const result = await provider.textToText({
             messages: [
                 { type: 'user', text: initialContent.prompt },
-                { type: 'user', text: cleanUpDom(main) },
+                { type: 'user', text: pageContent },
             ],
             signal: context.signal
         });
         return !context.aborted ? result : '';
     }
-
-    function cleanUpDom(value) {
-        NON_CONTENT_TAGS.forEach(tag => {
-            value.querySelectorAll(tag).forEach(element => element.remove());
-        });
-        cleanUpNodes(value);
-        Array.from(value.querySelectorAll(':empty'))
-            .filter(element => NON_EMPTY_TAGS.includes(element.tagName.toLowerCase()))
-            .forEach((element) => element.remove());
-        return value.innerHTML.trim();
-    }
-
-    function cleanUpNodes(value) {
-        const removableAttributes = value.getAttributeNames()
-            .filter((name) => name !== 'role' && !name.startsWith('aria-'));
-        removableAttributes.forEach((name) => value.removeAttribute(name));
-        for (const childNode of value.childNodes) {
-            if (childNode.nodeType === Node.ELEMENT_NODE) {
-                cleanUpNodes(childNode);
-            } else if (childNode.nodeType === Node.TEXT_NODE) {
-                childNode.nodeValue = childNode.nodeValue.trim();
-            }
-        }
-    }
-
 })(window, document, window.eai = window.eai || {});
