@@ -66,40 +66,35 @@
         }
 
         /**
-         * Retrieves the message history from the chat dialog
-         * @returns {{messages: *[]}}
+         * Gets the initial user-provided content from the chat dialog history
+         * @returns {string}
          */
-        get history() {
-            const messages = this.dom.querySelectorAll(SELECTOR_MESSAGE);
-            const result = { messages: [] };
-            for (const message of messages) {
-                const contentHolder = message.querySelector(ns.ui.SELECTOR_CONTENT);
-                if (!contentHolder) {
-                    continue;
-                }
-                const content = contentHolder.innerText.trim();
-                if (message.matches('.prompt')) {
-                    result.prompt = content;
-                    result.messages.push({ role: 'user', text: content });
-                } else if (message.matches('.initial')) {
-                    result.initial = content;
-                    result.messages.push({ role: 'user', text: content });
-                } else if (!message.matches('.info')) {
-                    result.messages.push({
-                        role: message.matches('.remote') ? 'assistant' : 'user',
-                        text: content
-                    });
-                }
-            }
-            return result;
+        get initialContent() {
+            const initialMessage = this.dom.querySelector(SELECTOR_MESSAGE + '.initial ' + ns.ui.SELECTOR_CONTENT);
+            return initialMessage ? initialMessage.innerText.trim() : '';
         }
 
         /**
          * Gets the messages from the chat dialog history
-         * @returns {*[]}
+         * @returns {Object[]}
          */
         get messages() {
-            return this.history.messages || [];
+            const messages = this.dom.querySelectorAll(SELECTOR_MESSAGE);
+            const result = [];
+            for (const message of messages) {
+                const contentHolder = !message.matches('.info') ?
+                    message.querySelector(ns.ui.SELECTOR_CONTENT) :
+                    null;
+                if (!contentHolder) {
+                    continue;
+                }
+                const content = contentHolder.innerText.trim();
+                result.messages.push({
+                    role: message.matches('.remote') ? 'assistant' : 'user',
+                    text: content
+                });
+            }
+            return result;
         }
 
         /**
@@ -107,7 +102,8 @@
          * @returns {string}
          */
         get prompt() {
-            return this.history.prompt || '';
+            const promptMessage = this.dom.querySelector(SELECTOR_MESSAGE + '.prompt ' + ns.ui.SELECTOR_CONTENT);
+            return promptMessage ? promptMessage.innerText.trim() : '';
         }
 
         /**
@@ -123,7 +119,7 @@
          * @returns {string}
          */
         get title() {
-            return this.dom.querySelector('.title').innerText;
+            return this.dom.querySelector('.title').innerText.trim();
         }
 
         /**
