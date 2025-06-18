@@ -15,7 +15,7 @@
     'use strict';
 
     const ID = 'page.tags';
-    const PROMPT = `/no_think Given the list of tags below, choose tags that best describe content of the web page 
+    const PROMPT = `Given the list of tags below, choose tags that best describe content of the web page 
     in the next message. If the next message is HTML-formatted, analyze the HTML markup to detect the most important 
     parts of the text to be tagged. The number of tags should not exceed {{count}}. You may choose fewer tags if you 
     cannot find enough relevant tags, but not less than 1. Answer with a comma-separated list of tags, without any 
@@ -133,8 +133,7 @@
         if (context.aborted) {
             return null;
         }
-        response = ns.text.stripSpacesAndPunctuation((response || '').replace(/<think>.+?<\/think>/gs, ''));
-        const tagSet = response
+        const tagSet = ns.text.stripSpacesAndPunctuation(response)
             .split(',')
             .map((tag) => tag.trim())
             .map((tag) => findMatchingTagId(context.tagList, tag))
@@ -170,5 +169,4 @@
         const match = tagList.find((t) => t.title.toLowerCase() === tag.toLowerCase());
         return match ? match.id : null;
     }
-
 })(window, document, window.eai = window.eai || {});
