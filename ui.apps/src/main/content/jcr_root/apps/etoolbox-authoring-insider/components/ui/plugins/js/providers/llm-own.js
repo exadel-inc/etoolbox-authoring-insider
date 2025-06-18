@@ -25,6 +25,7 @@
         settings: [
             { name: 'url', title: 'Endpoint (URL)', required: true },
             { name: 'llm', title: 'Model', required: true },
+            { name: 'think', type: 'checkbox', title: 'Enable thinking (when applicable)', defaultValue: true },
             { name: 'systemPrompt', type: 'text', title: 'System Prompt' },
             { name: 'supports', title: 'Support constraints', multi: true }
         ],
@@ -55,6 +56,7 @@
         options.llm = this.llm || DEFAULT_MODEL;
         options.systemPrompt = this.systemPrompt;
         options.title = this.title;
+        options.disableThinking = this.think === false;
         return options;
     }
 
@@ -78,7 +80,9 @@
         }
 
         if (response.content) {
-            return response.content.trim().replace(/<\|\w+\|>/g, '');
+            return response.content.trim()
+                .replace(/<\|\w+\|>/g, '')
+                .replace(/<think>[\s\S]*?<\/think>/g, '');
         } else if (response.message) {
             const result = response.message.content || response.message.toString() || '';
             return result.trim();
@@ -115,12 +119,16 @@
             }
             messages.push(newMessage);
         }
-        return {
+        const result = {
             stream: false,
             model: options.llm,
             temperature: 0.6,
             messages,
         };
+        if (options.disableThinking) {
+            result.think = false;
+        }
+        return result;
     }
 
 })(window.eai = window.eai || {});
