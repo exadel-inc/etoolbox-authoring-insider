@@ -114,6 +114,12 @@
         isBlank,
 
         /**
+         * Compacts the provided text to a single line string, removing all line breaks and extra spaces but preserving
+         * dedicated line breaks if provided as {@code \\n}
+         */
+        singleLine,
+
+        /**
          * Strips spaces and punctuation from the provided value
          * @param value {string|object} - The value to process. Can be a string or an object with an 'html' property
          * @returns {string|object}
@@ -180,6 +186,13 @@
         return value.toString().trim().length === 0;
     }
 
+    function singleLine(value) {
+        if (!ns.utils.isString(value)) {
+            return '';
+        }
+        return value.replace(/[\n\r\s]+/g, ' ').replace(/\\n/g, '\n');
+    }
+
     function stripSpacesAndPunctuation(value) {
         const pattern = /^[\s.,'"`*]+|[\s.,'"`*]+$/g;
         if (ns.utils.isObjectWithProperty(value, 'html')) {
@@ -200,5 +213,4 @@
         container.innerHTML = html;
         return container.textContent;
     }
-
 })(document, window.eai = window.eai || {});
