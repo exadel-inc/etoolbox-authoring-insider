@@ -32,6 +32,7 @@
          */
         constructor(dialog, options) {
             this.dom = dialog;
+            this.data = {};
             if (ns.utils.isObject(options)) {
                 Object.assign(this, options);
             }
@@ -89,7 +90,7 @@
                     continue;
                 }
                 const content = contentHolder.innerText.trim();
-                result.messages.push({
+                result.push({
                     role: message.matches('.remote') ? 'assistant' : 'user',
                     text: content
                 });
@@ -151,12 +152,11 @@
          * @param {Object} options - Object containing the metadata to assign
          * @returns {ns.ui.DialogContext}
          */
-        with(options) {
+        withData(options) {
             if (ns.utils.isObject(options)) {
-                Object.assign(this, options);
+                Object.assign(this.data, options);
             }
             return this;
         }
     };
-
 })(window.eai = window.eai || {});
