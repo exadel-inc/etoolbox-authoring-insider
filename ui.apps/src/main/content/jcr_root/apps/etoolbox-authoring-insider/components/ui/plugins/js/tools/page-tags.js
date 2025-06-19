@@ -15,11 +15,14 @@
     'use strict';
 
     const ID = 'page.tags';
-    const PROMPT = `Given the list of tags below, choose tags that best describe content of the web page 
-    in the next message. If the next message is HTML-formatted, analyze the HTML markup to detect the most important 
-    parts of the text to be tagged. The number of tags should not exceed {{count}}. You may choose fewer tags if you 
-    cannot find enough relevant tags, but not less than 1. Answer with a comma-separated list of tags, without any 
-    additional text.`;
+
+    const PROMPT = `You will receive two inputs:\\n
+    1. A block of text in Markdown;\\n
+    2. A list of keywords, semicolon-separated.\\n
+    Your task is to read the text, consider the keywords one by one, and decide which keywords correspond to the text.\\n
+    Select not more than 10 keywords.\\n
+    Output **only** the keywords you have selected, sorted by relevance starting with the most relevant one, 
+    semicolon-separated. No additional text, explanation, or formatting is allowed.`;
 
     const DEFAULT_TAG_COUNT = 10;
     const DEFAULT_TAG_FOLDER = '/content/cq:tags';
@@ -38,6 +41,7 @@
             { name: 'selectors', type: 'textfield', title: 'Field selection (if not specified, will match all text fields)', multi: true },
             { name: 'source', type: 'textfield', title: 'Tag folder', required: true, defaultValue: DEFAULT_TAG_FOLDER },
             { name: 'count', type: 'textfield', title: 'Number of tags to select', required: true, defaultValue: DEFAULT_TAG_COUNT },
+            { name: 'excludedElements', type: 'textfield', title: 'Page elements to ignore', multi: true },
         ],
 
         isValid,
@@ -65,17 +69,10 @@
             source: field,
             providers: this.providers,
             providerId,
-            responses: [
-                {
-                    icon: 'scribble',
-                    title: 'Send your own message',
-                    action: 'message',
-                    style: 'icon'
-                }
-            ],
-            onStart: async(context) => await doTask(context.with({
+            onStart: async(context) => await doTask(context.withData({
                 source: this.source,
-                count: parseInt(this.count, 10)
+                count: parseInt(this.count, 10),
+                excludedElements: this.excludedElements
             }), provider),
             onInput: async(msg, context) =>
                 provider.textToText({ messages: context.messages, signal: context.signal }),
@@ -84,65 +81,69 @@
                     prompt: context.prompt,
                 });
             },
-            onAccept: (result) => ns.fields.setSelectedContent(field, result),
+            onAccept: (result) => ns.fields.setSelectedContent(field, result.split('<br>')),
         });
     }
 
     async function doTask(context, provider) {
-        debugger;
-        if (!context.tagList) {
+        let tagList = context.data.tagList;
+        if (!tagList) {
             context.wait('Loading tags...');
             try {
-                const tagsJson = await ns.http.getJson(context.source + '.1.json');
-                if (ns.utils.isObject(tagsJson)) {
-                    context.tagList = prepareTagList(context.source, tagsJson);
-                } else {
-                    context.tagList = [];
-                }
+                const tagsJson = await ns.http.getJson(context.data.source + '.1.json');
+                tagList = (context.data.tagList = await prepareTagList(context.data.source, tagsJson));
             } catch (error) {
-                return ns.ui.alert('Error', 'Failed to load tags from ' + context.source, 'error');
+                ns.ui.alert('Error', 'Failed to load tags from ' + context.data.source, 'error');
             }
         }
-        if (!context.tagList.length) {
-            return ns.ui.alert('Error', 'No tags found in ' + context.source, 'error');
-        }
-
-        let prompt = context.prompt;
-        if (!prompt) {
-            prompt = PROMPT.replace(/[\n\r\s]+/g, ' ').replace('{{count}}', context.count) +
-            `\n<tags>\n${context.tagList.map((t) => t.title).join('\n')}\n</tags>`;
-            context.prompt = prompt;
+        if (!tagList.length) {
+            return context.appendMessage('No tags found in ' + context.data.source, 'error');
         }
 
         // Collect the page content
         context.wait('Collecting page info...');
-        const pageContent = await ns.pages.extractContent(window.location.href);
+        const pageContent = await ns.pages.extractContent(
+            window.location.href,
+            { format: 'md', exclude: context.data.excludedElements });
         if (!pageContent) {
-            return ns.ui.alert('Error', 'Failed to extract page content', 'error');
+            return context.appendMessage('Failed to extract page content', 'error');
         }
 
         // Feed page content to the provider
         context.wait('Processing content...');
-        let response = await provider.textToText({
+        const prompt = ns.text.singleLine(PROMPT)
+            .replace('{{count}}', context.data.count.toString());
+
+        const response = await provider.textToText({
             messages: [
-                { type: 'user', text: prompt },
+                { type: 'system', text: prompt },
                 { type: 'user', text: pageContent },
+                { type: 'user', text: '### Keywords:\n' + tagList.map((t) => t.title).join(';') }
             ],
             signal: context.signal
         });
         if (context.aborted) {
             return null;
         }
-        const tagSet = ns.text.stripSpacesAndPunctuation(response)
-            .split(',')
+
+        const tags = ns.text.stripSpacesAndPunctuation(response)
+            .split(/[;,]/)
             .map((tag) => tag.trim())
-            .map((tag) => findMatchingTagId(context.tagList, tag))
+            .map((tag) => findMatchingTagId(tagList, tag))
             .filter(Boolean)
-            .reduce((acc, tag) => acc.add(tag), new Set());
-        return { type: 'html', html: Array.from(tagSet).sort().join('<br>') };
+            .reduce((set, tagId) => set.add(tagId), new Set());
+
+        if (tags.size === 0) {
+            return context.appendMessage('No tags picked for the page', 'error');
+        }
+
+        return { type: 'html', html: Array.from(tags).slice(0, context.data.count).sort().join('<br>') };
     }
 
     function prepareTagList(sourcePath, sourceObject) {
+        if (!ns.utils.isObject(sourceObject)) {
+            return [];
+        }
         const indexOfCqTags = sourcePath.indexOf('/cq:tags/');
         let tagRelativePath = indexOfCqTags >= 0 ?
             sourcePath.substring(indexOfCqTags + 9) :
@@ -158,7 +159,7 @@
                 return {
                     id: `${tagPrefix}:${tagRelativePath}${tagRelativePath.length > 0 ? '/' : ''}${k}`,
                     title: sourceObject[k]['jcr:title'] || k,
-                }
+                };
             });
     }
 
