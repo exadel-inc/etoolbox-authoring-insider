@@ -15,6 +15,7 @@
     'use strict';
 
     const DEFAULT_MODEL = 'llava-llama3';
+    const DEFAULT_TEMPERATURE = 0.6;
 
     ns.providers.register({
         icon: 'llama',
@@ -26,7 +27,7 @@
             { name: 'url', title: 'Endpoint (URL)', required: true },
             { name: 'llm', title: 'Model', required: true },
             { name: 'think', type: 'checkbox', title: 'Enable thinking (when applicable)', defaultValue: true },
-            { name: 'systemPrompt', type: 'text', title: 'System Prompt' },
+            { name: 'systemPrompt', type: 'text', title: 'System prompt' },
             { name: 'supports', title: 'Support constraints', multi: true }
         ],
 
@@ -56,7 +57,7 @@
         options.llm = this.llm || DEFAULT_MODEL;
         options.systemPrompt = this.systemPrompt;
         options.title = this.title;
-        options.disableThinking = this.think === false;
+        options.disableThinking = !this.think;
         return options;
     }
 
@@ -122,7 +123,7 @@
         const result = {
             stream: false,
             model: options.llm,
-            temperature: 0.6,
+            temperature: DEFAULT_TEMPERATURE,
             messages,
         };
         if (options.disableThinking) {
