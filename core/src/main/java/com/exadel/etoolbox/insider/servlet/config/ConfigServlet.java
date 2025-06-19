@@ -56,6 +56,10 @@ import java.util.stream.StreamSupport;
 )
 public class ConfigServlet extends SlingSafeMethodsServlet {
 
+    static final String TYPE_BOOLEAN = "{Boolean}";
+    private static final String TYPE_DOUBLE = "{Double}";
+    private static final String TYPE_LONG = "{Long}";
+
     private static final String CONFIG_ROOT = "/conf/etoolbox/authoring-insider";
     private static final String NODE_PROVIDERS = "providers";
     private static final String NODE_TOOLS = "tools";
@@ -145,9 +149,18 @@ public class ConfigServlet extends SlingSafeMethodsServlet {
         Map<String, Object> unpackedDetails = JsonUtil.getMap(details);
         unpackedDetails.forEach((key, value) -> {
             boolean isHidden = !key.isEmpty() && (key.charAt(0) == '_' || key.charAt(0) == '.');
-            if (!isHidden) {
-                target.put(key, value);
+            if (isHidden) {
+                return;
             }
+            Object effectiveValue = value;
+            if (value instanceof String && StringUtils.startsWith(value.toString(), TYPE_BOOLEAN)) {
+                effectiveValue = Boolean.parseBoolean(value.toString().substring(TYPE_BOOLEAN.length()));
+            } else if (value instanceof String && StringUtils.startsWith(value.toString(), TYPE_LONG)) {
+                effectiveValue = Long.parseLong(value.toString().substring(TYPE_LONG.length()));
+            } else if (value instanceof String && StringUtils.startsWith(value.toString(), TYPE_DOUBLE)) {
+                effectiveValue = Double.parseDouble(value.toString().substring(TYPE_DOUBLE.length()));
+            }
+            target.put(key, effectiveValue);
         });
     }
 
