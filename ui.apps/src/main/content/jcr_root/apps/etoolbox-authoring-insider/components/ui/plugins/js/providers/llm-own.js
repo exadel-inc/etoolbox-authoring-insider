@@ -97,12 +97,12 @@
             messages.push({ role: 'system', text: options.systemPrompt });
         }
         for (let i = 0; i < options.messages.length; i++) {
-            const source = ns.utils.isObject(options.messages[i]) ? options.messages[i].text : options.messages[i].toString();
+            const source = options.messages[i];
             if (!source) {
                 continue;
             }
             let role = source.role || source.type || 'user';
-            if (role === 'local') {
+            if (role === 'local' || (role === 'system' && options.systemPrompt)) {
                 role = 'user';
             } else if (role === 'remote') {
                 role = 'assistant';
