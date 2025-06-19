@@ -156,6 +156,19 @@
                     return;
                 }
             }
+            if (Array.isArray(selectorOrValue)) {
+                if (ns.utils.isFunction(field.setValues)) {
+                    field.setValues(selectorOrValue);
+                    return;
+                } else {
+                    const foundationField = $(field).adaptTo('foundation-field');
+                    if (foundationField) {
+                        foundationField.setValues(selectorOrValue);
+                        emitInputEvent(field);
+                        return;
+                    }
+                }
+            }
             if (ns.utils.isFunction(field.setValue)) {
                 field.setValue(selectorOrValue);
                 return;
