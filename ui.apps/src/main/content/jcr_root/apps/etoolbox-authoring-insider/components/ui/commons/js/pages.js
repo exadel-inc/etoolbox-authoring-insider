@@ -38,7 +38,7 @@
         /**
          * Extracts content from the provided AEM page removing non-content tags and empty elements
          * @param {string} url - Path to the page
-         * @param {object} [options] - Options for extraction
+         * @param {object=} [options] - Options for extraction
          * @returns {string}
          */
         extractContent
@@ -46,7 +46,7 @@
 
     async function extractContent(url, options = {}) {
         try {
-            const content = await getPageContent(url);
+            const content = await getPageContent(url, options ? options.signal : null);
             const dom = parseDom(content);
             return convertDom(dom, options);
         } catch (e) {
@@ -59,7 +59,7 @@
        Content retrieval
        ----------------- */
 
-    async function getPageContent(url) {
+    async function getPageContent(url, signal) {
         const urlObject = new URL(url);
         urlObject.pathname = urlObject.pathname.replace('/editor.html', '');
         if (urlObject.pathname.startsWith('/mnt/overlay') && urlObject.searchParams.has('item')) {
@@ -68,7 +68,7 @@
         }
         urlObject.searchParams.set('wcmmode', 'disabled');
 
-        return await ns.http.getText(urlObject.toString());
+        return await ns.http.getText(urlObject.toString(), signal ? { signal } : {});
     }
 
     function parseDom(text) {
