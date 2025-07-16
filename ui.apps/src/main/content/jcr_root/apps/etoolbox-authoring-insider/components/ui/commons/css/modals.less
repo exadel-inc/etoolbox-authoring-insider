@@ -305,9 +305,9 @@
     }
   }
 
-  // A special centered case to make the spinner display in the middle of a dialog when there are no messages
-  .messages:empty + .centered,
-  .messages:has(.prompt.hidden:first-child:last-child) + .centered{
+  // A special case to make the spinner display in the middle of a dialog when there are no visible messages
+  .messages:not(:has(*)) + .centered,
+  .messages:not(:has(.message:not(.hidden))) + .centered{
     position: relative;
     top: 50%;
     transform: translateY(-100%);
