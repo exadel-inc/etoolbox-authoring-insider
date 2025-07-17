@@ -120,18 +120,17 @@
         /**
          * Performs an operation against a field
          * @param {Element} field - The field to operate on
-         * @param {*|string} id - The provider id
-         * @param {Object=} options - The operation options
+         * @param {*|string} providerId - ID of the provider to use for the operation
          * @returns {Promise<void>}
          */
-        async handle(field, id, options) {
+        async handle(field, providerId) {
             if (!this._handle) {
                 return;
             }
-            const providerId = ns.utils.isString(id) && id.includes('@') ?
-                id.split('@')[1] :
+            providerId = ns.utils.isString(providerId) && providerId.includes('@') ?
+                providerId.split('@')[1] :
                 (this.providers.length > 0 ? this.providers[0].id : null);
-            await this._handle(field, providerId, options);
+            await this._handle(field, providerId);
         }
 
         /**
