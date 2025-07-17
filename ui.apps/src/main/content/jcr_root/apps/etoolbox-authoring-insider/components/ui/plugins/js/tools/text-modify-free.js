@@ -60,7 +60,7 @@
                 }
             ],
 
-            onStart: async(context) => await handleDialogContext(context),
+            onStartup: async(context) => await handleDialogContext(context),
 
             onInput: async(msg, context) =>
                 await context.provider.textToText({ messages: context.messages, signal: context.signal }),

@@ -66,7 +66,7 @@
                 }
             ],
 
-            onStart: async(context) =>
+            onStartup: async(context) =>
                 await handleDialogContext(context.withData({ promptTemplate: this.prompt })),
 
             onInput: async(msg, context) =>

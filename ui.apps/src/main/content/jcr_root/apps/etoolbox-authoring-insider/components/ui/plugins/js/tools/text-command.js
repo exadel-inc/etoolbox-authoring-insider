@@ -77,7 +77,7 @@
                 }
             ],
 
-            onStart: async(context) => await handleDialogContext(context.withData({ promptTemplate: this.prompt })),
+            onStartup: async(context) => await handleDialogContext(context.withData({ promptTemplate: this.prompt })),
 
             onInput: async(msg, context) => context.provider.textToText({
                 messages: context.messages,
