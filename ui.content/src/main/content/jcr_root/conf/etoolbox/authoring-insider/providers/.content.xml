@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jcr:root xmlns:jcr="http://www.jcp.org/jcr/1.0"
+          xmlns:nt="http://www.jcp.org/jcr/nt/1.0"
+          jcr:primaryType="nt:unstructured">
+    <item0
+            jcr:primaryType="nt:unstructured"
+            enabled="true"
+            icon="llama"
+            title="Own LLM"
+            type="llm.own"/>
+    <item1
+            jcr:primaryType="nt:unstructured"
+            details="\{&quot;service&quot;:&quot;openai&quot;}"
+            enabled="true"
+            icon="openai"
+            title="ChatGPT"
+            type="llm.external"/>
+</jcr:root>
