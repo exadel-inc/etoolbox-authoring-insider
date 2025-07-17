@@ -32,6 +32,7 @@
             this.isTemplate = options.isTemplate;
             this.handle = options.handle;
             this.isMatch = options.isMatch;
+            this.isValid = options.isValid;
             this.requires = options.requires;
             this.settings = options.settings;
             this.title = options.title;
@@ -56,8 +57,9 @@
             if (ns.utils.isFunction(_isMatch)) {
                 this._isMatch = _isMatch.bind(this);
             }
-            if (ns.utils.isFunction(options.isValid)) {
-                this._isValid = options.isValid.bind(this);
+            const _isValid = options.isValid || model.isValid;
+            if (ns.utils.isFunction(_isValid)) {
+                this._isValid = _isValid.bind(this);
             }
         }
 
@@ -185,7 +187,7 @@
             } else {
                 // This is a settings-less model
                 const model = new ToolModel(options);
-                if (!isValid(model)) {
+                if (!model.id || !ns.utils.isFunction(model.handle)) {
                     console.error('Invalid tool', options);
                     return;
                 }
@@ -246,7 +248,7 @@
          */
         register: function (options) {
             const model = new ToolModel(options);
-            if (!isValid(model)) {
+            if (!model.id || !ns.utils.isFunction(model.handle)) {
                 console.error('Invalid tool', options);
                 return;
             }
@@ -265,10 +267,6 @@
 
     function isStringArray(value) {
         return Array.isArray(value) && value.every((item) => ns.utils.isString(item));
-    }
-
-    function isValid(model) {
-        return model && !!model.id && ns.utils.isFunction(model.handle);
     }
 
 })(window.eai = window.eai || {});
