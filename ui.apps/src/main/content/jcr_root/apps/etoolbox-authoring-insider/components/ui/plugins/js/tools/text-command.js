@@ -40,40 +40,32 @@
         return !!this.prompt;
     }
 
-    function handle(field, providerId, initialContent) {
+    function handle(field, providerId) {
+        // Arguments validation
         if (!field) {
             return ns.ui.alert(this.title, 'Target field is invalid', 'error');
         }
-
-        const provider = ns.providers.getInstance(providerId);
-        if (!provider) {
+        if (!ns.providers.getInstance(providerId)) {
             return ns.ui.alert(this.title, `Could not find a provider for action ${providerId}`, 'error');
         }
 
-        if (!this.prompt) {
-            return ns.ui.alert(this.title, 'Prompt is not set', 'error');
-        }
-        const repeatPrompt = this.repeatPrompt || 'Provide another variant of how you ' + this.prompt;
-
-        if (!ns.utils.isObject(initialContent)) {
-            initialContent = {};
-        }
-        initialContent.text = initialContent.text || ns.fields.getSelectedContent(field);
-        initialContent.prompt = initialContent.prompt || this.prompt;
-
+        // Chat dialog
         ns.ui.chatDialog({
             id: ID + '.dialog',
             title: this.title,
             icon: this.icon,
             source: field,
-            intro: initialContent,
+            intro: {
+                text: ns.fields.getSelectedContent(field),
+            },
             providers: this.providers,
             providerId,
+
             responses: [
                 {
                     icon: 'plus-one',
                     title: 'Another variant',
-                    message: repeatPrompt,
+                    message: this.repeatPrompt || 'Provide another variant of how you ' + this.prompt,
                     style: 'icon',
                     class: 'skip-after-input'
                 },
@@ -84,61 +76,53 @@
                     style: 'icon'
                 }
             ],
-            onStart: async(context) =>
-                await inputAndRun(context, provider, initialContent),
-            onInput: async(msg, context) =>
-                provider.textToText({ messages: context.messages, signal: context.signal }),
-            onReload: (newProviderId, context) => {
-                if (context.isRefresh) {
-                    return this.handle(field, newProviderId);
-                }
-                this.handle(field, newProviderId, {
-                    text: context.initialContent,
-                    prompt: context.prompt,
-                });
-            },
+
+            onStart: async(context) => await handleDialogContext(context.withData({ promptTemplate: this.prompt })),
+
+            onInput: async(msg, context) => context.provider.textToText({
+                messages: context.messages,
+                signal: context.signal
+            }),
+
             onResponse: (response) => ns.text.stripSpacesAndPunctuation(response),
-            onAccept: (result) =>
-                ns.fields.setSelectedContent(field, result),
+
+            onAccept: (result) => ns.fields.setSelectedContent(field, result),
         });
     }
 
-    async function inputAndRun(context, provider, initialContent) {
+    async function handleDialogContext(context) {
         // Ask for the source text if the original field was empty
-        if (ns.text.isBlank(initialContent.text)) {
-            initialContent.text = await ns.ui.inputDialog({
+        if (ns.text.isBlank(context.initial)) {
+            const text = await ns.ui.inputDialog({
                 title: 'Enter your content',
                 parent: context.dom
             });
-            if (!initialContent.text) {
+            if (ns.text.isBlank(text)) {
                 return context.close();
             }
-            context.appendMessage(initialContent.text, 'local initial');
+            context.addInitial(text.trim(), false);
         }
 
         // Fill in the prompt placeholders if there are any
-        const textBuilder = new ns.text.TextBuilder(initialContent.prompt);
-        let placeholder;
-        while ((placeholder = textBuilder.nextPlaceholder()) !== null) {
-            const completionArgs = { title: placeholder.title, parent: context.dom };
-            if (placeholder.options) {
-                completionArgs.fields = [{ type: 'selectlist', options: placeholder.options }];
+        if (ns.text.isBlank(context.prompt)) {
+            const textBuilder = new ns.text.TextBuilder(context.data.promptTemplate);
+            let placeholder;
+            while ((placeholder = textBuilder.nextPlaceholder()) !== null) {
+                const completionArgs = { title: placeholder.title, parent: context.dom };
+                if (placeholder.options) {
+                    completionArgs.fields = [{ type: 'selectlist', options: placeholder.options }];
+                }
+                const completion = await ns.ui.inputDialog(completionArgs);
+                if (!completion) {
+                    return context.close();
+                }
+                textBuilder.fillIn(placeholder, completion);
             }
-            const completion = await ns.ui.inputDialog(completionArgs);
-            if (!completion) {
-                return context.close();
-            }
-            textBuilder.fillIn(placeholder, completion);
+            context.addPrompt(textBuilder.toString());
         }
-        initialContent.prompt = textBuilder.build();
-        context.prompt = initialContent.prompt;
 
         // Perform the inference
-        const messages = [
-            { type: 'local', text: initialContent.prompt },
-            { type: 'local', text: initialContent.text },
-        ];
-        const result = await provider.textToText({ messages, signal: context.signal });
+        const result = await context.provider.textToText({ messages: context.messages, signal: context.signal });
         return !context.aborted ? result : '';
     }
 

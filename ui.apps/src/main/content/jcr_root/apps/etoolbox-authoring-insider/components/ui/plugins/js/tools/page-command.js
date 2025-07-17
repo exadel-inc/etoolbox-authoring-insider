@@ -39,25 +39,16 @@
         return !!this.prompt;
     }
 
-    function handle(field, providerId, initialContent) {
+    function handle(field, providerId) {
+        // Arguments validation
         if (!field) {
             return ns.ui.alert(this.title, 'Target field is invalid', 'error');
         }
-
-        const provider = ns.providers.getInstance(providerId);
-        if (!provider) {
-            return ns.ui.alert(this.title, `Could not find a provider for action ${providerId}`, 'error');
+        if (!ns.providers.getInstance(providerId)) {
+            return ns.ui.alert(this.title, `Could not find a provider with ID ${providerId}`, 'error');
         }
 
-        if (!this.prompt) {
-            return ns.ui.alert(this.title, 'Prompt is not set', 'error');
-        }
-
-        if (!ns.utils.isObject(initialContent)) {
-            initialContent = {};
-        }
-        initialContent.prompt = initialContent.prompt || this.prompt;
-
+        // Chat dialog
         ns.ui.chatDialog({
             id: ID + '.dialog',
             title: this.title,
@@ -65,6 +56,7 @@
             source: field,
             providers: this.providers,
             providerId,
+
             responses: [
                 {
                     icon: 'scribble',
@@ -73,57 +65,54 @@
                     style: 'icon'
                 }
             ],
-            onStart: async(context) => await doTask(context, provider, initialContent),
+
+            onStart: async(context) =>
+                await handleDialogContext(context.withData({ promptTemplate: this.prompt })),
+
             onInput: async(msg, context) =>
-                provider.textToText({ messages: context.messages, signal: context.signal }),
-            onReload: (newProviderId, context) => {
-                if (context.isRefresh) {
-                    return this.handle(field, newProviderId);
-                }
-                this.handle(field, newProviderId, {
-                    prompt: context.prompt,
-                });
-            },
+                context.provider.textToText({ messages: context.messages, signal: context.signal }),
+
             onResponse: (response) => ns.text.stripSpacesAndPunctuation(response),
+
             onAccept: (result) => ns.fields.setSelectedContent(field, result),
         });
     }
 
-    async function doTask(context, provider, initialContent) {
-        // Fill in the prompt placeholders if there are any
-        const textBuilder = new ns.text.TextBuilder(initialContent.prompt);
-        let placeholder;
-        while ((placeholder = textBuilder.nextPlaceholder()) !== null) {
-            const completionArgs = { title: placeholder.title, parent: context.dom };
-            if (placeholder.options) {
-                completionArgs.fields = [{ type: 'selectlist', options: placeholder.options }];
+    async function handleDialogContext(context) {
+        // Prepare messages
+        if (ns.text.isBlank(context.prompt)) {
+
+            // Fill in the prompt placeholders if there are any
+            const textBuilder = new ns.text.TextBuilder(context.data.promptTemplate);
+            let placeholder;
+            while ((placeholder = textBuilder.nextPlaceholder()) !== null) {
+                const completionArgs = { title: placeholder.title, parent: context.dom };
+                if (placeholder.options) {
+                    completionArgs.fields = [{ type: 'selectlist', options: placeholder.options }];
+                }
+                const completion = await ns.ui.inputDialog(completionArgs);
+                if (!completion) {
+                    return context.close();
+                }
+                textBuilder.fillIn(placeholder, completion);
             }
-            const completion = await ns.ui.inputDialog(completionArgs);
-            if (!completion) {
-                return context.close();
+            context.addPrompt(textBuilder.toString());
+
+            // Collect the page content
+            context.wait('Collecting page info...');
+            const pageContent = await ns.pages.extractContent(
+                window.location.href,
+                { format: 'md', signal: context.signal, escapeNewLine: true }
+            );
+            if (!pageContent) {
+                return ns.ui.alert('Error', 'Failed to extract page content', 'error');
             }
-            textBuilder.fillIn(placeholder, completion);
+            context.addPrompt(pageContent);
         }
-        initialContent.prompt = textBuilder.build();
-        context.prompt = initialContent.prompt;
 
-        // Collect the page content
-        context.wait('Collecting page info...');
-        const pageContent = await ns.pages.extractContent(window.location.href);
-
-        // Feed page content to the provider
+        // Feed messages to the provider
         context.wait('Processing content...');
-        if (!pageContent) {
-            return ns.ui.alert('Error', 'Failed to extract page content', 'error');
-        }
-
-        const result = await provider.textToText({
-            messages: [
-                { type: 'user', text: initialContent.prompt },
-                { type: 'user', text: pageContent },
-            ],
-            signal: context.signal
-        });
+        const result = await context.provider.textToText({ messages: context.messages, signal: context.signal });
         return !context.aborted ? result : '';
     }
 })(window, document, window.eai = window.eai || {});
