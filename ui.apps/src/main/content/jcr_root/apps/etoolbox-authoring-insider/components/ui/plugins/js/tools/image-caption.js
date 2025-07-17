@@ -52,16 +52,16 @@
     }
 
     async function handle(field, providerId) {
+        // Arguments validation
         const sourceValue = findImageSource(this, field);
         if (!sourceValue) {
             return ns.ui.alert(this.title, 'Could not find an image to create caption for', 'error');
         }
-
-        const provider = ns.providers.getInstance(providerId);
-        if (!provider) {
-            return ns.ui.alert(this.title, `Could not find a provider for action ${providerId}`, 'error');
+        if (!ns.providers.getInstance(providerId)) {
+            return ns.ui.alert(this.title, `Could not find a provider with ID ${providerId}`, 'error');
         }
 
+        // Initialization
         let encodedImage;
         try {
             encodedImage = await ns.http.getText(sourceValue + '.base64?size=' + (this.imageSize || ''));
@@ -72,6 +72,7 @@
         const prompt = this.prompt || DEFAULT_PROMPT;
         const repeatPrompt = this.repeatPrompt || DEFAULT_REPEAT_PROMPT;
 
+        // Chat dialog
         ns.ui.chatDialog({
             id: 'image.caption.dialog',
             title: this.title,
@@ -98,7 +99,8 @@
                     style: 'icon'
                 }
             ],
-            onStart: async(context) => provider.imageToText({
+
+            onStart: async(context) => context.provider.imageToText({
                 image: encodedImage,
                 imageDetail: this.imageDetail,
                 messages: [
@@ -106,14 +108,16 @@
                 ],
                 signal: context.signal
             }),
-            onInput: async(msg, context) => provider.imageToText({
+
+            onInput: async(msg, context) => context.provider.imageToText({
                 image: encodedImage,
                 imageDetail: this.imageDetail,
                 messages: context.messages,
                 signal: context.signal
             }),
-            onReload: (newProviderId) => this.handle(field, newProviderId || providerId),
+
             onResponse: (response) => ns.text.stripSpacesAndPunctuation(response),
+
             onAccept: (result) => storeMetadata(field, result, sourceValue),
         });
     }

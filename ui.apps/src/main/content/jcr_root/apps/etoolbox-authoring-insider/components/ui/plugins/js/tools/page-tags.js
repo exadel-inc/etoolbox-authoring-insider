@@ -39,7 +39,7 @@
         ],
         settings: [
             { name: 'selectors', type: 'textfield', title: 'Field selection (if not specified, will match all text fields)', multi: true },
-            { name: 'source', type: 'textfield', title: 'Tag folder', required: true, defaultValue: DEFAULT_TAG_FOLDER },
+            { name: 'tagFolder', type: 'textfield', title: 'Tag folder', required: true, defaultValue: DEFAULT_TAG_FOLDER },
             { name: 'count', type: 'textfield', title: 'Number of tags to select', required: true, defaultValue: DEFAULT_TAG_COUNT },
             { name: 'excludedElements', type: 'textfield', title: 'Page elements to ignore', multi: true },
         ],
@@ -49,19 +49,19 @@
     });
 
     function isValid() {
-        return !!this.source && !isNaN(this.count) && this.count > 0;
+        return !!this.tagFolder && !isNaN(this.count) && this.count > 0;
     }
 
     function handle(field, providerId) {
+        // Arguments validation
         if (!field) {
             return ns.ui.alert(this.title, 'Target field is invalid', 'error');
         }
-
-        const provider = ns.providers.getInstance(providerId);
-        if (!provider) {
-            return ns.ui.alert(this.title, `Could not find a provider for action ${providerId}`, 'error');
+        if (!ns.providers.getInstance(providerId)) {
+            return ns.ui.alert(this.title, `Could not find a provider with ID ${providerId}`, 'error');
         }
 
+        // Chat dialog
         ns.ui.chatDialog({
             id: ID + '.dialog',
             title: this.title,
@@ -69,52 +69,49 @@
             source: field,
             providers: this.providers,
             providerId,
-            onStart: async(context) => await doTask(context.withData({
-                source: this.source,
+
+            onStart: async(context) => await handleDialogContext(context.withData({
+                tagFolder: this.tagFolder,
                 count: parseInt(this.count, 10),
                 excludedElements: this.excludedElements
-            }), provider),
-            onInput: async(msg, context) =>
-                provider.textToText({ messages: context.messages, signal: context.signal }),
-            onReload: (newProviderId, context) => {
-                this.handle(field, newProviderId, {
-                    prompt: context.prompt,
-                });
-            },
+            })),
+
             onAccept: (result) => ns.fields.setSelectedContent(field, result.split('<br>')),
         });
     }
 
-    async function doTask(context, provider) {
+    async function handleDialogContext(context) {
         let tagList = context.data.tagList;
         if (!tagList) {
             context.wait('Loading tags...');
             try {
-                const tagsJson = await ns.http.getJson(context.data.source + '.1.json');
-                tagList = (context.data.tagList = await prepareTagList(context.data.source, tagsJson));
+                const tagsJson = await ns.http.getJson(context.data.tagFolder + '.1.json');
+                tagList = (context.data.tagList = await prepareTagList(context.data.tagFolder, tagsJson));
             } catch (error) {
-                ns.ui.alert('Error', 'Failed to load tags from ' + context.data.source, 'error');
+                context.addError('Failed to load tags from ' + context.data.tagFolder);
             }
         }
         if (!tagList.length) {
-            return context.appendMessage('No tags found in ' + context.data.source, 'error');
+            return context.addError('No tags found in ' + context.data.tagFolder);
         }
 
         // Collect the page content
         context.wait('Collecting page info...');
         const pageContent = await ns.pages.extractContent(
             window.location.href,
-            { format: 'md', exclude: context.data.excludedElements });
+            { format: 'md', exclude: context.data.excludedElements, signal: context.signal, escapeNewLine: true });
+        if (context.aborted) {
+            return null;
+        }
         if (!pageContent) {
-            return context.appendMessage('Failed to extract page content', 'error');
+            return context.addError('Failed to extract page content');
         }
 
         // Feed page content to the provider
         context.wait('Processing content...');
-        const prompt = ns.text.singleLine(PROMPT)
-            .replace('{{count}}', context.data.count.toString());
+        const prompt = ns.text.singleLine(PROMPT).replace('{{count}}', context.data.count.toString());
 
-        const response = await provider.textToText({
+        const response = await context.provider.textToText({
             messages: [
                 { type: 'system', text: prompt },
                 { type: 'user', text: pageContent },
@@ -134,7 +131,7 @@
             .reduce((set, tagId) => set.add(tagId), new Set());
 
         if (tags.size === 0) {
-            return context.appendMessage('No tags picked for the page', 'error');
+            return context.addError('No tags picked for the page');
         }
 
         return { type: 'html', html: Array.from(tags).slice(0, context.data.count).sort().join('<br>') };
