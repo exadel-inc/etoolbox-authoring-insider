@@ -57,7 +57,7 @@
             providers: this.providers,
             providerId,
 
-            onStart: async(context) => await handleDialogContext(context),
+            onStartup: async(context) => await handleDialogContext(context),
 
             onResponse: (response) => ns.text.stripSpacesAndPunctuation(response),
 

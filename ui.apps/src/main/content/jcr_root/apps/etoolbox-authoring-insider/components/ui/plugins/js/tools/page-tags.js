@@ -70,7 +70,7 @@
             providers: this.providers,
             providerId,
 
-            onStart: async(context) => await handleDialogContext(context.withData({
+            onStartup: async(context) => await handleDialogContext(context.withData({
                 tagFolder: this.tagFolder,
                 count: parseInt(this.count, 10),
                 excludedElements: this.excludedElements

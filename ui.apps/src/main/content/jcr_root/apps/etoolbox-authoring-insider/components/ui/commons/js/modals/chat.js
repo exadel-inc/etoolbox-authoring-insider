@@ -83,13 +83,13 @@
         dialog.onCancel = options.onCancel;
         dialog.onInput = options.onInput;
         dialog.onResponse = options.onResponse;
-        dialog.onStart = options.onStart;
+        dialog.onStartup = options.onStartup;
 
         Coral.commons.ready(dialog, function () {
             const parent = options.parent || (options.source && options.source.closest('coral-dialog'));
             ns.ui.adjustDialogSize(dialog, parent);
-            if (ns.utils.isFunction(dialog.onStart)) {
-                runAndRenderResponse(dialog, dialog.onStart);
+            if (ns.utils.isFunction(dialog.onStartup)) {
+                runAndRenderResponse(dialog, dialog.onStartup);
             }
             ns.fields.lock(dialog.source);
             dialog.show();
@@ -382,19 +382,19 @@
 
     function onProviderChange(event) {
         const dialog = event.target.closest('coral-dialog');
-        if (!ns.utils.isFunction(dialog.onStart)) {
+        if (!ns.utils.isFunction(dialog.onStartup)) {
             return;
         }
         // Clean up all the messages except the initial and prompt ones to restart the conversation via another provider
         // but NOT prompt the user once again for filling in the missing data
         dialog.querySelectorAll(`${SELECTOR_MESSAGE}:not(.prompt,.initial)`).forEach((msg) => msg.remove());
 
-        runAndRenderResponse(dialog, dialog.onStart);
+        runAndRenderResponse(dialog, dialog.onStartup);
     }
 
     function onRefreshClick(event) {
         const dialog = event.target.closest('coral-dialog');
-        if (!ns.utils.isFunction(dialog.onStart)) {
+        if (!ns.utils.isFunction(dialog.onStartup)) {
             return;
         }
         // Clean up all the messages (except the intro, if any) to restart the conversation via another provider
@@ -402,7 +402,7 @@
         dialog.querySelectorAll(SELECTOR_MESSAGE + ':not(.initial)').forEach((msg) => msg.remove());
         dialog.classList.remove(CLS_MODIFIED);
 
-        runAndRenderResponse(dialog, dialog.onStart);
+        runAndRenderResponse(dialog, dialog.onStartup);
     }
 
     /* ----------------------

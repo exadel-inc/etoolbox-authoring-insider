@@ -100,7 +100,7 @@
                 }
             ],
 
-            onStart: async(context) => context.provider.imageToText({
+            onStartup: async(context) => context.provider.imageToText({
                 image: encodedImage,
                 imageDetail: this.imageDetail,
                 messages: [
