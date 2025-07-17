@@ -115,29 +115,12 @@
         }
 
         /**
-         * Checks if the chat dialog has an initial message. The initial message is usually a text value of the field
-         * to process, or the content of the page to process
-         * @returns {boolean}
+         * Gets the initial content assigned to the chat dialog
+         * @returns {string}
          */
-        get hasInitialContent() {
-            return !!this.dom.querySelector(ns.ui.SELECTOR_MESSAGE + '.initial');
-        }
-
-        /**
-         * Checks if the chat dialog has a prompt message
-         * @returns {boolean}
-         */
-        get hasPrompt() {
-            return !!this.dom.querySelector(ns.ui.SELECTOR_MESSAGE + '.prompt');
-        }
-
-        /**
-         * Checks if the chat dialog contains a prompt and/or initial content. This accessor is used to judge if there is
-         * a need to process setup data or prompt user for additional input
-         * @returns {boolean}
-         */
-        get isPrefilled() {
-            return this.hasInitialContent || this.hasPrompt;
+        get initial() {
+            const contentHolder = this.dom.querySelector(`${ns.ui.SELECTOR_MESSAGE}.initial ${ns.ui.SELECTOR_CONTENT}`);
+            return contentHolder ? contentHolder.innerText.trim() : '';
         }
 
         /**
@@ -161,6 +144,15 @@
                 });
             }
             return result;
+        }
+
+        /**
+         * Gets the prompt message from the chat dialog. If there are multiple prompt messages, the first one is returned
+         * @returns {string}
+         */
+        get prompt() {
+            const contentHolder = this.dom.querySelector(`${ns.ui.SELECTOR_MESSAGE}.prompt ${ns.ui.SELECTOR_CONTENT}`);
+            return contentHolder ? contentHolder.innerText.trim() : '';
         }
 
         /**
