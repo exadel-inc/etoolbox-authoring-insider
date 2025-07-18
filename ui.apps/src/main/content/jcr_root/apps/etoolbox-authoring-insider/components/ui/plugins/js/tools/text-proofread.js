@@ -37,7 +37,7 @@
     });
 
     function handle(field, providerId) {
-        // Argumenys validation
+        // Arguments validation
         if (!field) {
             return ns.ui.alert(this.title, 'Target field is invalid', 'error');
         }
