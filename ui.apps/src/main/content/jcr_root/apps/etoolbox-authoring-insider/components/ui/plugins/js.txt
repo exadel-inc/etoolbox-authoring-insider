@@ -6,6 +6,7 @@ tools/text-modify-free.js
 tools/text-proofread.js
 tools/text-translate.js
 tools/page-command.js
+tools/page-tags.js
 tools/sample/add-link.js
 
 providers/llm-external.js

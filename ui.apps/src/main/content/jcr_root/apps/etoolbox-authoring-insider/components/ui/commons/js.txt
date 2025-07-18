@@ -4,6 +4,7 @@ fields.js
 fields-matcher.js
 http.js
 icons.js
+pages.js
 text.js
 utils.js
 

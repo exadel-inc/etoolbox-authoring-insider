@@ -3,4 +3,6 @@
     <filter root="/content/etoolbox/authoring-insider/servlet/config" mode="merge"/>
     <filter root="/content/etoolbox/authoring-insider/servlet/relay" mode="merge"/>
     <filter root="/conf/etoolbox/authoring-insider" mode="merge"/>
+    <filter root="/conf/etoolbox/authoring-insider/tools" mode="merge"/>
+    <filter root="/conf/etoolbox/authoring-insider/providers" mode="merge"/>
 </workspaceFilter>

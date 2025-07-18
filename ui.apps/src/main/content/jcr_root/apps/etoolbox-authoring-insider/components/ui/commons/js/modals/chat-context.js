@@ -14,8 +14,6 @@
 (function (ns) {
     'use strict';
 
-    const SELECTOR_MESSAGE = '.message';
-
     ns.ui = ns.ui || {};
 
     /**
@@ -23,18 +21,26 @@
      * or a similar method. Instances of this class are usually passed to callback functions that are defined by user
      * to handle dialog events
      */
-    ns.ui.DialogContext = class {
+    ns.ui.DialogContext = class DialogContext {
 
         /**
          * Creates a new instance of {@code DialogContext}
          * @param {Element} dialog - The chat dialog element
-         * @param options - The dialog context options
          */
-        constructor(dialog, options) {
+        constructor(dialog) {
             this.dom = dialog;
-            if (ns.utils.isObject(options)) {
-                Object.assign(this, options);
+            this.data = {};
+            this._abortController = new AbortController();
+        }
+
+        /**
+         * Aborts the pending operation associated with the current dialog (such as a request to a server).
+         */
+        abort() {
+            if (this._abortController.signal.aborted) {
+                return;
             }
+            this._abortController.abort();
         }
 
         /**
@@ -43,7 +49,34 @@
          * @returns {*|boolean}
          */
         get aborted() {
-            return this.dom.abortController && this.dom.abortController.signal.aborted;
+            return this._abortController.signal.aborted;
+        }
+
+        /**
+         * Adds an error message to the chat dialog
+         * @param {string} message - The error message to add
+         */
+        addError(message) {
+            if (this.aborted) {
+                return;
+            }
+            return this.addMessage(message, 'error');
+        }
+
+        /**
+         * Adds an initial message to the chat dialog
+         * @param {string} message - The initial message to add
+         * @param {boolean} hidden - If true, the message will be added as a hidden initial message
+         */
+        addInitial(message, hidden) {
+            if (this.aborted) {
+                return;
+            }
+            this.dom.addMessage(
+                message,
+                'local initial' + (hidden ? ' hidden' : ''),
+                { afterLast: (msg) => msg.matches('.initial,.prompt'), fallback: 'beginning' }
+            );
         }
 
         /**
@@ -51,60 +84,84 @@
          * @param {string|Object} message - The message to add
          * @param {string} type - The message type
          */
-        appendMessage(message, type) {
-            if (type === 'prompt') {
-                type = 'local';
+        addMessage(message, type) {
+            if (this.aborted) {
+                return;
             }
             this.dom.addMessage(message, type);
+        }
+
+        /**
+         * Adds a prompt message to the chat dialog. If a prompt already exists, it updates its content
+         * @param {string|Object} message - The message to add
+         */
+        addPrompt(message) {
+            if (this.aborted) {
+                return;
+            }
+            this.dom.addMessage(
+                message,
+                'local prompt hidden',
+                { afterLast: (msg) => msg.matches('.prompt'), fallback: 'beginning' }
+            );
         }
 
         /**
          * Closes the chat dialog
          */
         close() {
+            this.abort();
             this.dom.open = false;
         }
 
         /**
-         * Retrieves the message history from the chat dialog
-         * @returns {{messages: *[]}}
+         * Gets the initial content assigned to the chat dialog
+         * @returns {string}
          */
-        getHistory() {
-            const messages = this.dom.querySelectorAll(SELECTOR_MESSAGE);
-            const result = { messages: [] };
+        get initial() {
+            const contentHolder = this.dom.querySelector(`${ns.ui.SELECTOR_MESSAGE}.initial ${ns.ui.SELECTOR_CONTENT}`);
+            return contentHolder ? contentHolder.innerText.trim() : '';
+        }
+
+        /**
+         * Gets the messages from the chat dialog history
+         * @returns {Object[]}
+         */
+        get messages() {
+            const messages = this.dom.querySelectorAll(ns.ui.SELECTOR_MESSAGE);
+            const result = [];
             for (const message of messages) {
-                const contentHolder = message.querySelector(ns.ui.SELECTOR_CONTENT);
+                const contentHolder = !message.matches('.info') ?
+                    message.querySelector(ns.ui.SELECTOR_CONTENT) :
+                    null;
                 if (!contentHolder) {
                     continue;
                 }
                 const content = contentHolder.innerText.trim();
-                if (message.matches('.prompt')) {
-                    result.prompt = content;
-                    result.messages.push({ role: 'user', text: content });
-                } else if (message.matches('.initial')) {
-                    result.initial = content;
-                    result.messages.push({ role: 'user', text: content });
-                } else if (!message.matches('.info')) {
-                    result.messages.push({
-                        role: message.matches('.remote') ? 'assistant' : 'user',
-                        text: content
-                    });
-                }
+                result.push({
+                    role: message.matches('.remote') ? 'assistant' : 'user',
+                    text: content
+                });
             }
             return result;
         }
 
         /**
-         * Sets the prompt string in the chat dialog
-         * @param {string} value - The prompt string
+         * Gets the prompt message from the chat dialog. If there are multiple prompt messages, the first one is returned
+         * @returns {string}
          */
-        setPrompt(value) {
-            const existingPrompt = this.dom.querySelector('.local.prompt .content');
-            if (existingPrompt) {
-                existingPrompt.innerText = value;
-            } else {
-                this.dom.addMessage(value, 'local prompt hidden', true);
-            }
+        get prompt() {
+            const contentHolder = this.dom.querySelector(`${ns.ui.SELECTOR_MESSAGE}.prompt ${ns.ui.SELECTOR_CONTENT}`);
+            return contentHolder ? contentHolder.innerText.trim() : '';
+        }
+
+        /**
+         * Gets the provider instance selected in the chat dialog. The provider is used to process messages
+         * @returns {Provider|null}
+         */
+        get provider() {
+            const providerId = ns.fields.getValue(this.dom.querySelector(ns.ui.SELECTOR_PROVIDERS));
+            return ns.providers.getInstance(providerId);
         }
 
         /**
@@ -112,7 +169,15 @@
          * @returns {*|AbortSignal}
          */
         get signal() {
-            return this.dom.abortController && this.dom.abortController.signal;
+            return this._abortController.signal;
+        }
+
+        /**
+         * Gets the source field associated with the chat dialog
+         * @returns {*|Element}
+         */
+        get source() {
+            return this.dom.source;
         }
 
         /**
@@ -120,7 +185,7 @@
          * @returns {string}
          */
         get title() {
-            return this.dom.querySelector('.title').innerText;
+            return this.dom.querySelector('.title').innerText.trim();
         }
 
         /**
@@ -133,6 +198,17 @@
                 this.dom.querySelector(ns.ui.SELECTOR_WAIT).dataset.message = message;
             }
         }
-    };
 
+        /**
+         * Assigns metadata to the dialog context. The metadata can be used later in the dialog event handlers
+         * @param {Object} options - Object containing the metadata to assign
+         * @returns {ns.ui.DialogContext}
+         */
+        withData(options) {
+            if (ns.utils.isObject(options)) {
+                Object.assign(this.data, options);
+            }
+            return this;
+        }
+    };
 })(window.eai = window.eai || {});

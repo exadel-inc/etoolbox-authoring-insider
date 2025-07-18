@@ -208,7 +208,7 @@
          */
         register: function (options) {
             const model = new ProviderModel(options);
-            if (!isValid(model)) {
+            if (!model.id) {
                 console.error('Invalid provider', options);
                 return;
             }
@@ -223,9 +223,5 @@
             delete models[id];
         }
     };
-
-    function isValid(model) {
-        return model && !!model.id;
-    }
 
 })(window.eai = window.eai || {});
