@@ -582,9 +582,9 @@
     function setBusy(dialog, value) {
         if (value) {
             dialog.classList.add(CLS_BUSY);
-            dialog.busyCouner = (dialog.busyCounter || 0) + 1;
+            dialog.busyCounter = (dialog.busyCounter || 0) + 1;
         } else {
-            dialog.busyCounter = !isNaN(dialog.busyCounter) ? dialog.busyCouner - 1 : 0;
+            dialog.busyCounter = !isNaN(dialog.busyCounter) ? dialog.busyCounter - 1 : 0;
             if (dialog.busyCounter <= 0) {
                 dialog.classList.remove(CLS_BUSY);
                 delete dialog.busyCounter;
