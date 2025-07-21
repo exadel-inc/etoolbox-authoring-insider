@@ -258,7 +258,7 @@
             const disabledItems = new Set(disabledItemsHolder.value.split(';').filter(Boolean));
 
             for (const missedModel of models) {
-                if (disabledItems.has(missedModel.id)) {
+                if (missedModel.isTemplate || disabledItems.has(missedModel.id)) {
                     continue;
                 }
                 const newMultifieldItem = new Coral.Multifield.Item();
