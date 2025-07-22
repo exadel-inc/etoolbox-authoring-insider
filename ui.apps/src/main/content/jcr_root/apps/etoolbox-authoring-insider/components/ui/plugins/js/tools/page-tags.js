@@ -31,7 +31,6 @@
         icon: 'pageTag',
         id: ID,
         title: 'Assign page tags',
-        isTemplate: true,
 
         requires: [
             'page',
