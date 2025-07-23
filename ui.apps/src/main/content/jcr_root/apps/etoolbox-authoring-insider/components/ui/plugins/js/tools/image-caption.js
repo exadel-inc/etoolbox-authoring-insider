@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-(function (ns) {
+(function ($, ns) {
     'use strict';
 
     const ID = 'image.caption';
@@ -32,6 +32,7 @@
             { name: 'selectors', type: 'textfield', title: 'Field selection (if not specified, default will apply)', multi: true },
             { name: 'imageSize', type: 'textfield', title: 'Image size filter (if not specified, default will apply)', placeholder: 'E.g.: 100x100 - 600x600' },
             { name: 'imageDetail', type: 'select', title: 'Image detail', options: ['low', 'high'] },
+            { name: 'save', type: 'checkbox', title: 'Save the caption to image metadata?', defaultValue: true },
             { name: 'prompt', type: 'text', title: 'Prompt', defaultValue: DEFAULT_PROMPT },
             { name: 'repeatPrompt', type: 'text', title: 'Repetition Prompt', defaultValue: DEFAULT_REPEAT_PROMPT }
         ],
@@ -100,25 +101,48 @@
                 }
             ],
 
-            onStartup: async(context) => context.provider.imageToText({
+            onStartup: async(context) => handleDialogContext(context.withData({
                 image: encodedImage,
+                imageAddress: this.save ? sourceValue : null,
                 imageDetail: this.imageDetail,
-                messages: [
-                    { type: 'user', text: prompt }
-                ],
-                signal: context.signal
-            }),
+                prompt
+            })),
 
             onInput: async(msg, context) => context.provider.imageToText({
-                image: encodedImage,
-                imageDetail: this.imageDetail,
+                image: context.data.image,
+                imageDetail: context.data.imageDetail,
                 messages: context.messages,
                 signal: context.signal
             }),
 
             onResponse: (response) => ns.text.stripSpacesAndPunctuation(response),
 
-            onAccept: (result) => storeMetadata(field, result, sourceValue),
+            onAccept: (result, context) => storeMetadata(field, result, context.data.imageAddress),
+        });
+    }
+
+    async function handleDialogContext(context) {
+        if (context.data.imageAddress) {
+            try {
+                const metadata = await ns.http.getJson(context.data.imageAddress + '.metadata');
+                if (metadata && metadata['eai.caption']) {
+                    return {
+                        type: 'text',
+                        text: metadata['eai.caption'],
+                        note: '* Loaded from image metadata',
+                    };
+                }
+            } catch (error) {
+                console.error('Failed to load image metadata: ' + error.message);
+            }
+        }
+        return context.provider.imageToText({
+            image: context.data.image,
+            imageDetail: context.data.imageDetail,
+            messages: [
+                { type: 'user', text: context.data.prompt }
+            ],
+            signal: context.signal
         });
     }
 
@@ -144,8 +168,22 @@
         return findImageSource(tool, field.parentElement, dir);
     }
 
-    async function storeMetadata(field, value) {
+    async function storeMetadata(field, value, imageAddress) {
         ns.fields.setValue(field, value);
+        if (!imageAddress) {
+            return;
+        }
+        $(field).closest('form').off('eai').one('submit.eai', async function submitCaption() {
+            const caption = ns.fields.getValue(field);
+            if (ns.text.isBlank(caption)) {
+                return;
+            }
+            try {
+                await ns.http.post(imageAddress + '.metadata', { data: { 'eai.caption': caption } });
+            } catch (error) {
+                ns.ui.alert('Image caption', 'Could not save the caption to image metadata: ' + error.message, 'error');
+            }
+        });
     }
 
-})(window.eai = window.eai || {});
+})(Granite.$, window.eai = window.eai || {});
