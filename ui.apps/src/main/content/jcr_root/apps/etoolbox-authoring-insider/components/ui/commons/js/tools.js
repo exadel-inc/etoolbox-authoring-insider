@@ -51,6 +51,15 @@
         constructor(model, options = {}) {
             this._model = model;
             this.id = idCounter.nextIndexedId(model.id);
+            if (Array.isArray(model.settings) && model.settings.some((setting) => setting.defaultValue !== undefined)) {
+                const defaults = {};
+                model.settings
+                    .filter((setting) => setting.defaultValue !== undefined)
+                    .forEach((setting) => {
+                        defaults[setting.name] = setting.defaultValue;
+                    });
+                options = Object.assign({}, defaults, options);
+            }
             ns.utils.intern(options, this, { exclude: ['id', 'isMatch'], addPrefixTo: ['icon', 'ordinal', 'title'] });
             this._handle = model.handle && model.handle.bind(this);
             const _isMatch = options.isMatch || model.isMatch;
