@@ -137,7 +137,10 @@
             if (!Object.prototype.hasOwnProperty.call(value, propName)) {
                 return false;
             }
-            return !propValue || value[propName] === propValue;
+            if (!propValue) {
+                return value[propName] !== undefined && value[propName] !== null;
+            }
+            return value[propName] === propValue;
         },
 
         /**
