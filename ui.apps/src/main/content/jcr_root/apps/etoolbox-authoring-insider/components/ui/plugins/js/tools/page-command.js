@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-(function (window, document, ns) {
+(function (window, ns) {
     'use strict';
 
     const ID = 'page.command';
@@ -115,4 +115,4 @@
         const result = await context.provider.textToText({ messages: context.messages, signal: context.signal });
         return !context.aborted ? result : '';
     }
-})(window, document, window.eai = window.eai || {});
+})(window, window.eai = window.eai || {});

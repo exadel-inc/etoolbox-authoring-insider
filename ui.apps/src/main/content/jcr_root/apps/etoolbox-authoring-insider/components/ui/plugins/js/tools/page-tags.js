@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-(function (window, document, ns) {
+(function (ns) {
     'use strict';
 
     const ID = 'page.tags';
@@ -166,4 +166,4 @@
         const match = tagList.find((t) => t.title.toLowerCase() === tag.toLowerCase());
         return match ? match.id : null;
     }
-})(window, document, window.eai = window.eai || {});
+})(window.eai = window.eai || {});
