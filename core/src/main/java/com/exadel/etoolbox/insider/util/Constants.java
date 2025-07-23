@@ -27,6 +27,7 @@ public class Constants {
     public static final String HEADER_NO_CACHE = "no-cache";
 
     public static final String PROP_DETAILS = "details";
+    public static final String PROP_ERROR = "error";
     public static final String PROP_FIELDS = "fields";
     public static final String PROP_PATH = "_path";
 
