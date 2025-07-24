@@ -88,7 +88,7 @@ public class ImageMetadataServlet extends SlingAllMethodsServlet {
         ModifiableValueMap metadata = metadataResource != null ? metadataResource.adaptTo(ModifiableValueMap.class) : null;
 
         if (metadata == null) {
-            response.setStatus(404);
+            response.setStatus(HttpStatus.SC_NOT_FOUND);
             return;
         }
         metadata.putAll(values);

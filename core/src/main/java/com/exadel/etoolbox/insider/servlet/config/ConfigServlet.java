@@ -154,7 +154,7 @@ public class ConfigServlet extends SlingSafeMethodsServlet {
             }
             Object effectiveValue = value;
             if (isStringifiedBoolean(value)) {
-                effectiveValue = Boolean.parseBoolean(StringUtils.removeStart(value.toString(),TYPE_BOOLEAN));
+                effectiveValue = Boolean.parseBoolean(StringUtils.removeStart(value.toString(), TYPE_BOOLEAN));
             } else if (isStringifiedLong(value)) {
                 effectiveValue = Long.parseLong(StringUtils.removeStart(value.toString(), TYPE_LONG));
             } else if (isStringifiedDouble(value)) {
