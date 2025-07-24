@@ -19,10 +19,12 @@
     const DEFAULT_PROMPT = 'Provide the phrase that can be used as the title and/or alt text for the given image';
     const DEFAULT_REPEAT_PROMPT = DEFAULT_PROMPT.replace('Provide', 'Provide another variant of');
 
+    const TITLE = 'Image caption (alt text)';
+
     ns.tools.register({
         icon: 'imageText',
         id: ID,
-        title: 'Image caption (alt text)',
+        title: TITLE,
 
         requires: [
             ID,
@@ -54,7 +56,7 @@
 
     async function handle(field, providerId) {
         // Arguments validation
-        const sourceValue = findImageSource(this, field);
+        const sourceValue = findImageSource(field);
         if (!sourceValue) {
             return ns.ui.alert(this.title, 'Could not find an image to create caption for', 'error');
         }
@@ -117,7 +119,7 @@
 
             onResponse: (response) => ns.text.stripSpacesAndPunctuation(response),
 
-            onAccept: (result, context) => storeMetadata(field, result, context.data.imageAddress),
+            onAccept: (result, context) => storeCaption(field, result, !!context.data.imageAddress),
         });
     }
 
@@ -146,13 +148,13 @@
         });
     }
 
-    function findImageSource(tool, field, dir) {
+    function findImageSource(field, dir) {
         if (!field) {
-            return ns.ui.alert(tool.title, 'Target field is invalid', 'error');
+            return ns.ui.alert(TITLE, 'Target field is invalid', 'error');
         }
         if (!dir) {
             const closestFieldWrapper = field.closest('.coral-Form-fieldwrapper');
-            return findImageSource(tool, closestFieldWrapper, 'backward') || findImageSource(tool, closestFieldWrapper, 'forward');
+            return findImageSource(closestFieldWrapper, 'backward') || findImageSource(closestFieldWrapper, 'forward');
         }
         let other = dir === 'backward' ? field.previousSibling : field.nextSibling;
         while (other) {
@@ -165,23 +167,34 @@
         if (!field.parentElement) {
             return null;
         }
-        return findImageSource(tool, field.parentElement, dir);
+        return findImageSource(field.parentElement, dir);
     }
 
-    async function storeMetadata(field, value, imageAddress) {
+    async function storeCaption(field, value, saveToMetadata) {
         ns.fields.setValue(field, value);
-        if (!imageAddress) {
+        if (!saveToMetadata) {
             return;
         }
-        $(field).closest('form').off('eai').one('submit.eai', async function submitCaption() {
-            const caption = ns.fields.getValue(field);
-            if (ns.text.isBlank(caption)) {
-                return;
-            }
-            try {
-                await ns.http.post(imageAddress + '.metadata', { data: { 'eai.caption': caption } });
-            } catch (error) {
-                ns.ui.alert('Image caption', 'Could not save the caption to image metadata: ' + error.message, 'error');
+        const $form = $(field).closest('form');
+        const captionSources = $form.get(0).captionSources || ($form.get(0).captionSources = new Set());
+        captionSources.add(field);
+        $form.off('.eai').one('submit.eai', async function submitCaptions() {
+            console.log('Submit callback');
+            for (const captionSource of captionSources) {
+                const caption = ns.fields.getValue(captionSource);
+                if (ns.text.isBlank(caption)) {
+                    return;
+                }
+                const imageAddress = findImageSource(captionSource);
+                if (!imageAddress) {
+                    console.error('Could not find image address for ', captionSource.name);
+                    return;
+                }
+                try {
+                    await ns.http.post(imageAddress + '.metadata', { data: { 'eai.caption': caption } });
+                } catch (error) {
+                    ns.ui.alert(TITLE, 'Could not save the caption to image metadata: ' + error.message, 'error');
+                }
             }
         });
     }
