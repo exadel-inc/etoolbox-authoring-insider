@@ -179,16 +179,15 @@
         const captionSources = $form.get(0).captionSources || ($form.get(0).captionSources = new Set());
         captionSources.add(field);
         $form.off('.eai').one('submit.eai', async function submitCaptions() {
-            console.log('Submit callback');
             for (const captionSource of captionSources) {
                 const caption = ns.fields.getValue(captionSource);
                 if (ns.text.isBlank(caption)) {
-                    return;
+                    continue;
                 }
                 const imageAddress = findImageSource(captionSource);
                 if (!imageAddress) {
                     console.error('Could not find image address for ', captionSource.name);
-                    return;
+                    continue;
                 }
                 try {
                     await ns.http.post(imageAddress + '.metadata', { data: { 'eai.caption': caption } });
