@@ -467,7 +467,7 @@
        -------------- */
 
     $(document)
-        .off('eai')
+        .off('.eai')
         .on('ready.eai', onDocumentReady)
         .on('click.eai', '#item-properties [variant="primary"]', onPropertiesSave)
         .on('click.eai', '[data-adds-to]', onAddEntryClick)
