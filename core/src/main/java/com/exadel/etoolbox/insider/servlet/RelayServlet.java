@@ -67,7 +67,6 @@ import java.util.function.Supplier;
 @Slf4j
 public class RelayServlet extends SlingAllMethodsServlet {
 
-    private static final String PROP_ERROR = "error";
     private static final String PROP_TASK = "task";
 
     @Reference(cardinality = ReferenceCardinality.MULTIPLE, policy = ReferencePolicy.DYNAMIC)
@@ -207,7 +206,7 @@ public class RelayServlet extends SlingAllMethodsServlet {
     }
 
     private static void outputError(@NotNull SlingHttpServletResponse response, int status, String message) throws IOException {
-        JsonUtil.writeTo(response, status, PROP_ERROR, message);
+        JsonUtil.writeTo(response, status, Constants.PROP_ERROR, message);
     }
 
     @RequiredArgsConstructor

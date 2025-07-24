@@ -84,7 +84,7 @@ test('Should report a blank value', () => {
     expect(ns.text.isBlank(' ')).toBe(true);
     expect(ns.text.isBlank('<p> <br> <br/></p>')).toBe(true);
     expect(ns.text.isBlank({  html: '' })).toBe(true);
-    expect(ns.text.isBlank({  foo: 'bar' })).toBe(true);
+    expect(ns.text.isBlank({  foo: 'bar' })).toBe(false);
     expect(ns.text.isBlank(null)).toBe(true);
     expect(ns.text.isBlank(undefined)).toBe(true);
     expect(ns.text.isBlank('test')).toBe(false);

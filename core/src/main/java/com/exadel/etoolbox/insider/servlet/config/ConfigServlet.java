@@ -56,7 +56,7 @@ import java.util.stream.StreamSupport;
 )
 public class ConfigServlet extends SlingSafeMethodsServlet {
 
-    static final String TYPE_BOOLEAN = "{Boolean}";
+    private static final String TYPE_BOOLEAN = "{Boolean}";
     private static final String TYPE_DOUBLE = "{Double}";
     private static final String TYPE_LONG = "{Long}";
 
@@ -153,12 +153,12 @@ public class ConfigServlet extends SlingSafeMethodsServlet {
                 return;
             }
             Object effectiveValue = value;
-            if (value instanceof String && StringUtils.startsWith(value.toString(), TYPE_BOOLEAN)) {
-                effectiveValue = Boolean.parseBoolean(value.toString().substring(TYPE_BOOLEAN.length()));
-            } else if (value instanceof String && StringUtils.startsWith(value.toString(), TYPE_LONG)) {
-                effectiveValue = Long.parseLong(value.toString().substring(TYPE_LONG.length()));
-            } else if (value instanceof String && StringUtils.startsWith(value.toString(), TYPE_DOUBLE)) {
-                effectiveValue = Double.parseDouble(value.toString().substring(TYPE_DOUBLE.length()));
+            if (isStringifiedBoolean(value)) {
+                effectiveValue = Boolean.parseBoolean(StringUtils.removeStart(value.toString(), TYPE_BOOLEAN));
+            } else if (isStringifiedLong(value)) {
+                effectiveValue = Long.parseLong(StringUtils.removeStart(value.toString(), TYPE_LONG));
+            } else if (isStringifiedDouble(value)) {
+                effectiveValue = Double.parseDouble(StringUtils.removeStart(value.toString(), TYPE_DOUBLE));
             }
             target.put(key, effectiveValue);
         });
@@ -167,5 +167,21 @@ public class ConfigServlet extends SlingSafeMethodsServlet {
     private static String getLastTwoChunks(String value) {
         String[] chunks = value.split(Constants.SEPARATOR_SLASH);
         return chunks.length > 1 ? chunks[chunks.length - 2] + Constants.SEPARATOR_SLASH + chunks[chunks.length - 1] : value;
+    }
+
+    private static boolean isStringifiedBoolean(Object value) {
+        if (!(value instanceof String)) {
+            return false;
+        }
+        return StringUtils.startsWith(value.toString(), TYPE_BOOLEAN)
+                || StringUtils.equalsAny(value.toString(), "true", "false");
+    }
+
+    private static boolean isStringifiedDouble(Object value) {
+        return value instanceof String && StringUtils.startsWith(value.toString(), TYPE_DOUBLE);
+    }
+
+    private static boolean isStringifiedLong(Object value) {
+        return value instanceof String && StringUtils.startsWith(value.toString(), TYPE_LONG);
     }
 }

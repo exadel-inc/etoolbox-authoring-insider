@@ -173,8 +173,11 @@
         if (!value) {
             return true;
         }
-        if (ns.utils.isObject(value)) {
+        if (ns.utils.isObjectWithProperty(value, 'html')) {
             return isBlank(value.html);
+        }
+        if (ns.utils.isObjectWithProperty(value, 'text')) {
+            return isBlank(value.text);
         }
         if (ns.utils.isHtmlElement(value)) {
             return isBlank(value.innerText);
@@ -196,7 +199,11 @@
     function stripSpacesAndPunctuation(value) {
         const pattern = /^[\s.,'"`*]+|[\s.,'"`*]+$/g;
         if (ns.utils.isObjectWithProperty(value, 'html')) {
-            value.html = value.html.replace(pattern, '');
+            value.html = String(value.html).replace(pattern, '');
+            return value;
+        }
+        if (ns.utils.isObjectWithProperty(value, 'text')) {
+            value.text = String(value.text).replace(pattern, '');
             return value;
         }
         if (ns.utils.isString(value)) {

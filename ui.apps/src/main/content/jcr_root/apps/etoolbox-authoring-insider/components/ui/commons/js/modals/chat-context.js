@@ -29,7 +29,7 @@
          */
         constructor(dialog) {
             this.dom = dialog;
-            this.data = {};
+            this.data = dialog.context instanceof ns.ui.DialogContext ? Object.assign({}, dialog.context.data) : {};
             this._abortController = new AbortController();
         }
 

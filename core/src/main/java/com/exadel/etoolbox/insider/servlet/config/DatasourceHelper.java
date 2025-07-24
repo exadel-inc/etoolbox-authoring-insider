@@ -209,8 +209,8 @@ class DatasourceHelper {
             if (RESTYPE_CHECKBOX.equals(resourceType)) {
                 properties.put(PROP_TEXT, title);
                 properties.put("checked", Boolean.parseBoolean(defaultValue));
-                properties.put(PROP_VALUE, ConfigServlet.TYPE_BOOLEAN + Boolean.TRUE);
-                properties.put("uncheckedValue", ConfigServlet.TYPE_BOOLEAN + Boolean.FALSE);
+                properties.put(PROP_VALUE, Boolean.TRUE);
+                properties.put("uncheckedValue", Boolean.FALSE);
             }
         }
 

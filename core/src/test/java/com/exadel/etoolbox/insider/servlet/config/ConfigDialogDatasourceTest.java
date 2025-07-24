@@ -172,7 +172,7 @@ public class ConfigDialogDatasourceTest {
         dialogFieldProperties = dialogField.getValueMap();
         Assertions.assertEquals("optional", dialogFieldProperties.get("name", String.class));
         Assertions.assertTrue(dialogFieldProperties.get("checked", false));
-        Assertions.assertEquals("{Boolean}true", dialogFieldProperties.get("value", String.class));
-        Assertions.assertEquals("{Boolean}false", dialogFieldProperties.get("uncheckedValue", String.class));
+        Assertions.assertEquals("true", dialogFieldProperties.get("value", String.class));
+        Assertions.assertEquals("false", dialogFieldProperties.get("uncheckedValue", String.class));
     }
 }

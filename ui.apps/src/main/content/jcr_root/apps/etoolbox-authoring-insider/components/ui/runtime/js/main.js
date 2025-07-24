@@ -75,7 +75,7 @@
                 template.content.querySelectorAll(INSTRUMENTATION_HOOKS).forEach((field) => ns.controls.handleField(field));
             });
         } else {
-            $(document).off('eai').on('coral-overlay:beforeopen.eai', 'coral-dialog', onDialogOpen);
+            $(document).off('.eai').on('coral-overlay:beforeopen.eai', 'coral-dialog', onDialogOpen);
         }
     }
 

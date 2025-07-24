@@ -278,7 +278,7 @@
             return;
         }
 
-        frame.onAccept && frame.onAccept(ns.ui.getInputValue(frame));
+        frame.onAccept && frame.onAccept(ns.ui.getInputValue(frame), dialog.context);
 
         const nextFrame = frame.nextSibling || frame.items.first();
         frames.items.remove(frame);
@@ -312,7 +312,7 @@
         const responseText = message.classList.contains('html') ?
             message.querySelector(SELECTOR_CONTENT).innerHTML :
             message.querySelector(SELECTOR_CONTENT).innerText.trim();
-        onAccept(responseText);
+        onAccept(responseText, dialog.context);
     }
 
     async function onActionMessageClick(event) {
@@ -456,16 +456,24 @@
         if (ns.utils.isObjectWithProperty(message, 'type', 'html')) {
             messageContent.innerHTML = message.html;
             messageElement.classList.add('html');
+        } else if (ns.utils.isObjectWithProperty(message, 'type', 'text')) {
+            messageContent.innerText = message.text || message.value;
         } else if (ns.utils.isObjectWithProperty(message, 'type', 'info')) {
             messageContent.innerText = message.text || message.value;
             messageElement.classList.add('info');
         } else {
             messageContent.innerText = message;
         }
-
         messageElement.appendChild(messageContent);
+
         if (anchorButton) {
             messageElement.appendChild(anchorButton);
+        }
+        if (ns.utils.isObjectWithProperty(message, 'note')) {
+            messageElement.appendChild(ns.ui.createElement({
+                class: 'note',
+                innerText: message['note']
+            }));
         }
 
         const fallbackMessageDivPosition = ns.utils.isObjectWithProperty(placement, 'fallback', 'beginning') ?

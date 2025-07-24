@@ -37,6 +37,7 @@
      * Creates a new HTML DOM element with the specified tag name, attributes, and optional children
      * @param {Object} options - The element attributes and options
      * @param {string} options.tag - The tag name of the element (optional, default is 'div')
+     * @param {string} options.class - CSS class names to apply to the element (optional)
      * @param {string} options.innerHtml - The inner HTML content of the element (optional)
      * @param {string} options.innerText - The inner text content of the element (optional)
      * @param {Array|Object} options.children - The child elements of the element (optional)

@@ -18,6 +18,7 @@ import com.day.cq.dam.api.Rendition;
 import com.day.image.Layer;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpStatus;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.resource.Resource;
@@ -27,7 +28,6 @@ import org.jetbrains.annotations.NotNull;
 import org.osgi.service.component.annotations.Component;
 
 import javax.servlet.Servlet;
-import javax.servlet.http.HttpServletResponse;
 import java.awt.Color;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -77,7 +77,7 @@ public class ImageRenditionServlet extends SlingSafeMethodsServlet {
         Rendition rendition = getFitRendition(asset, boundaries);
         if (rendition == null) {
             log.error("Could not retrieve a rendition for asset {}", request.getResource().getPath());
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            response.setStatus(HttpStatus.SC_NOT_FOUND);
             return;
         }
 
@@ -95,7 +95,7 @@ public class ImageRenditionServlet extends SlingSafeMethodsServlet {
                 payloadMimeType = MIME_TYPE_PNG;
             } catch (IOException e) {
                 log.error("Could not create on-the-fly rendition for asset {}", request.getResource().getPath(), e);
-                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                response.setStatus(HttpStatus.SC_NOT_FOUND);
                 return;
             }
         }
