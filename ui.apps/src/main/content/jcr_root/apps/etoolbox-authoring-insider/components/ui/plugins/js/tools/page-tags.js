@@ -108,7 +108,7 @@
             return null;
         }
         if (!pageContent) {
-            return context.addError('Failed to extract page content');
+            return context.addMessage('Not enough content in the page', 'info');
         }
 
         // Feed page content to the provider
