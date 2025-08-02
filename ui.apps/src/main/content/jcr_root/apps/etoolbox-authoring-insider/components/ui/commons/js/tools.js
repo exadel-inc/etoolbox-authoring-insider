@@ -152,26 +152,26 @@
                 return false;
             }
             let selectors = this['selectors'];
-            const isTextField = !field.matches('.cq-ui-tagfield');
-            if (!selectors) {
-                return ns.utils.isFunction(this._isMatch) ? this._isMatch(field) : isTextField;
-            }
             if (ns.utils.isString(selectors)) {
                 selectors = [selectors];
-            } else if (!Array.isArray(selectors) || selectors.length === 0) {
-                return ns.utils.isFunction(this._isMatch) ? this._isMatch(field) : isTextField;
             }
-            if (isStringArray(selectors)) {
-                selectors = selectors.map((selector) => new ns.fields.Matcher(selector));
-                this['selectors'] = selectors;
+            if (Array.isArray(selectors) && selectors.length > 0) {
+                if (isStringArray(selectors)) {
+                    selectors = selectors.map((selector) => new ns.fields.Matcher(selector));
+                    this['selectors'] = selectors;
+                }
+                const requirements = selectors.filter((selector) => selector.isRequirement);
+                const options = selectors.filter((selector) => !selector.isRequirement);
+                const allRequirementsMatched = requirements.every((requirement) => requirement.matches(field));
+                const someOptionsMatched = options.length === 0 || options.some((option) => option.matches(field));
+                return allRequirementsMatched && someOptionsMatched;
             }
-            const requirements = selectors.filter((selector) => selector.isRequirement);
-            const options = selectors.filter((selector) => !selector.isRequirement);
-            const allRequirementsMatched = requirements.every((requirement) => requirement.matches(field));
-            const someOptionsMatched = options.length === 0 || options.some((option) => option.matches(field));
-            const resultBySelectors = allRequirementsMatched && someOptionsMatched;
-
-            return resultBySelectors || (ns.utils.isFunction(this._isMatch) && this._isMatch(field));
+            const isTextField = !field.matches('.cq-ui-tagfield');
+            if (ns.utils.isFunction(this._isMatch)) {
+                const resultByIsMatch = this._isMatch(field);
+                return resultByIsMatch !== undefined ? resultByIsMatch : isTextField;
+            }
+            return isTextField;
         }
     }
 

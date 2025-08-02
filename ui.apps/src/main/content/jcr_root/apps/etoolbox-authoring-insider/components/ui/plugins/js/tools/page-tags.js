@@ -43,9 +43,14 @@
             { name: 'excludedElements', type: 'textfield', title: 'Page elements to ignore', multi: true },
         ],
 
+        isMatch,
         isValid,
         handle,
     });
+
+    function isMatch(field) {
+        return ns.fields.getName(field).includes('cq:tags');
+    }
 
     function isValid() {
         return !!this.tagFolder && !isNaN(this.count) && this.count > 0;
@@ -103,7 +108,7 @@
             return null;
         }
         if (!pageContent) {
-            return context.addError('Failed to extract page content');
+            return context.addMessage('Not enough content in the page', 'info');
         }
 
         // Feed page content to the provider
