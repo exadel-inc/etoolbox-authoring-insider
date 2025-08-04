@@ -139,7 +139,7 @@
         const messages = [];
         if (ns.utils.isObjectWithProperty(options.intro, 'prompt')) {
             messages.push(ns.ui.createElement({
-                class: 'message local prompt hidden',
+                class: 'message local prompt hidden permanent',
                 children: {
                     class: CLS_CONTENT,
                     innerText: options.intro.prompt
@@ -399,7 +399,7 @@
         }
         // Clean up all the messages (except the intro, if any) to restart the conversation via another provider
         // AND ask user for the missing data
-        dialog.querySelectorAll(SELECTOR_MESSAGE + ':not(.initial)').forEach((msg) => msg.remove());
+        dialog.querySelectorAll(SELECTOR_MESSAGE + ':not(.initial):not(.permanent)').forEach((msg) => msg.remove());
         dialog.classList.remove(CLS_MODIFIED);
 
         runAndRenderResponse(dialog, dialog.onStartup);
