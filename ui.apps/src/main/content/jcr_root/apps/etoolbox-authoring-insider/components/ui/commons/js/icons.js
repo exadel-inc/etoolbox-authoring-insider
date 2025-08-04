@@ -22,6 +22,7 @@
         'insider-mono',
         'llama',
         'openai',
+        'openrouter',
         'plus-one',
         'shrink',
         'summary'

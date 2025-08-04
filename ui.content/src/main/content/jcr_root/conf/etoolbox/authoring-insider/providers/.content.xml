@@ -4,15 +4,20 @@
           jcr:primaryType="nt:unstructured">
     <item0
             jcr:primaryType="nt:unstructured"
-            enabled="true"
-            icon="llama"
-            title="Own LLM"
-            type="llm.own"/>
-    <item1
-            jcr:primaryType="nt:unstructured"
-            details="\{&quot;service&quot;:&quot;openai&quot;}"
-            enabled="true"
+            details="\{&quot;service&quot;:&quot;openai&quot;, &quot;_token&quot;:&quot;${openai.token}&quot;, &quot;model&quot;:&quot;${openai.model}&quot;}"
             icon="openai"
             title="ChatGPT"
             type="llm.external"/>
+    <item1
+            jcr:primaryType="nt:unstructured"
+            details="\{&quot;service&quot;:&quot;openrouter&quot;, &quot;_token&quot;:&quot;${openrouter.token}&quot;, &quot;model&quot;:&quot;${openrouter.model}&quot;}"
+            icon="openrouter"
+            title="Openrouter.ai"
+            type="llm.external"/>
+    <item2
+            jcr:primaryType="nt:unstructured"
+            details="\{&quot;url&quot;:&quot;${own.endpoint}&quot;, &quot;llm&quot;:&quot;${own.model}&quot;}"
+            icon="llama"
+            title="Own LLM"
+            type="llm.own"/>
 </jcr:root>
