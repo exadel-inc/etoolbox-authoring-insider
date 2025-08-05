@@ -11,13 +11,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.exadel.etoolbox.insider.service.impl;
+package com.exadel.etoolbox.insider.service.provider.impl;
 
 import com.adobe.granite.crypto.CryptoException;
 import com.adobe.granite.crypto.CryptoSupport;
 import com.exadel.etoolbox.insider.service.ServiceException;
-import com.exadel.etoolbox.insider.service.ServiceProvider;
-import com.exadel.etoolbox.insider.service.ServiceProviderConfig;
+import com.exadel.etoolbox.insider.service.provider.ServiceProvider;
+import com.exadel.etoolbox.insider.service.provider.ServiceProviderConfig;
 import com.exadel.etoolbox.insider.util.Constants;
 import com.exadel.etoolbox.insider.util.JsonUtil;
 import lombok.extern.slf4j.Slf4j;

@@ -15,7 +15,6 @@ package com.exadel.etoolbox.insider.service;
 
 /**
  * Represents an exception that may occur during service operations
- * @see ServiceProvider
  */
 public class ServiceException extends Exception {
 

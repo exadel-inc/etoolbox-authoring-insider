@@ -11,8 +11,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.exadel.etoolbox.insider.service;
+package com.exadel.etoolbox.insider.service.provider;
 
+import com.exadel.etoolbox.insider.service.ServiceException;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.jetbrains.annotations.NotNull;
 

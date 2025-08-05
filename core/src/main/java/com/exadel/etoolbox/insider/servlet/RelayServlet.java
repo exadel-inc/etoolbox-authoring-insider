@@ -14,7 +14,7 @@
 package com.exadel.etoolbox.insider.servlet;
 
 import com.exadel.etoolbox.insider.service.ServiceException;
-import com.exadel.etoolbox.insider.service.ServiceProvider;
+import com.exadel.etoolbox.insider.service.provider.ServiceProvider;
 import com.exadel.etoolbox.insider.util.Constants;
 import com.exadel.etoolbox.insider.util.JsonUtil;
 import lombok.Getter;

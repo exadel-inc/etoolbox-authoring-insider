@@ -11,8 +11,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.exadel.etoolbox.insider.service.impl;
+package com.exadel.etoolbox.insider.service.provider.impl;
 
+import com.exadel.etoolbox.insider.service.provider.ServiceProvider;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +35,7 @@ import java.security.cert.X509Certificate;
 
 /**
  * A factory class for creating customized {@link CloseableHttpClient}s for use with
- * {@link com.exadel.etoolbox.insider.service.ServiceProvider} instances
+ * {@link ServiceProvider} instances
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @Slf4j

@@ -13,7 +13,7 @@
  */
 package com.exadel.etoolbox.insider.servlet;
 
-import com.exadel.etoolbox.insider.service.ServiceProvider;
+import com.exadel.etoolbox.insider.service.provider.ServiceProvider;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.jetbrains.annotations.NotNull;
