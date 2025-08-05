@@ -16,8 +16,29 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.apache.sling</groupId>
-                <artifactId>sling-maven-plugin</artifactId>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
+                <configuration>
+                    <source>11</source>
+                    <target>11</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-maven-dependencies</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <includeArtifactIds>${mcp.artifactId},reactor-core,reactive-streams</includeArtifactIds>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>biz.aQute.bnd</groupId>
@@ -30,7 +51,20 @@
                         </goals>
                         <configuration>
                             <bnd><![CDATA[
-Import-Package: javax.annotation;version=0.0.0,!com.sun.*,!sun.misc,!jdk.internal.module,*
+Include-Resource:   target/dependency/${mcp.artifactId}-${mcp.version}-server.jar;lib:=true,\
+                    target/dependency/reactor-core-3.7.0.jar;lib:=true,\
+                    target/dependency/reactive-streams-1.0.4.jar;lib:=true
+Import-Package:     !com.fasterxml.jackson.*,\
+                    !com.networknt.*,\
+                    !com.sun.*,\
+                    !io.micrometer.*,\
+                    !jakarta.servlet.*,\
+                    !javax.annotation.meta,\
+                    !jdk.internal.module,\
+                    !reactor.blockhound.*,\
+                    !sun.misc,\
+                    *
+-fixupmessages:     Classes found in the wrong directory:*
                                 ]]></bnd>
                         </configuration>
                     </execution>
@@ -90,12 +124,26 @@ Import-Package: javax.annotation;version=0.0.0,!com.sun.*,!sun.misc,!jdk.interna
             <artifactId>gson</artifactId>
         </dependency>
         <dependency>
+            <groupId>io.modelcontextprotocol.sdk</groupId>
+            <artifactId>${mcp.artifactId}</artifactId>
+            <version>${mcp.version}</version>
+            <classifier>server</classifier>
+        </dependency>
+        <dependency>
+            <groupId>io.projectreactor</groupId>
+            <artifactId>reactor-core</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-collections4</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.reactivestreams</groupId>
+            <artifactId>reactive-streams</artifactId>
         </dependency>
         <!-- Testing -->
         <dependency>
