@@ -104,8 +104,11 @@
                 window.location.href,
                 { format: 'md', signal: context.signal, escapeNewLine: true }
             );
+            if (context.aborted) {
+                return null;
+            }
             if (!pageContent) {
-                return ns.ui.alert('Error', 'Failed to extract page content', 'error');
+                return context.addMessage('Not enough content in the page', 'info');
             }
             context.addPrompt(pageContent);
         }
