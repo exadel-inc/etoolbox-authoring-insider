@@ -11,37 +11,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.exadel.etoolbox.insider.servlet;
+package com.exadel.etoolbox.insider.servlet.relay;
 
+import com.exadel.etoolbox.insider.service.ServiceException;
 import com.exadel.etoolbox.insider.service.provider.ServiceProvider;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
-class MockServiceProvider implements ServiceProvider {
+class MockFailingServiceProvider implements ServiceProvider {
     @Override
     @NotNull
     public String getId() {
-        return "mock";
+        return "mock-failing";
     }
 
     @Override
     @NotNull
-    public String getResponse(SlingHttpServletRequest request) {
-        boolean respondSlow = Boolean.parseBoolean(request.getParameter("slow"));
-        if (!respondSlow) {
-            return "Lorem ipsum";
-        }
-        try {
-            if (!new CountDownLatch(1).await(1000, TimeUnit.MILLISECONDS)) {
-                return "Timed out";
-            }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-        return StringUtils.EMPTY;
+    public String getResponse(SlingHttpServletRequest request) throws ServiceException {
+        throw new ServiceException("Dolor sit amet");
     }
 }

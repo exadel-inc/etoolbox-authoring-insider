@@ -14,12 +14,13 @@
 package com.exadel.etoolbox.insider.service.provider;
 
 import com.exadel.etoolbox.insider.service.ServiceException;
+import com.exadel.etoolbox.insider.servlet.relay.RelayServlet;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * Defines an interface for a component that answers to a request from the Authoring Insider's UI relayed via
- * {@link com.exadel.etoolbox.insider.servlet.RelayServlet}. Such a component usually communicates to a third-party HTTP
+ * {@link RelayServlet}. Such a component usually communicates to a third-party HTTP
  * endpoint or a service, or else performs a complex operation
  */
 public interface ServiceProvider {

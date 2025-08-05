@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.exadel.etoolbox.insider.servlet;
+package com.exadel.etoolbox.insider.servlet.relay;
 
 import com.exadel.etoolbox.insider.service.ServiceException;
 import com.exadel.etoolbox.insider.service.provider.ServiceProvider;

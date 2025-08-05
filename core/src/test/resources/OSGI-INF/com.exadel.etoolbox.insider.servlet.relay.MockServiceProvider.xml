@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <scr:component
         xmlns:scr="http://www.osgi.org/xmlns/scr/v1.3.0"
-        name="com.exadel.etoolbox.insider.servlet.MockFailingServiceProvider">
+        name="com.exadel.etoolbox.insider.servlet.relay.MockServiceProvider">
   <service>
     <provide interface="com.exadel.etoolbox.insider.service.provider.ServiceProvider"/>
   </service>
-  <implementation class="com.exadel.etoolbox.insider.servlet.MockFailingServiceProvider"/>
+  <implementation class="com.exadel.etoolbox.insider.servlet.relay.MockServiceProvider"/>
 </scr:component>
