@@ -18,8 +18,8 @@ import com.adobe.granite.crypto.CryptoSupport;
 import com.exadel.etoolbox.insider.LoggerExtension;
 import com.exadel.etoolbox.insider.service.ServiceException;
 import com.exadel.etoolbox.insider.util.Constants;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.wcm.testing.mock.aem.junit5.AemContext;
 import io.wcm.testing.mock.aem.junit5.AemContextExtension;
 import org.apache.http.Header;
@@ -101,26 +101,26 @@ public class ServiceProviderImplTest {
     }
 
     @Test
-    public void shouldRetrieveResult() throws ServiceException {
+    public void shouldRetrieveResult() throws ServiceException, IOException {
         context.request().setContent(Constants.EMPTY_JSON.getBytes());
         HttpClientFactory.Builder builder = prepareHttpClientBuilder("{\"lorem\": \"ipsum\"}");
         try (MockedStatic<HttpClientFactory> ignored = prepareHttpClientFactory(builder)) {
             String result = serviceProvider.getResponse(context.request());
-            JsonElement jsonElement = JsonParser.parseString(result);
-            Assertions.assertEquals("ipsum", jsonElement.getAsJsonObject().get("lorem").getAsString());
+            JsonNode json = new ObjectMapper().readTree(result);
+            Assertions.assertEquals("ipsum", json.get("lorem").asText());
         }
     }
 
     @Test
-    public void shouldRetryRequestOnException() throws ServiceException {
+    public void shouldRetryRequestOnException() throws ServiceException, IOException {
         context.request().setContent(Constants.EMPTY_JSON.getBytes());
         HttpClientFactory.Builder builder = prepareHttpClientBuilder(
                 "{\"lorem\": \"ipsum\"}",
                 Arrays.asList(new SocketTimeoutException(), new IOException()));
         try (MockedStatic<HttpClientFactory> ignored = prepareHttpClientFactory(builder)) {
             String result = serviceProvider.getResponse(context.request());
-            JsonElement jsonElement = JsonParser.parseString(result);
-            Assertions.assertEquals("ipsum", jsonElement.getAsJsonObject().get("lorem").getAsString());
+            JsonNode json = new ObjectMapper().readTree(result);
+            Assertions.assertEquals("ipsum", json.get("lorem").asText());
         }
         List<String> messages = loggerExtension.getMessages();
         Assertions.assertTrue(messages.stream().anyMatch(m -> m.contains("Connection to http://localhost:4502 timed out after 100 ms")));

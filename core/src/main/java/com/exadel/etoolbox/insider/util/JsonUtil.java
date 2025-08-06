@@ -13,9 +13,8 @@
  */
 package com.exadel.etoolbox.insider.util;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonParseException;
-import com.google.gson.reflect.TypeToken;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -24,7 +23,6 @@ import org.apache.sling.api.SlingHttpServletResponse;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -39,8 +37,8 @@ public class JsonUtil {
 
     public static final String CONTENT_TYPE_JSON = "application/json";
 
-    private static final Gson GSON = new Gson();
-    private static final Type MAP = new TypeToken<Map<String, Object>>() {}.getType();
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final TypeReference<Map<String, Object>> MAP = new TypeReference<>() {};
 
     private static final String EXCEPTION_PARSE = "Could not parse JSON string: {}";
     private static final String EXCEPTION_SERIALIZE = "Could not serialize {} to JSON";
@@ -56,7 +54,7 @@ public class JsonUtil {
             return Collections.emptyMap();
         }
         try {
-            return GSON.fromJson(json, MAP);
+            return OBJECT_MAPPER.readValue(json, MAP);
         } catch (Exception e) {
             log.error(EXCEPTION_PARSE, json, e);
             return Collections.emptyMap();
@@ -76,7 +74,7 @@ public class JsonUtil {
             return Collections.emptyList();
         }
         try {
-            return GSON.fromJson(json, TypeToken.getParameterized(List.class, type).getType());
+            return OBJECT_MAPPER.readValue(json, OBJECT_MAPPER.getTypeFactory().constructCollectionType(List.class, type));
         } catch (Exception e) {
             log.error(EXCEPTION_PARSE, json, e);
             return Collections.emptyList();
@@ -94,8 +92,8 @@ public class JsonUtil {
             return Constants.EMPTY_JSON;
         }
         try {
-            return GSON.toJson(value);
-        } catch (JsonParseException e) {
+            return OBJECT_MAPPER.writeValueAsString(value);
+        } catch (Exception e) {
             log.error(EXCEPTION_SERIALIZE, value, e);
             return Constants.EMPTY_JSON;
         }

@@ -33,7 +33,7 @@ public class JsonUtilTest {
         Map<String, Object> map = JsonUtil.getMap(json);
 
         Assertions.assertEquals(2, map.size());
-        Assertions.assertEquals(1.0, map.get("a")); // Gson represents numbers as double by default
+        Assertions.assertEquals(1, map.get("a"));
         Assertions.assertEquals("test", map.get("b"));
     }
 

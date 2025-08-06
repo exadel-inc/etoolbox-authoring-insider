@@ -54,8 +54,7 @@
 Include-Resource:   target/dependency/${mcp.artifactId}-${mcp.version}-server.jar;lib:=true,\
                     target/dependency/reactor-core-3.7.0.jar;lib:=true,\
                     target/dependency/reactive-streams-1.0.4.jar;lib:=true
-Import-Package:     !com.fasterxml.jackson.*,\
-                    !com.networknt.*,\
+Import-Package:     !com.networknt.*,\
                     !com.sun.*,\
                     !io.micrometer.*,\
                     !jakarta.servlet.*,\
@@ -120,13 +119,16 @@ Import-Package:     !com.fasterxml.jackson.*,\
         </dependency>
         <!-- Misc -->
         <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
         </dependency>
         <dependency>
             <groupId>io.modelcontextprotocol.sdk</groupId>
             <artifactId>${mcp.artifactId}</artifactId>
-            <version>${mcp.version}</version>
             <classifier>server</classifier>
         </dependency>
         <dependency>

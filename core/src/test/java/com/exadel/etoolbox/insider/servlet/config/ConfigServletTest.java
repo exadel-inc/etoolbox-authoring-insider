@@ -14,9 +14,8 @@
 package com.exadel.etoolbox.insider.servlet.config;
 
 import com.exadel.etoolbox.insider.util.Constants;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.wcm.testing.mock.aem.junit5.AemContext;
 import io.wcm.testing.mock.aem.junit5.AemContextExtension;
 import org.apache.http.HttpHeaders;
@@ -49,67 +48,67 @@ public class ConfigServletTest {
         Assertions.assertTrue(context.response().getHeader(HttpHeaders.CACHE_CONTROL).contains("no-cache"));
 
         String output = context.response().getOutputAsString();
-        JsonObject json = JsonParser.parseString(output).getAsJsonObject();
+        JsonNode json = new ObjectMapper().readTree(output);
 
         Assertions.assertNotNull(json);
         Assertions.assertTrue(json.has("tools"));
         Assertions.assertTrue(json.has("providers"));
 
-        JsonArray toolsList = json.get("tools").getAsJsonArray();
+        JsonNode toolsList = json.get("tools");
         Assertions.assertEquals(4, toolsList.size());
 
-        JsonObject tool = toolsList.get(0).getAsJsonObject();
-        Assertions.assertEquals("tools/item0", tool.get(Constants.PROP_PATH).getAsString());
-        Assertions.assertEquals(0, tool.get("ordinal").getAsInt());
-        Assertions.assertTrue(tool.get("enabled").getAsBoolean());
-        Assertions.assertEquals("edit", tool.get("icon").getAsString());
-        Assertions.assertEquals("Tool 0", tool.get("title").getAsString());
-        Assertions.assertEquals("Create a new page", tool.get("prompt").getAsString());
-        Assertions.assertEquals("input", tool.getAsJsonArray("selectors").get(0).getAsString());
+        JsonNode tool = toolsList.get(0);
+        Assertions.assertEquals("tools/item0", tool.get(Constants.PROP_PATH).asText());
+        Assertions.assertEquals(0, tool.get("ordinal").asInt());
+        Assertions.assertTrue(tool.get("enabled").asBoolean());
+        Assertions.assertEquals("edit", tool.get("icon").asText());
+        Assertions.assertEquals("Tool 0", tool.get("title").asText());
+        Assertions.assertEquals("Create a new page", tool.get("prompt").asText());
+        Assertions.assertEquals("input", tool.get("selectors").get(0).asText());
 
-        tool = toolsList.get(1).getAsJsonObject();
-        Assertions.assertEquals("tools/item1", tool.get(Constants.PROP_PATH).getAsString());
-        Assertions.assertEquals(1, tool.get("ordinal").getAsInt());
-        Assertions.assertFalse(tool.get("enabled").getAsBoolean());
+        tool = toolsList.get(1);
+        Assertions.assertEquals("tools/item1", tool.get(Constants.PROP_PATH).asText());
+        Assertions.assertEquals(1, tool.get("ordinal").asInt());
+        Assertions.assertFalse(tool.get("enabled").asBoolean());
         Assertions.assertNull(tool.get("icon"));
-        Assertions.assertEquals("Tool 1", tool.get("title").getAsString());
-        Assertions.assertEquals("Create a new component", tool.get("prompt").getAsString());
+        Assertions.assertEquals("Tool 1", tool.get("title").asText());
+        Assertions.assertEquals("Create a new component", tool.get("prompt").asText());
 
-        tool = toolsList.get(2).getAsJsonObject();
-        Assertions.assertEquals("tools/item2", tool.get(Constants.PROP_PATH).getAsString());
-        Assertions.assertEquals(2, tool.get("ordinal").getAsInt());
-        Assertions.assertTrue(tool.get("enabled").getAsBoolean());
+        tool = toolsList.get(2);
+        Assertions.assertEquals("tools/item2", tool.get(Constants.PROP_PATH).asText());
+        Assertions.assertEquals(2, tool.get("ordinal").asInt());
+        Assertions.assertTrue(tool.get("enabled").asBoolean());
         Assertions.assertNull(tool.get("icon"));
         Assertions.assertNull(tool.get("title"));
 
-        tool = toolsList.get(3).getAsJsonObject();
-        Assertions.assertEquals("tools/item3", tool.get(Constants.PROP_PATH).getAsString());
-        Assertions.assertFalse(tool.get("enabled").getAsBoolean());
+        tool = toolsList.get(3);
+        Assertions.assertEquals("tools/item3", tool.get(Constants.PROP_PATH).asText());
+        Assertions.assertFalse(tool.get("enabled").asBoolean());
 
-        JsonArray providersList = json.get("providers").getAsJsonArray();
+        JsonNode providersList = json.get("providers");
         Assertions.assertEquals(3, providersList.size());
 
-        JsonObject provider = providersList.get(0).getAsJsonObject();
-        Assertions.assertEquals("providers/item0", provider.get(Constants.PROP_PATH).getAsString());
-        Assertions.assertEquals(0, provider.get("ordinal").getAsInt());
-        Assertions.assertTrue(provider.get("enabled").getAsBoolean());
-        Assertions.assertEquals("model", provider.get("icon").getAsString());
-        Assertions.assertEquals("Provider 0", provider.get("title").getAsString());
-        Assertions.assertEquals("llm.external", provider.get("type").getAsString());
-        Assertions.assertEquals("http://localhost:10001", provider.get("url").getAsString());
+        JsonNode provider = providersList.get(0);
+        Assertions.assertEquals("providers/item0", provider.get(Constants.PROP_PATH).asText());
+        Assertions.assertEquals(0, provider.get("ordinal").asInt());
+        Assertions.assertTrue(provider.get("enabled").asBoolean());
+        Assertions.assertEquals("model", provider.get("icon").asText());
+        Assertions.assertEquals("Provider 0", provider.get("title").asText());
+        Assertions.assertEquals("llm.external", provider.get("type").asText());
+        Assertions.assertEquals("http://localhost:10001", provider.get("url").asText());
 
-        provider = providersList.get(1).getAsJsonObject();
-        Assertions.assertEquals("providers/item1", provider.get(Constants.PROP_PATH).getAsString());
-        Assertions.assertEquals(1, provider.get("ordinal").getAsInt());
-        Assertions.assertFalse(provider.get("enabled").getAsBoolean());
+        provider = providersList.get(1);
+        Assertions.assertEquals("providers/item1", provider.get(Constants.PROP_PATH).asText());
+        Assertions.assertEquals(1, provider.get("ordinal").asInt());
+        Assertions.assertFalse(provider.get("enabled").asBoolean());
         Assertions.assertNull(provider.get("icon"));
-        Assertions.assertEquals("Provider 1", provider.get("title").getAsString());
-        Assertions.assertEquals("llm.own", provider.get("type").getAsString());
+        Assertions.assertEquals("Provider 1", provider.get("title").asText());
+        Assertions.assertEquals("llm.own", provider.get("type").asText());
 
-        provider = providersList.get(2).getAsJsonObject();
-        Assertions.assertEquals("providers/item2", provider.get(Constants.PROP_PATH).getAsString());
-        Assertions.assertEquals(2, provider.get("ordinal").getAsInt());
-        Assertions.assertTrue(provider.get("enabled").getAsBoolean());
+        provider = providersList.get(2);
+        Assertions.assertEquals("providers/item2", provider.get(Constants.PROP_PATH).asText());
+        Assertions.assertEquals(2, provider.get("ordinal").asInt());
+        Assertions.assertTrue(provider.get("enabled").asBoolean());
         Assertions.assertNull(provider.get("icon"));
         Assertions.assertNull(provider.get("title"));
     }
@@ -120,12 +119,12 @@ public class ConfigServletTest {
         Assertions.assertEquals(200, context.response().getStatus());
 
         String output = context.response().getOutputAsString();
-        JsonObject json = JsonParser.parseString(output).getAsJsonObject();
+        JsonNode json = new ObjectMapper().readTree(output);
 
         Assertions.assertNotNull(json);
         Assertions.assertTrue(json.has("tools"));
-        Assertions.assertEquals(0, json.get("tools").getAsJsonArray().size());
+        Assertions.assertEquals(0, json.get("tools").size());
         Assertions.assertTrue(json.has("providers"));
-        Assertions.assertEquals(0, json.get("providers").getAsJsonArray().size());
+        Assertions.assertEquals(0, json.get("providers").size());
     }
 }
