@@ -26,17 +26,22 @@ import io.modelcontextprotocol.spec.McpServerTransport;
 import io.modelcontextprotocol.spec.McpServerTransportProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
+import org.apache.sling.api.SlingHttpServletRequest;
+import org.apache.sling.api.SlingHttpServletResponse;
+import org.apache.sling.api.servlets.ServletResolverConstants;
+import org.apache.sling.api.servlets.SlingAllMethodsServlet;
+import org.jetbrains.annotations.NotNull;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
-import org.osgi.service.http.whiteboard.HttpWhiteboardConstants;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import javax.servlet.AsyncContext;
-import javax.servlet.Servlet;
-import javax.servlet.http.HttpServlet;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletRequestWrapper;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -49,22 +54,20 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Component(
-		service = Servlet.class,
+		service = javax.servlet.Servlet.class,
 		property = {
-				HttpWhiteboardConstants.HTTP_WHITEBOARD_SERVLET_PATTERN + "=" + McpServlet.ENDPOINT_STATUS,
-				HttpWhiteboardConstants.HTTP_WHITEBOARD_SERVLET_PATTERN + "=" + McpServlet.ENDPOINT_MESSAGE,
-				HttpWhiteboardConstants.HTTP_WHITEBOARD_CONTEXT_SELECT + "=(osgi.http.whiteboard.context.name=org.apache.sling)",
-				HttpWhiteboardConstants.HTTP_WHITEBOARD_FILTER_ASYNC_SUPPORTED + "=true",
-				HttpWhiteboardConstants.HTTP_WHITEBOARD_SERVLET_ASYNC_SUPPORTED + "=true"
-		})
+				ServletResolverConstants.SLING_SERVLET_METHODS + "=GET",
+				ServletResolverConstants.SLING_SERVLET_METHODS + "=POST",
+				ServletResolverConstants.SLING_SERVLET_RESOURCE_TYPES + "=/bin/etoolbox/authoring-insider/mcp",
+				ServletResolverConstants.SLING_SERVLET_RESOURCE_TYPES + "=/bin/etoolbox/authoring-insider/mcp/message",
+				"sling.servlet.asyncSupported=true"
+		}
+)
 @Slf4j
-public class McpServlet extends HttpServlet implements McpServerTransportProvider {
-
-	static final String ENDPOINT_STATUS = "/bin/etoolbox/authoring-insider/mcp";
-	static final String ENDPOINT_MESSAGE = ENDPOINT_STATUS + "/message";
+public class McpServlet extends SlingAllMethodsServlet implements McpServerTransportProvider {
 
 	private static final String CONTENT_TYPE_JSON = "application/json";
-	private static final String CONENT_TYPE_EVENT_STREAM = "text/event-stream";
+	private static final String CONTENT_TYPE_EVENT_STREAM = "text/event-stream";
 
 	private static final String EVENT_TYPE_MESSAGE = "message";
 	private static final String EVENT_TYPE_ENDPOINT = "endpoint";
@@ -82,6 +85,11 @@ public class McpServlet extends HttpServlet implements McpServerTransportProvide
 	   Lifecycle
 	   --------- */
 
+	@Activate
+	private void activate() {
+		log.info("Activating MCP servlet");
+	}
+
 	@Deactivate
 	private void deactivate() {
 		log.info("Deactivating MCP servlet");
@@ -93,7 +101,10 @@ public class McpServlet extends HttpServlet implements McpServerTransportProvide
 	   ------------- */
 
 	@Override
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+	protected void doGet(
+			@NotNull SlingHttpServletRequest request,
+			@NotNull SlingHttpServletResponse response) throws IOException {
+
 		if (mcpInstrumentation == null) {
 			response.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
 			return;
@@ -109,28 +120,35 @@ public class McpServlet extends HttpServlet implements McpServerTransportProvide
 		}
 
 		String requestURI = request.getRequestURI();
-		if (!requestURI.endsWith(ENDPOINT_STATUS)) {
+		if (!requestURI.endsWith("/mcp")) {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND);
 			return;
 		}
 
-		response.setContentType(CONENT_TYPE_EVENT_STREAM);
+		response.setContentType(CONTENT_TYPE_EVENT_STREAM);
 		response.setCharacterEncoding(StandardCharsets.UTF_8.name());
 		response.setHeader("Cache-Control", "no-cache");
 		response.setHeader("Connection", "keep-alive");
 		response.setHeader("Access-Control-Allow-Origin", "*");
 
 		String sessionId = UUID.randomUUID().toString();
-		AsyncContext asyncContext = request.startAsync();
+		HttpServletRequest originalRequest = getOriginalRequest(request);
+		AsyncContext asyncContext = originalRequest.startAsync();
 		asyncContext.setTimeout(TIMEOUT_INFINITE);
 		SessionTransport sessionTransport = new SessionTransport(sessionId, asyncContext);
 
 		sessions.put(sessionId, sessionFactory.get().create(sessionTransport));
-		sendEvent(asyncContext.getResponse().getWriter(), EVENT_TYPE_ENDPOINT, ENDPOINT_MESSAGE + "?sessionId=" + sessionId);
+		sendEvent(
+				asyncContext.getResponse().getWriter(),
+				EVENT_TYPE_ENDPOINT,
+				request.getRequestPathInfo().getResourcePath() + "/message?sessionId=" + sessionId);
 	}
 
 	@Override
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+	protected void doPost(
+			@NotNull SlingHttpServletRequest request,
+			@NotNull SlingHttpServletResponse response) throws IOException {
+
 		if (mcpInstrumentation == null) {
 			response.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
 			return;
@@ -140,7 +158,7 @@ public class McpServlet extends HttpServlet implements McpServerTransportProvide
 		}
 
 		String requestURI = request.getRequestURI();
-		if (!requestURI.endsWith(ENDPOINT_MESSAGE)) {
+		if (!requestURI.endsWith("/message")) {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND);
 			return;
 		}
@@ -284,5 +302,21 @@ public class McpServlet extends HttpServlet implements McpServerTransportProvide
 
 	private static void logSendingFailure(String sessionId, Throwable e) {
 		log.error("Failed to send a message to session {}: {}", sessionId, e.getMessage());
+	}
+
+	/* ---------
+	   Utilities
+	   --------- */
+
+	private static HttpServletRequest getOriginalRequest(SlingHttpServletRequest value) {
+		HttpServletRequest result = value;
+		while (result instanceof ServletRequestWrapper) {
+			ServletRequest wrapped = ((ServletRequestWrapper) result).getRequest();
+			if (!(wrapped instanceof HttpServletRequest)) {
+				return result;
+			}
+			result = (HttpServletRequest) wrapped;
+		}
+		return result;
 	}
 }
