@@ -35,7 +35,7 @@
                             <goal>copy-dependencies</goal>
                         </goals>
                         <configuration>
-                            <includeArtifactIds>${mcp.artifactId},reactor-core,reactive-streams</includeArtifactIds>
+                            <includeArtifactIds>${mcp.artifactId}</includeArtifactIds>
                         </configuration>
                     </execution>
                 </executions>
@@ -51,15 +51,15 @@
                         </goals>
                         <configuration>
                             <bnd><![CDATA[
-Include-Resource:   target/dependency/${mcp.artifactId}-${mcp.version}-server.jar;lib:=true,\
-                    target/dependency/reactor-core-3.7.0.jar;lib:=true,\
-                    target/dependency/reactive-streams-1.0.4.jar;lib:=true
-Import-Package:     !com.networknt.*,\
-                    !com.sun.*,\
+Include-Resource:   target/dependency/${mcp.artifactId}-${mcp.version}-aem.jar;lib:=true
+Import-Package:     !com.sun.*,\
                     !io.micrometer.*,\
                     !jakarta.servlet.*,\
                     !javax.annotation.meta,\
                     !jdk.internal.module,\
+                    !org.graalvm.*,\
+                    !org.jcodings.*,\
+                    !org.joni.*,\
                     !reactor.blockhound.*,\
                     !sun.misc,\
                     *
@@ -129,11 +129,7 @@ Import-Package:     !com.networknt.*,\
         <dependency>
             <groupId>io.modelcontextprotocol.sdk</groupId>
             <artifactId>${mcp.artifactId}</artifactId>
-            <classifier>server</classifier>
-        </dependency>
-        <dependency>
-            <groupId>io.projectreactor</groupId>
-            <artifactId>reactor-core</artifactId>
+            <classifier>aem</classifier>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -142,10 +138,6 @@ Import-Package:     !com.networknt.*,\
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.reactivestreams</groupId>
-            <artifactId>reactive-streams</artifactId>
         </dependency>
         <!-- Testing -->
         <dependency>

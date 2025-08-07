@@ -70,11 +70,11 @@
                             <goal>install-file</goal>
                         </goals>
                         <configuration>
-                            <file>${project.basedir}/core/lib/${mcp.artifactId}-${mcp.version}-server.jar</file>
+                            <file>${project.basedir}/core/lib/${mcp.artifactId}-${mcp.version}-aem.jar</file>
                             <groupId>io.modelcontextprotocol.sdk</groupId>
                             <artifactId>${mcp.artifactId}</artifactId>
                             <version>${mcp.version}</version>
-                            <classifier>server</classifier>
+                            <classifier>aem</classifier>
                             <packaging>jar</packaging>
                         </configuration>
                     </execution>
@@ -329,13 +329,7 @@ Bundle-DocURL:
                 <groupId>io.modelcontextprotocol.sdk</groupId>
                 <artifactId>${mcp.artifactId}</artifactId>
                 <version>${mcp.version}</version>
-                <classifier>server</classifier>
-                <scope>provided</scope>
-            </dependency>
-            <dependency>
-                <groupId>io.projectreactor</groupId>
-                <artifactId>reactor-core</artifactId>
-                <version>3.7.0</version>
+                <classifier>aem</classifier>
                 <scope>provided</scope>
             </dependency>
             <dependency>
@@ -348,12 +342,6 @@ Bundle-DocURL:
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
                 <version>3.12.0</version>
-                <scope>provided</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.reactivestreams</groupId>
-                <artifactId>reactive-streams</artifactId>
-                <version>1.0.4</version>
                 <scope>provided</scope>
             </dependency>
             <!-- Testing -->
