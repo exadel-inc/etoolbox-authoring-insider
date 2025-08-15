@@ -209,7 +209,7 @@
         if (ns.utils.isString(value)) {
             return value.replace(pattern, '');
         }
-        return '';
+        return value;
     }
 
     function stripTags(html) {
