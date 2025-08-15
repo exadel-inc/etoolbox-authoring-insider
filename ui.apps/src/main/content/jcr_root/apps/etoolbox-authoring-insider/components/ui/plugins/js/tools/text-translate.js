@@ -128,7 +128,10 @@
 
             responses,
 
-            onStartup: async(context) => await handleDialogContext(context),
+            onStartup: async(context) => await handleDialogContext(context.withData({
+                languages: this.languages || DEFAULT_LANGUAGES,
+                validation: this.validation || 'none',
+            })),
 
             onInput: async(msg, context) =>
                 await context.provider.textToText({ messages: context.messages, signal: context.signal }),
@@ -160,7 +163,7 @@
                         name: 'language',
                         type: 'selectlist',
                         title: 'Language',
-                        options: self.languages || DEFAULT_LANGUAGES
+                        options: context.data.languages || DEFAULT_LANGUAGES
                     }
                 ]
             });
@@ -179,7 +182,7 @@
         }
 
         // Translate the text
-        context.wait(self.validation !== 'none' ? 'Translating...' : '');
+        context.wait(context.data.validation !== 'none' ? 'Translating...' : '');
         const translation = await context.provider.textToText({
             messages,
             signal: context.signal
@@ -190,17 +193,25 @@
         }
 
         // Perform validation step(s) if needed
-        if (self.validation && self.validation.includes('extra')) {
-            const language = prompt.match(/into ([^.]+)/i)[1];
+        if (context.data.validation && context.data.validation.includes('extra')) {
             return await runValidation(
                 context,
-                { text, translation, language, doProofread: self.validation.includes('proofread') });
+                {
+                    text,
+                    translation,
+                    language: context.data.language,
+                    doProofread: context.data.validation.includes('proofread')
+                });
 
-        } else if (self.validation && self.validation === 'pageant') {
-            const language = prompt.match(/into ([^.]+)/i)[1];
+        } else if (context.data.validation && context.data.validation === 'pageant') {
             return await runPageant(
                 context,
-                { text, translation, prompt, language });
+                {
+                    text,
+                    translation,
+                    language: context.data.language,
+                    prompt: context.prompt
+                });
 
         } else {
             return /<\w+|<\/\w+>/g.test(translation) ?
