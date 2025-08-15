@@ -73,7 +73,7 @@
 
     async function handleDialogContext(context) {
         let text;
-        if (ns.text.isBlank(context.initialContent)) {
+        if (ns.text.isBlank(context.initial)) {
             text = ns.fields.getSelectedContent(context.source) || await ns.ui.inputDialog({
                 title: 'Enter your content',
                 parent: context.dom
