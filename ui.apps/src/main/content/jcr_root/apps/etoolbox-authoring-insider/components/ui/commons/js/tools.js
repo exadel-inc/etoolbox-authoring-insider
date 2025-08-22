@@ -32,6 +32,7 @@
             this.isTemplate = options.isTemplate;
             this.handle = options.handle;
             this.isMatch = options.isMatch;
+            this.isValid = options.isValid;
             this.requires = options.requires;
             this.settings = options.settings;
             this.title = options.title;
@@ -50,14 +51,24 @@
         constructor(model, options = {}) {
             this._model = model;
             this.id = idCounter.nextIndexedId(model.id);
+            if (Array.isArray(model.settings) && model.settings.some((setting) => setting.defaultValue !== undefined)) {
+                const defaults = {};
+                model.settings
+                    .filter((setting) => setting.defaultValue !== undefined)
+                    .forEach((setting) => {
+                        defaults[setting.name] = setting.defaultValue;
+                    });
+                options = Object.assign({}, defaults, options);
+            }
             ns.utils.intern(options, this, { exclude: ['id', 'isMatch'], addPrefixTo: ['icon', 'ordinal', 'title'] });
             this._handle = model.handle && model.handle.bind(this);
             const _isMatch = options.isMatch || model.isMatch;
             if (ns.utils.isFunction(_isMatch)) {
                 this._isMatch = _isMatch.bind(this);
             }
-            if (ns.utils.isFunction(options.isValid)) {
-                this._isValid = options.isValid.bind(this);
+            const _isValid = options.isValid || model.isValid;
+            if (ns.utils.isFunction(_isValid)) {
+                this._isValid = _isValid.bind(this);
             }
         }
 
@@ -118,18 +129,17 @@
         /**
          * Performs an operation against a field
          * @param {Element} field - The field to operate on
-         * @param {*|string} id - The provider id
-         * @param {Object=} options - The operation options
+         * @param {*|string} providerId - ID of the provider to use for the operation
          * @returns {Promise<void>}
          */
-        async handle(field, id, options) {
+        async handle(field, providerId) {
             if (!this._handle) {
                 return;
             }
-            const providerId = ns.utils.isString(id) && id.includes('@') ?
-                id.split('@')[1] :
+            providerId = ns.utils.isString(providerId) && providerId.includes('@') ?
+                providerId.split('@')[1] :
                 (this.providers.length > 0 ? this.providers[0].id : null);
-            await this._handle(field, providerId, options);
+            await this._handle(field, providerId);
         }
 
         /**
@@ -141,27 +151,27 @@
             if (!field) {
                 return false;
             }
-            if (ns.utils.isFunction(this._isMatch)) {
-                return this._isMatch(field);
-            }
             let selectors = this['selectors'];
-            if (!selectors) {
-                return true;
-            }
             if (ns.utils.isString(selectors)) {
                 selectors = [selectors];
-            } else if (!Array.isArray(selectors) || selectors.length === 0) {
-                return true;
             }
-            if (isStringArray(selectors)) {
-                selectors = selectors.map((selector) => new ns.fields.Matcher(selector));
-                this['selectors'] = selectors;
+            if (Array.isArray(selectors) && selectors.length > 0) {
+                if (isStringArray(selectors)) {
+                    selectors = selectors.map((selector) => new ns.fields.Matcher(selector));
+                    this['selectors'] = selectors;
+                }
+                const requirements = selectors.filter((selector) => selector.isRequirement);
+                const options = selectors.filter((selector) => !selector.isRequirement);
+                const allRequirementsMatched = requirements.every((requirement) => requirement.matches(field));
+                const someOptionsMatched = options.length === 0 || options.some((option) => option.matches(field));
+                return allRequirementsMatched && someOptionsMatched;
             }
-            const requirements = selectors.filter((selector) => selector.isRequirement);
-            const options = selectors.filter((selector) => !selector.isRequirement);
-            const allRequirementsMatched = requirements.every((requirement) => requirement.matches(field));
-            const someOptionsMatched = options.length === 0 || options.some((option) => option.matches(field));
-            return allRequirementsMatched && someOptionsMatched;
+            const isTextField = !field.matches('.cq-ui-tagfield');
+            if (ns.utils.isFunction(this._isMatch)) {
+                const resultByIsMatch = this._isMatch(field);
+                return resultByIsMatch !== undefined ? resultByIsMatch : isTextField;
+            }
+            return isTextField;
         }
     }
 
@@ -185,7 +195,7 @@
             } else {
                 // This is a settings-less model
                 const model = new ToolModel(options);
-                if (!isValid(model)) {
+                if (!model.id || !ns.utils.isFunction(model.handle)) {
                     console.error('Invalid tool', options);
                     return;
                 }
@@ -246,7 +256,7 @@
          */
         register: function (options) {
             const model = new ToolModel(options);
-            if (!isValid(model)) {
+            if (!model.id || !ns.utils.isFunction(model.handle)) {
                 console.error('Invalid tool', options);
                 return;
             }
@@ -265,10 +275,6 @@
 
     function isStringArray(value) {
         return Array.isArray(value) && value.every((item) => ns.utils.isString(item));
-    }
-
-    function isValid(model) {
-        return model && !!model.id && ns.utils.isFunction(model.handle);
     }
 
 })(window.eai = window.eai || {});

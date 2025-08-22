@@ -51,7 +51,10 @@
             },
         });
         if (result) {
-            ns.fields.setSelectedContent(field, `<a href="${result.url}" ${result.newWindow ? 'target="_blank"' : ''} title="${sourceValue}">${sourceValue}</a>`);
+            ns.fields.setSelectedContent(
+                field,
+                `<a href="${result.url}" ${result.newWindow ? 'target="_blank"' : ''} title="${sourceValue}">${sourceValue}</a>`
+            );
         }
     }
 

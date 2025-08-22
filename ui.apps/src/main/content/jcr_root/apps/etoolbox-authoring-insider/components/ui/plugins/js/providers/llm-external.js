@@ -19,7 +19,7 @@
     const DEFAULT_SERVICE = 'openai';
     const DEFAULT_MODEL = 'gpt-4o-mini';
 
-    const MODELS = {};
+    const MODELS = { openrouter: 'openai/gpt-oss-20b:free' };
     MODELS[DEFAULT_SERVICE] = DEFAULT_MODEL;
 
     const RESPONSE_WAIT_INTERVAL = 5000;

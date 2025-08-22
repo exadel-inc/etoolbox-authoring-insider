@@ -22,15 +22,6 @@
 
     let lastModifiedMultifieldId = false;
 
-    $(document)
-        .on('ready', onDocumentReady)
-        .on('click', '#item-properties [variant="primary"]', onPropertiesSave)
-        .on('click', '[data-adds-to]', onAddEntryClick)
-        .on('click', '.delete', onDeleteEntryClick)
-        .on('click', '.properties', onPropertiesOpen)
-        .on('coral-tablist:change', onActiveTabChange)
-        .on('keydown', '.foundation-toggleable', onKeyDownInDialog);
-
     /* --------------
        Event handlers
        -------------- */
@@ -48,7 +39,7 @@
             await submitAllData();
         }
         // This hook is added apart from the rest to avoid "autosubmit" handler running unconditionally upon a page load
-        $(document).on('change', '.autosubmit-defer', onAutoSubmitDebounce);
+        $(document).on('change.eai', '.autosubmit-defer', onAutoSubmitDebounce);
 
         const hash = window.location.hash;
         const targetId = hash && hash.substring(1);
@@ -170,8 +161,10 @@
         }
         dialog.open = false;
         // Wrap the form data in URLSearchParams to avoid sending as a multipart attachment
-        // because in the latter case a Sling restrictuin on the number of fields may apply
-        const data = new URLSearchParams(packDetails(new FormData(dialogForm)));
+        // because in the latter case a Sling restriction on the number of fields may apply
+        const formData = new FormData(dialogForm);
+        packDetails(formData);
+        const data = new URLSearchParams(formData);
         try {
             await ns.http.post(dialogForm.action, { data });
             ns.ui.notify(null, 'Settings saved', 'success');
@@ -267,7 +260,7 @@
             const disabledItems = new Set(disabledItemsHolder.value.split(';').filter(Boolean));
 
             for (const missedModel of models) {
-                if (disabledItems.has(missedModel.id)) {
+                if (missedModel.isTemplate || disabledItems.has(missedModel.id)) {
                     continue;
                 }
                 const newMultifieldItem = new Coral.Multifield.Item();
@@ -399,31 +392,51 @@
     }
 
     function packDetails(formData) {
-        const details = {};
-        const keysToRemove = new Set();
+        const formDataObject = {};
         for (const entry of formData.entries()) {
             const [key, value] = entry;
-            if (key.includes('@') || key.startsWith(':') || DEFAULT_PROPS.includes(key)) {
+            if (key.startsWith(':') || DEFAULT_PROPS.includes(key)) {
                 continue;
             }
-            if (value) {
-                if (!details[key]) {
-                    details[key] = value;
-                } else {
-                    if (!Array.isArray(details[key])) {
-                        details[key] = [details[key]];
-                    }
-                    details[key].push(value);
-                }
+            const formDataKey = key.includes('@') ? key.split('@')[0] : key;
+            if (!formDataObject[formDataKey]) {
+                formDataObject[formDataKey] = {};
             }
-            keysToRemove.add(key);
+            const formDataPropName = key.includes('@') ? key.split('@')[1] : 'value';
+            if (formDataPropName === 'value' && formDataObject[formDataKey]['value'] === undefined) {
+                formDataObject[formDataKey]['value'] = value;
+            } else if (formDataPropName === 'value') {
+                if (!Array.isArray(formDataObject[formDataKey]['value'])) {
+                    formDataObject[formDataKey]['value'] = [formDataObject[formDataKey]['value']];
+                }
+                formDataObject[formDataKey]['value'].push(value);
+            } else {
+                formDataObject[formDataKey][formDataPropName] = value;
+            }
         }
-        keysToRemove.forEach((key) => formData.delete(key));
+
+        const details = {};
+        const packedKeys = new Set();
+        for (const entries of Object.entries(formDataObject)) {
+            const [key, properties] = entries;
+            if (properties.value) {
+                details[key] = properties.value;
+            } else if (properties['DefaultValue'] && properties['UseDefaultWhenMissing']) {
+                details[key] = properties['DefaultValue'];
+            }
+            Object.keys(properties).forEach((prop) => {
+                if (prop === 'value') {
+                    packedKeys.add(key);
+                } else {
+                    packedKeys.add(key + '@' + prop);
+                }
+            });
+        }
+        packedKeys.forEach((key) => formData.delete(key));
         formData.set('details@Delete', null);
         if (Object.keys(details).length > 0) {
             formData.set('details', JSON.stringify(details));
         }
-        return formData;
     }
 
     /* -----
@@ -449,4 +462,17 @@
         });
     }
 
+    /* --------------
+       Initialization
+       -------------- */
+
+    $(document)
+        .off('.eai')
+        .on('ready.eai', onDocumentReady)
+        .on('click.eai', '#item-properties [variant="primary"]', onPropertiesSave)
+        .on('click.eai', '[data-adds-to]', onAddEntryClick)
+        .on('click.eai', '.delete', onDeleteEntryClick)
+        .on('click.eai', '.properties', onPropertiesOpen)
+        .on('coral-tablist:change.eai', onActiveTabChange)
+        .on('keydown.eai', '.foundation-toggleable', onKeyDownInDialog);
 })(window, document, Granite.$, Granite.UI.Foundation.Utils, window.eai = window.eai || {});

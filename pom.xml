@@ -6,7 +6,7 @@
     <groupId>com.exadel.etoolbox</groupId>
     <artifactId>etoolbox-authoring-insider</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.0</version>
+    <version>1.0.0-SNAPSHOT</version>
     <description>EToolbox Authoring Insider</description>
 
     <modules>
@@ -127,14 +127,31 @@ Bundle-DocURL:
                     </configuration>
                 </plugin>
                 <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-antrun-plugin</artifactId>
+                    <version>3.1.0</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>ant-contrib</groupId>
+                            <artifactId>ant-contrib</artifactId>
+                            <version>1.0b3</version>
+                            <exclusions>
+                                <exclusion>
+                                    <groupId>ant</groupId>
+                                    <artifactId>ant</artifactId>
+                                </exclusion>
+                            </exclusions>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+                <plugin>
                     <groupId>org.apache.jackrabbit</groupId>
                     <artifactId>filevault-package-maven-plugin</artifactId>
                     <extensions>true</extensions>
-                    <version>1.1.4</version>
+                    <version>1.3.6</version>
                     <configuration>
                         <group>${project.groupId}</group>
                         <name>${project.artifactId}</name>
-                        <accessControlHandling>merge</accessControlHandling>
                         <filterSource>src/main/content/META-INF/vault/filter.xml</filterSource>
                         <properties>
                             <cloudManagerTarget>none</cloudManagerTarget>
@@ -148,6 +165,11 @@ Bundle-DocURL:
                             </jackrabbit-nodetypes>
                         </validatorsSettings>
                     </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-clean-plugin</artifactId>
+                    <version>3.3.2</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -201,21 +223,6 @@ Bundle-DocURL:
                     </snapshots>
                 </pluginRepository>
             </pluginRepositories>
-        </profile>
-
-        <profile>
-            <id>release</id>
-            <build>
-                <pluginManagement>
-                    <plugins>
-                        <plugin>
-                            <groupId>org.apache.maven.plugins</groupId>
-                            <artifactId>maven-antrun-plugin</artifactId>
-                            <version>3.0.0</version>
-                        </plugin>
-                    </plugins>
-                </pluginManagement>
-            </build>
         </profile>
     </profiles>
 

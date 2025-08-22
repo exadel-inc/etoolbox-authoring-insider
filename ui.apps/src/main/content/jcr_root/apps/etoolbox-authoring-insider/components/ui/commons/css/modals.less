@@ -24,6 +24,7 @@
 @fg-dark: #323232;
 @fg-error: #721c24;
 @fg-medium: #666;
+@fg-white: #FFF;
 
 .flex-column {
   display: flex;
@@ -175,6 +176,9 @@
 
     .coral3-SelectList.is-focused {
       .is-selected, .is-highlighted {
+        background-color: @bg-selection;
+        border: none;
+        color: @fg-white;
         .icon {
           filter: brightness(100);
         }
@@ -288,6 +292,13 @@
         color: green;
         text-decoration: unset;
     }
+
+    .note {
+      color: @fg-medium;
+      margin-top: 0.5rem;
+      font-size: 0.9rem;
+      font-style: italic;
+    }
   }
 
   .response {
@@ -301,9 +312,9 @@
     }
   }
 
-  // A special centered case to make the spinner display in the middle of a dialog when there are no messages
-  .messages:empty + .centered,
-  .messages:has(.prompt.hidden:first-child:last-child) + .centered{
+  // A special case to make the spinner display in the middle of a dialog when there are no visible messages
+  .messages:not(:has(*)) + .centered,
+  .messages:not(:has(.message:not(.hidden))) + .centered{
     position: relative;
     top: 50%;
     transform: translateY(-100%);
@@ -432,9 +443,12 @@
       .font-large;
       border: 1px solid @border-dark;
       flex-grow: 1;
-      .coral3-SelectList-item:not([disabled]).is-selected {
-        background-color: @bg-selection;
-        color: #FFF;
+      .coral3-SelectList-item:not([disabled]) {
+        &.is-selected, &.is-highlighted {
+          background-color: @bg-selection;
+          border: none;
+          color: @fg-white;
+        }
       }
     }
 

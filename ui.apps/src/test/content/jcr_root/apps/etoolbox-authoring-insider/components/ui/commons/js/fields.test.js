@@ -131,3 +131,42 @@ test('Should lock/unlock a field', () => {
     ns.fields.unlock(field);
     expect(field.unlock).toHaveBeenCalled();
 });
+
+test('Should retrieve field name', () => {
+    // Test field with direct name property
+    const fieldWithName = {
+        name: 'testField'
+    };
+    expect(ns.fields.getName(fieldWithName)).toBe('testField');
+
+    // Test field without name that needs coral form field lookup
+    const coralFormField = document.createElement('div');
+    coralFormField.className = 'coral-Form-field';
+
+    const namedInput = document.createElement('input');
+    namedInput.name = 'formFieldName';
+    coralFormField.appendChild(namedInput);
+
+    const field = document.createElement('div');
+    coralFormField.appendChild(field);
+
+    // Mock closest method
+    field.closest = jest.fn().mockReturnValue(coralFormField);
+
+    expect(ns.fields.getName(field)).toBe('formFieldName');
+
+    // Test field with multiple named elements, should pick first valid name
+    const hiddenInput = document.createElement('input');
+    hiddenInput.name = 'hiddenField@TypeHint';
+    coralFormField.insertBefore(hiddenInput, namedInput);
+
+    expect(ns.fields.getName(field)).toBe('formFieldName');
+
+    // Test field with no coral form field
+    field.closest = jest.fn().mockReturnValue(null);
+    expect(ns.fields.getName(field)).toBe('');
+
+    // Test null/undefined field
+    expect(ns.fields.getName(null)).toBe('');
+    expect(ns.fields.getName(undefined)).toBe('');
+});

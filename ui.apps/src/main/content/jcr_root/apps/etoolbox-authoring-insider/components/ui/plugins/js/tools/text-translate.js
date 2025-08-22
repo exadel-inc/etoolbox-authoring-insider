@@ -92,19 +92,16 @@
         handle,
     });
 
-    function handle(field, providerId, initialContent) {
+    function handle(field, providerId) {
+        // Arguments validation
         if (!field) {
             return ns.ui.alert(this.title, 'Target field is invalid', 'error');
         }
-        const provider = ns.providers.getInstance(providerId);
-        if (!provider) {
+        if (!ns.providers.getInstance(providerId)) {
             return ns.ui.alert(this.title, `Could not find a provider for action ${providerId}`, 'error');
         }
 
-        if (!ns.utils.isObject(initialContent)) {
-            initialContent = { html: ns.fields.getSelectedContent(field, true) };
-        }
-
+        // Chat dialog
         const responses = [{
             icon: 'scribble',
             title: 'Send your own message',
@@ -125,48 +122,39 @@
             title: this.title,
             icon: this.icon,
             source: field,
-            intro: initialContent,
             providers: this.providers,
             providerId,
+            intro: { html: ns.fields.getSelectedContent(field, true) },
+
             responses,
-            onStart: async(context) => {
-                return await inputAndRun(this, context, provider, initialContent);
-            },
-            onInput: async(msg, context) => {
-                return await provider.textToText({ messages: context.getHistory().messages, signal: context.signal });
-            },
-            onReload: (newProviderId, context) => {
-                if (context.isRefresh) {
-                    return this.handle(field, newProviderId);
-                }
-                const history = context.getHistory();
-                this.handle(field, newProviderId, {
-                    prompt: history.prompt,
-                    text: history.initial,
-                });
-            },
+
+            onStartup: async(context) => await handleDialogContext(context.withData({
+                languages: this.languages || DEFAULT_LANGUAGES,
+                validation: this.validation || 'none',
+            })),
+
+            onInput: async(msg, context) =>
+                await context.provider.textToText({ messages: context.messages, signal: context.signal }),
+
             onResponse: (response) => ns.text.stripSpacesAndPunctuation(response),
+
             onAccept: (result) => ns.fields.setSelectedContent(field, result, true),
         });
     }
 
-    async function inputAndRun(self, context, provider, initialContent) {
-        // Prompt for user input if the original field is empty
-        let text = initialContent.text || initialContent.html;
-        if (ns.text.isBlank(text)) {
-            text = await ns.ui.inputDialog({
+    async function handleDialogContext(context) {
+        // Fill in missing data
+        if (ns.text.isBlank(context.initial)) {
+            const text = await ns.ui.inputDialog({
                 title: 'Enter your content',
                 parent: context.dom
             });
-            if (!text) {
+            if (ns.text.isBlank(text)) {
                 return context.close();
             }
-            context.appendMessage(text, 'local initial');
+            context.addInitial(text, true);
         }
-
-        // Ask user to select a language if it was not provided
-        let prompt = initialContent.prompt;
-        if (!prompt) {
+        if (ns.text.isBlank(context.prompt)) {
             const language = await ns.ui.inputDialog({
                 title: context.title,
                 parent: context.dom,
@@ -175,24 +163,28 @@
                         name: 'language',
                         type: 'selectlist',
                         title: 'Language',
-                        options: self.languages || DEFAULT_LANGUAGES
+                        options: context.data.languages || DEFAULT_LANGUAGES
                     }
                 ]
             });
             if (!language) {
                 return context.close();
             }
-            prompt = preparePrompt(PROMPT, language);
-            context.setPrompt(prompt);
+            context.addPrompt(preparePrompt(PROMPT, language));
+        }
+
+        const messages = context.messages;
+        const textMessage = messages.filter(m => m.role === 'user')[1];
+        const text = textMessage ? textMessage.text : '';
+        if (!text) {
+            console.error('Could not retrieve translatable text');
+            return context.close();
         }
 
         // Translate the text
-        context.wait(self.validation !== 'none' ? 'Translating...' : '');
-        const translation = await provider.textToText({
-            messages: [
-                { type: 'user', text: prompt },
-                { type: 'user', text }
-            ],
+        context.wait(context.data.validation !== 'none' ? 'Translating...' : '');
+        const translation = await context.provider.textToText({
+            messages,
             signal: context.signal
         });
 
@@ -201,19 +193,25 @@
         }
 
         // Perform validation step(s) if needed
-        if (self.validation && self.validation.includes('extra')) {
-            const language = prompt.match(/into ([^.]+)/i)[1];
+        if (context.data.validation && context.data.validation.includes('extra')) {
             return await runValidation(
                 context,
-                provider,
-                { text, translation, language, doProofread: self.validation.includes('proofread') });
+                {
+                    text,
+                    translation,
+                    language: context.data.language,
+                    doProofread: context.data.validation.includes('proofread')
+                });
 
-        } else if (self.validation && self.validation === 'pageant') {
-            const language = prompt.match(/into ([^.]+)/i)[1];
+        } else if (context.data.validation && context.data.validation === 'pageant') {
             return await runPageant(
                 context,
-                provider,
-                { text, translation, prompt, language });
+                {
+                    text,
+                    translation,
+                    language: context.data.language,
+                    prompt: context.prompt
+                });
 
         } else {
             return /<\w+|<\/\w+>/g.test(translation) ?
@@ -222,9 +220,9 @@
         }
     }
 
-    async function runValidation(context, provider, params) {
+    async function runValidation(context, params) {
         context.wait('Validating translation...');
-        let result = await provider.textToText({
+        let result = await context.provider.textToText({
             messages: [
                 { type: 'user', text: preparePrompt(VALIDATION_PROMPT, params.language) },
                 { type: 'user', text: params.text },
@@ -238,7 +236,7 @@
 
         if (params.doProofread) {
             context.wait('Proofreading...');
-            result = await provider.textToText({
+            result = await context.provider.textToText({
                 messages: [
                     { type: 'user', text: preparePrompt(PROOFREADING_PROMPT, params.language) },
                     { type: 'user', text: result }
@@ -254,11 +252,11 @@
             result;
     }
 
-    async function runPageant(context, provider, params) {
+    async function runPageant(context, params) {
         const allTranslations = [params.translation];
         for (let i = 1; i < PAGEANT_COUNT; i++) {
             context.wait(`Translating (step ${i + 1})...`);
-            const anotherTranslation = await provider.textToText({
+            const anotherTranslation = await context.provider.textToText({
                 messages: [
                     { type: 'user', text: params.prompt },
                     { type: 'user', text: params.text }
@@ -278,7 +276,7 @@
             { type: 'user', text: params.text },
         ];
         allTranslations.forEach((translation) => messages.push({ type: 'user', text: translation }));
-        const result = await provider.textToText({ messages, signal: context.signal });
+        const result = await context.provider.textToText({ messages, signal: context.signal });
 
         if (context.aborted || !result) {
             return null;

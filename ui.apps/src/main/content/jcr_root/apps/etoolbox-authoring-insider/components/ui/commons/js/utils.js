@@ -125,7 +125,7 @@
 
         /**
          * Checks if a value is an object with the specified property
-         * @param value - The value to check
+         * @param {object|*} value - The value to check
          * @param {string} propName - The property name
          * @param {*|string=} propValue - The property value
          * @returns {boolean}
@@ -137,7 +137,26 @@
             if (!Object.prototype.hasOwnProperty.call(value, propName)) {
                 return false;
             }
-            return !propValue || value[propName] === propValue;
+            if (!propValue) {
+                return value[propName] !== undefined && value[propName] !== null;
+            }
+            return value[propName] === propValue;
+        },
+
+        /**
+         * Checks if a value is an object with a function property
+         * @param {object|*} value - The value to check
+         * @param functionName - The name of the function property
+         * @returns {boolean}
+         */
+        isObjectWithFunction: function (value, functionName) {
+            if (!ns.utils.isObject(value) || !functionName) {
+                return false;
+            }
+            if (!Object.prototype.hasOwnProperty.call(value, functionName)) {
+                return false;
+            }
+            return ns.utils.isFunction(value[functionName]);
         },
 
         /**

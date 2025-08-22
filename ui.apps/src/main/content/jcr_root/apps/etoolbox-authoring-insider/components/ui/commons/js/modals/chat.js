@@ -27,6 +27,7 @@
     const SELECTOR_CONTENT = '.' + CLS_CONTENT;
     const SELECTOR_FIELD = '.coral-Form-field';
     const SELECTOR_FRAMES = '#frames';
+    const SELECTOR_MESSAGE = '.message';
     const SELECTOR_MESSAGES = '.messages';
     const SELECTOR_PROVIDERS = '.providers';
     const SELECTOR_REFRESH_BUTTON = '.refresh';
@@ -36,6 +37,8 @@
 
     ns.ui.CLS_BUSY = CLS_BUSY;
     ns.ui.SELECTOR_CONTENT = SELECTOR_CONTENT;
+    ns.ui.SELECTOR_MESSAGE = SELECTOR_MESSAGE;
+    ns.ui.SELECTOR_PROVIDERS = SELECTOR_PROVIDERS;
     ns.ui.SELECTOR_WAIT = SELECTOR_WAIT;
 
     /* -----------------
@@ -72,7 +75,6 @@
 
         dialog.off('coral-overlay:close', onClose).on('coral-overlay:close', onClose);
 
-        dialog.abortController = new AbortController();
         dialog.source = options.source;
         dialog.addFrame = addFrame.bind(dialog);
         dialog.addMessage = addMessage.bind(dialog);
@@ -80,14 +82,14 @@
         dialog.onAccept = options.onAccept;
         dialog.onCancel = options.onCancel;
         dialog.onInput = options.onInput;
-        dialog.onReload = options.onReload;
         dialog.onResponse = options.onResponse;
+        dialog.onStartup = options.onStartup;
 
         Coral.commons.ready(dialog, function () {
             const parent = options.parent || (options.source && options.source.closest('coral-dialog'));
             ns.ui.adjustDialogSize(dialog, parent);
-            if (ns.utils.isFunction(options.onStart)) {
-                runAndRenderResponse(dialog, options.onStart);
+            if (ns.utils.isFunction(dialog.onStartup)) {
+                runAndRenderResponse(dialog, dialog.onStartup);
             }
             ns.fields.lock(dialog.source);
             dialog.show();
@@ -134,9 +136,18 @@
     }
 
     function createContent(options) {
-        let startMessage;
+        const messages = [];
+        if (ns.utils.isObjectWithProperty(options.intro, 'prompt')) {
+            messages.push(ns.ui.createElement({
+                class: 'message local prompt hidden permanent',
+                children: {
+                    class: CLS_CONTENT,
+                    innerText: options.intro.prompt
+                }
+            }));
+        }
         if (ns.utils.isObjectWithProperty(options.intro, 'image')) {
-            startMessage = ns.ui.createElement({
+            messages.push(ns.ui.createElement({
                 class: 'message initial no-grow',
                 children: {
                     tag: 'img',
@@ -144,35 +155,25 @@
                     src: options.intro.image,
                     alt: 'Source image'
                 }
-            });
-        }
-        if (ns.utils.isObjectWithProperty(options.intro, 'prompt')) {
-            startMessage = startMessage ? [startMessage] : [];
-            startMessage.unshift(ns.ui.createElement({
-                class: 'message local prompt hidden',
-                children: {
-                    class: CLS_CONTENT,
-                    innerText: options.intro.prompt
-                }
             }));
         }
         if (ns.utils.isObjectWithProperty(options.intro, 'text') && !ns.text.isBlank(options.intro.text)) {
-            startMessage = ns.ui.createElement({
+            messages.push(ns.ui.createElement({
                 class: 'message initial',
                 children: {
                     class: CLS_CONTENT,
                     innerText: options.intro.text
                 }
-            });
+            }));
         }
         if (ns.utils.isObjectWithProperty(options.intro, 'html') && !ns.text.isBlank(options.intro.html)) {
-            startMessage = ns.ui.createElement({
+            messages.push(ns.ui.createElement({
                 class: 'message initial',
                 children: {
                     class: CLS_CONTENT,
                     innerHtml: options.intro.html
                 }
-            });
+            }));
         }
 
         const responsesDefs = [];
@@ -234,7 +235,7 @@
             children: [
                 {
                     class: 'messages',
-                    children: startMessage
+                    children: messages
                 },
                 {
                     tag: SELECTOR_WAIT,
@@ -277,7 +278,7 @@
             return;
         }
 
-        frame.onAccept && frame.onAccept(ns.ui.getInputValue(frame));
+        frame.onAccept && frame.onAccept(ns.ui.getInputValue(frame), dialog.context);
 
         const nextFrame = frame.nextSibling || frame.items.first();
         frames.items.remove(frame);
@@ -311,7 +312,7 @@
         const responseText = message.classList.contains('html') ?
             message.querySelector(SELECTOR_CONTENT).innerHTML :
             message.querySelector(SELECTOR_CONTENT).innerText.trim();
-        onAccept(responseText);
+        onAccept(responseText, dialog.context);
     }
 
     async function onActionMessageClick(event) {
@@ -331,17 +332,17 @@
 
     async function onActionFreeMessageClick(event) {
         const dialog = event.target.closest('coral-dialog');
-        const text = await ns.ui.inputDialog({
+        const message = await ns.ui.inputDialog({
             id: 'free-message',
             title: event.target.closest('[is="coral-anchorbutton"]').getAttribute('title'),
             parent: dialog
         });
-        if (!text) {
+        if (!message) {
             return;
         }
-        dialog.addMessage(text, 'local');
+        dialog.addMessage(message, 'local');
         dialog.classList.add(CLS_MODIFIED);
-        runAndRenderResponse(dialog, dialog.onInput, text);
+        runAndRenderResponse(dialog, dialog.onInput, message);
     }
 
     function onCancelClick(event) {
@@ -362,8 +363,8 @@
         const dialog = event.target.closest('coral-dialog');
         dialog.classList.remove(CLS_BUSY, CLS_INTERACTIVE, CLS_MODIFIED);
         delete dialog.querySelector(SELECTOR_WAIT).dataset.message;
-        dialog.abortController.abort();
-        dialog.onCancel && dialog.onCancel();
+        dialog.context && dialog.context.abort();
+        ns.utils.isFunction(dialog.onCancel) && dialog.onCancel();
         ns.fields.focus(dialog.source);
         ns.fields.unlock(dialog.source);
     }
@@ -381,27 +382,27 @@
 
     function onProviderChange(event) {
         const dialog = event.target.closest('coral-dialog');
-        const onReload = dialog.onReload;
-        if (!ns.utils.isFunction(onReload)) {
-            console.error('The onReload handler is missing');
+        if (!ns.utils.isFunction(dialog.onStartup)) {
             return;
         }
-        dialog.open = false;
-        onReload(ns.fields.getValue(event.target), new ns.ui.DialogContext(dialog));
+        // Clean up all the messages except the initial and prompt ones to restart the conversation via another provider
+        // but NOT prompt the user once again for filling in the missing data
+        dialog.querySelectorAll(`${SELECTOR_MESSAGE}:not(.prompt,.initial)`).forEach((msg) => msg.remove());
+
+        runAndRenderResponse(dialog, dialog.onStartup);
     }
 
     function onRefreshClick(event) {
         const dialog = event.target.closest('coral-dialog');
-        const onReload = dialog.onReload;
-        if (!ns.utils.isFunction(onReload)) {
-            console.error('The onReload handler is missing');
+        if (!ns.utils.isFunction(dialog.onStartup)) {
             return;
         }
-        dialog.abortController.abort();
-        const providerId = ns.fields.getValue(dialog.querySelector(SELECTOR_PROVIDERS));
-        dialog.open = false;
+        // Clean up all the messages (except the intro, if any) to restart the conversation via another provider
+        // AND ask user for the missing data
+        dialog.querySelectorAll(SELECTOR_MESSAGE + ':not(.initial):not(.permanent)').forEach((msg) => msg.remove());
         dialog.classList.remove(CLS_MODIFIED);
-        onReload(providerId, new ns.ui.DialogContext(dialog, { isRefresh: true }));
+
+        runAndRenderResponse(dialog, dialog.onStartup);
     }
 
     /* ----------------------
@@ -431,7 +432,7 @@
         switchToFrame(this, newFrame);
     }
 
-    function addMessage(message, type, atStart = false) {
+    function addMessage(message, type, placement) {
         if (ns.text.isBlank(message)) {
             return;
         }
@@ -446,29 +447,64 @@
             });
         }
 
-        const messageDiv = document.createElement('div');
-        messageDiv.setAttribute('class', 'message ' + (type || ''));
+        const messagesContainer = this.querySelector(SELECTOR_MESSAGES);
+        const messageElement = document.createElement('div');
+        messageElement.setAttribute('class', 'message ' + (type || ''));
 
         const messageContent = document.createElement('span');
         messageContent.classList.add(CLS_CONTENT);
         if (ns.utils.isObjectWithProperty(message, 'type', 'html')) {
             messageContent.innerHTML = message.html;
-            messageDiv.classList.add('html');
+            messageElement.classList.add('html');
+        } else if (ns.utils.isObjectWithProperty(message, 'type', 'text')) {
+            messageContent.innerText = message.text || message.value;
         } else if (ns.utils.isObjectWithProperty(message, 'type', 'info')) {
             messageContent.innerText = message.text || message.value;
-            messageDiv.classList.add('info');
+            messageElement.classList.add('info');
         } else {
             messageContent.innerText = message;
         }
+        messageElement.appendChild(messageContent);
 
-        messageDiv.appendChild(messageContent);
         if (anchorButton) {
-            messageDiv.appendChild(anchorButton);
+            messageElement.appendChild(anchorButton);
         }
-        if (atStart) {
-            this.querySelector(SELECTOR_MESSAGES).prepend(messageDiv);
-        } else {
-            this.querySelector(SELECTOR_MESSAGES).append(messageDiv);
+        if (ns.utils.isObjectWithProperty(message, 'note')) {
+            messageElement.appendChild(ns.ui.createElement({
+                class: 'note',
+                innerText: message['note']
+            }));
+        }
+
+        const fallbackMessageDivPosition = ns.utils.isObjectWithProperty(placement, 'fallback', 'beginning') ?
+            'afterbegin' :
+            'beforeend';
+        let placed = false;
+        if (ns.utils.isObjectWithFunction(placement, 'afterLast')) {
+            let hit = null;
+            messagesContainer.querySelectorAll(SELECTOR_MESSAGE).forEach((msg) => {
+                if (placement.afterLast(msg)) {
+                    hit = msg;
+                }
+            });
+            if (hit) {
+                hit.insertAdjacentElement('afterend', messageElement);
+                placed = true;
+            }
+        } else if (ns.utils.isObjectWithFunction(placement, 'beforeFirst')) {
+            let hit = null;
+            messagesContainer.querySelectorAll(SELECTOR_MESSAGE).forEach((msg) => {
+                if (!hit && placement.beforeFirst(msg)) {
+                    hit = msg;
+                }
+            });
+            if (hit) {
+                hit.insertAdjacentElement('beforebegin', messageElement);
+                placed = true;
+            }
+        }
+        if (!placed) {
+            messagesContainer.insertAdjacentElement(fallbackMessageDivPosition, messageElement);
         }
     }
 
@@ -509,19 +545,24 @@
        ---------------- */
 
     function runAndRenderResponse(dialog, eventHandler, ...args) {
-        dialog.classList.add(CLS_BUSY);
+        setBusy(dialog, true);
         scrollToBottom(dialog);
+
+        dialog.context && dialog.context.abort();
+        dialog.context = new ns.ui.DialogContext(dialog);
         if (!ns.utils.isAsyncFunction(eventHandler)) {
-            const response = eventHandler(...args, new ns.ui.DialogContext(dialog));
+            const response = eventHandler(...args, dialog.context);
             dialog.addMessage(response, 'remote');
+            setBusy(dialog, false);
+            scrollToBottom(dialog);
             dialog.classList.toggle(CLS_INTERACTIVE, dialog.querySelectorAll('.remote').length > 0);
             return;
         }
-        eventHandler(...args, new ns.ui.DialogContext(dialog))
+        eventHandler(...args, dialog.context)
             .then((response) => {
                 let processedResponse = response;
                 if (ns.utils.isFunction(dialog.onResponse)) {
-                    processedResponse = dialog.onResponse(processedResponse, new ns.ui.DialogContext(dialog));
+                    processedResponse = dialog.onResponse(processedResponse, dialog.context);
                 }
                 dialog.addMessage(processedResponse, 'remote');
                 dialog.classList.toggle(CLS_INTERACTIVE, dialog.querySelectorAll('.remote').length > 0);
@@ -532,9 +573,9 @@
                 dialog.classList.remove(CLS_INTERACTIVE);
             })
             .finally(() => {
-                dialog.classList.remove(CLS_BUSY);
-                delete dialog.querySelector(SELECTOR_WAIT).dataset.message;
+                setBusy(dialog, false);
                 scrollToBottom(dialog);
+                dialog.classList.toggle(CLS_INTERACTIVE, dialog.querySelectorAll('.remote').length > 0);
             });
     }
 
@@ -544,6 +585,20 @@
             top: content.scrollHeight,
             behavior: 'smooth'
         }), 10);
+    }
+
+    function setBusy(dialog, value) {
+        if (value) {
+            dialog.classList.add(CLS_BUSY);
+            dialog.busyCounter = (dialog.busyCounter || 0) + 1;
+        } else {
+            dialog.busyCounter = !isNaN(dialog.busyCounter) ? dialog.busyCounter - 1 : 0;
+            if (dialog.busyCounter <= 0) {
+                dialog.classList.remove(CLS_BUSY);
+                delete dialog.busyCounter;
+                delete dialog.querySelector(SELECTOR_WAIT).dataset.message;
+            }
+        }
     }
 
     function switchToFrame(dialog, frame) {

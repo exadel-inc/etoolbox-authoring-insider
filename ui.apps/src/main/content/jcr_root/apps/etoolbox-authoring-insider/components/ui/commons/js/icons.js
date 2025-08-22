@@ -22,6 +22,7 @@
         'insider-mono',
         'llama',
         'openai',
+        'openrouter',
         'plus-one',
         'shrink',
         'summary'
@@ -54,7 +55,6 @@
         }
         // Create from a predefined path/url
         if (PREDEFINED_ICONS.includes(icon)) {
-            // return `<img src="${PREDEFINED_ICONS[icon]}" alt="${alt || 'Icon'}" class="icon">`;
             return `<span class="icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill-rule="evenodd" clip-rule="evenodd"><use href="${ICON_PACK}#${icon}"/></svg></span>`;
         }
         // Create from a DOM element

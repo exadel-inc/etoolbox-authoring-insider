@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.exadel.etoolbox</groupId>
         <artifactId>etoolbox-authoring-insider</artifactId>
-        <version>1.0.0</version>
+        <version>1.0.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -16,6 +16,10 @@
     <name>EToolbox Authoring Insider - UI content</name>
     <description>UI content package for EToolbox Authoring Insider</description>
 
+    <properties>
+            <antrun.fill>true</antrun.fill>
+    </properties>
+
     <build>
         <sourceDirectory>src/main/content/jcr_root</sourceDirectory>
         <plugins>
@@ -23,6 +27,7 @@
                 <groupId>org.apache.jackrabbit</groupId>
                 <artifactId>filevault-package-maven-plugin</artifactId>
                 <configuration>
+                    <accessControlHandling>merge</accessControlHandling>
                     <packageType>content</packageType>
                 </configuration>
             </plugin>
@@ -35,6 +40,64 @@
                     <failOnError>true</failOnError>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>fill-properties</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <!-- Temporarily unzip the content package -->
+                                <unzip src="${project.basedir}/target/${project.artifactId}-${project.version}.zip"
+                                       dest="${project.basedir}/target/${project.artifactId}-${project.version}-temp"
+                                       encoding="UTF8"/>
+                                <!-- Interpolate known values as specified in the .properties file -->
+                                <taskdef resource="net/sf/antcontrib/antlib.xml" classpathref="maven.plugin.classpath" />
+                                <if>
+                                    <and>
+                                        <available file="${project.basedir}/.properties"/>
+                                        <equals arg1="${antrun.fill}" arg2="true"/>
+                                    </and>
+                                    <then>
+                                        <copy todir="${project.basedir}/target/${project.artifactId}-${project.version}-temp/jcr_root/conf/etoolbox/authoring-insider"
+                                              overwrite="true">
+                                            <fileset dir="${project.basedir}/src/main/content/jcr_root/conf/etoolbox/authoring-insider"/>
+                                            <filterset begintoken="${" endtoken="}">
+                                                <filtersfile file="${project.basedir}/.properties"/>
+                                            </filterset>
+                                        </copy>
+                                    </then>
+                                </if>
+                                <!-- Erase un-interpolated properties -->
+                                <replaceregexp flags="g" byline="true" match="\$\{[^}]+\}" replace="">
+                                    <fileset dir="${project.basedir}/target/${project.artifactId}-${project.version}-temp/jcr_root/conf/etoolbox/authoring-insider">
+                                        <include name="**/*.xml"/>
+                                    </fileset>
+                                </replaceregexp>
+                                <!-- Repack the content package and clean up -->
+                                <zip basedir="${project.basedir}/target/${project.artifactId}-${project.version}-temp"
+                                     destfile="${project.basedir}/target/${project.artifactId}-${project.version}.zip"
+                                     encoding="UTF8"/>
+                                <delete dir="${project.basedir}/target/${project.artifactId}-${project.version}-temp"/>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>release</id>
+            <properties>
+                <antrun.fill>false</antrun.fill>
+            </properties>
+        </profile>
+    </profiles>
 </project>

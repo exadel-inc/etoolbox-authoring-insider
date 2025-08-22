@@ -17,21 +17,14 @@
     const CLS_MANAGED = 'js-eai-managed';
 
     const FRAGMENT_TEMPLATES = '[coral-multifield-template]';
-    const INSTRUMENTATION_HOOKS = '.coral-Form-field[type="text"][name], textarea[name]';
+    const INSTRUMENTATION_HOOKS = '.coral-Form-field[type="text"][name], textarea[name], .cq-ui-tagfield';
 
-    document.addEventListener('DOMContentLoaded', onLoad);
-    createAllInsiderObjects();
+    /* --------------
+       Event handlers
+       -------------- */
 
-    function onLoad() {
-        const pagePropertiesForm = document.querySelector('.cq-siteadmin-admin-properties');
-        if (pagePropertiesForm) {
-            pagePropertiesForm.querySelectorAll(INSTRUMENTATION_HOOKS).forEach((field) => ns.controls.handleField(field));
-            pagePropertiesForm.querySelectorAll(FRAGMENT_TEMPLATES).forEach((template) => {
-                template.content.querySelectorAll(INSTRUMENTATION_HOOKS).forEach((field) => ns.controls.handleField(field));
-            });
-        } else {
-            $(document).on('coral-overlay:beforeopen', 'coral-dialog', onDialogOpen);
-        }
+    function onDocumentReady() {
+        createAllInsiderObjects().then(appendInsiderUiElements);
     }
 
     function onDialogOpen(event) {
@@ -46,8 +39,12 @@
         });
     }
 
+    /* ---------------
+       Service methods
+       --------------- */
+
     function createAllInsiderObjects() {
-        createInsiderObjects(ns.tools, ns.settings.getToolSettings)
+        return createInsiderObjects(ns.tools, ns.settings.getToolSettings)
             .then(() => createInsiderObjects(ns.providers, ns.settings.getProviderSettings));
     }
 
@@ -70,4 +67,21 @@
         });
     }
 
+    function appendInsiderUiElements() {
+        const pagePropertiesForm = document.querySelector('.cq-siteadmin-admin-properties');
+        if (pagePropertiesForm) {
+            pagePropertiesForm.querySelectorAll(INSTRUMENTATION_HOOKS).forEach((field) => ns.controls.handleField(field));
+            pagePropertiesForm.querySelectorAll(FRAGMENT_TEMPLATES).forEach((template) => {
+                template.content.querySelectorAll(INSTRUMENTATION_HOOKS).forEach((field) => ns.controls.handleField(field));
+            });
+        } else {
+            $(document).off('.eai').on('coral-overlay:beforeopen.eai', 'coral-dialog', onDialogOpen);
+        }
+    }
+
+    /* --------------
+       Initialization
+       -------------- */
+
+    $(document).ready(onDocumentReady);
 })(document, Granite.$, window.eai = window.eai || {});

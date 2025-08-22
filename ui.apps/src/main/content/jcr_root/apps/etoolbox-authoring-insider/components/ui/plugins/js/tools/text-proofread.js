@@ -36,20 +36,19 @@
         handle,
     });
 
-    function handle(field, providerId, initialContent) {
+    function handle(field, providerId) {
+        // Arguments validation
         if (!field) {
             return ns.ui.alert(this.title, 'Target field is invalid', 'error');
         }
-        const provider = ns.providers.getInstance(providerId);
-        if (!provider) {
-            return ns.ui.alert(this.title, `Could not find a provider for action ${providerId}`, 'error');
+        if (!ns.providers.getInstance(providerId)) {
+            return ns.ui.alert(this.title, `Could not find a provider with ID ${providerId}`, 'error');
         }
-
-        const sourceValue = initialContent ? initialContent.text : ns.fields.getSelectedContent(field, true);
-        if (ns.text.isBlank(sourceValue)) {
+        if (ns.text.isBlank(ns.fields.getSelectedContent(field, true))) {
             return ns.ui.alert(this.title, 'No text to proofread', 'error');
         }
 
+        // Chat dialog
         ns.ui.chatDialog({
             id: ID + '.dialog',
             title: this.title,
@@ -57,19 +56,11 @@
             source: field,
             providers: this.providers,
             providerId,
-            onStart: async(context) => {
-                return await doTask(context, provider, sourceValue);
-            },
-            onInput: async(msg, context) => {
-                return await provider.textToText({ messages: context.getHistory().messages, signal: context.signal });
-            },
-            onReload: (newProviderId, context) => {
-                if (context.isRefresh) {
-                    return this.handle(field, newProviderId);
-                }
-                this.handle(field, newProviderId, { text: sourceValue });
-            },
+
+            onStartup: async(context) => await handleDialogContext(context),
+
             onResponse: (response) => ns.text.stripSpacesAndPunctuation(response),
+
             onAccept: (result) => {
                 if (result.includes('<del>')) {
                     result = result.replace(/<del>[^<]*<\/del>/g, '');
@@ -80,13 +71,13 @@
         });
     }
 
-    async function doTask(context, provider, sourceValue) {
+    async function handleDialogContext(context) {
         const messages = [
             { type: 'user', text: PROMPT },
-            { type: 'user', text: sourceValue },
+            { type: 'user', text: ns.fields.getSelectedContent(context.source, true) },
         ];
 
-        const result = await provider.textToText({ messages, signal: context.signal });
+        const result = await context.provider.textToText({ messages, signal: context.signal });
         if (context.aborted || !result) {
             return '';
         }

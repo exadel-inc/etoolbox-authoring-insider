@@ -33,19 +33,16 @@
         handle,
     });
 
-    function handle(field, providerId, initialContent) {
+    function handle(field, providerId) {
+        // Arguments validation
         if (!field) {
             return ns.ui.alert(this.title, 'Target field is invalid', 'error');
         }
-        const provider = ns.providers.getInstance(providerId);
-        if (!provider) {
+        if (!ns.providers.getInstance(providerId)) {
             return ns.ui.alert(this.title, `Could not find a provider for action ${providerId}`, 'error');
         }
 
-        if (!ns.utils.isObject(initialContent)) {
-            initialContent = { text: ns.fields.getSelectedContent(field) };
-        }
-
+        // Chat dialog
         ns.ui.chatDialog({
             id: ID + '.dialog',
             title: this.title,
@@ -53,6 +50,7 @@
             source: field,
             providers: this.providers,
             providerId,
+
             responses: [
                 {
                     icon: 'scribble',
@@ -61,62 +59,43 @@
                     style: 'icon'
                 }
             ],
-            onStart: async(context) => {
-                return await inputAndRun(context, provider, initialContent);
-            },
-            onInput: async(msg, context) => {
-                return await provider.textToText({ messages: context.getHistory().messages, signal: context.signal });
-            },
-            onReload: (newProviderId, context) => {
-                if (context.isRefresh) {
-                    return this.handle(field, newProviderId);
-                }
-                const history = context.getHistory();
-                this.handle(field, newProviderId, {
-                    prompt: history.prompt,
-                    text: history.initial,
-                });
-            },
+
+            onStartup: async(context) => await handleDialogContext(context),
+
+            onInput: async(msg, context) =>
+                await context.provider.textToText({ messages: context.messages, signal: context.signal }),
+
             onResponse: (response) => ns.text.stripSpacesAndPunctuation(response),
+
             onAccept: (result) => ns.fields.setSelectedContent(field, result),
         });
     }
 
-    async function inputAndRun(context, provider, initialContent) {
-        let text = initialContent.text;
-        if (!text) {
-            text = await ns.ui.inputDialog({
+    async function handleDialogContext(context) {
+        let text;
+        if (ns.text.isBlank(context.initial)) {
+            text = ns.fields.getSelectedContent(context.source) || await ns.ui.inputDialog({
                 title: 'Enter your content',
                 parent: context.dom
             });
-            if (!text) {
+            if (ns.text.isBlank(text)) {
                 return context.close();
             }
+            context.addInitial(text, false);
         }
-
-        let prompt = initialContent.prompt;
-        if (!prompt) {
-            prompt = await ns.ui.inputDialog({
+        if (ns.text.isBlank(context.prompt)) {
+            const prompt = await ns.ui.inputDialog({
                 title: 'Enter your prompt',
                 parent: context.dom,
-                intro: {
-                    text
-                },
+                intro: { text },
             });
-            if (!prompt) {
+            if (ns.text.isBlank(prompt)) {
                 return context.close();
             }
+            context.addPrompt(prompt);
         }
 
-        context.appendMessage(prompt, 'local prompt');
-        context.appendMessage(text, 'local initial');
-
-        const messages = [
-            { type: 'local', text: prompt },
-            { type: 'local', text }
-        ];
-
-        const result = await provider.textToText({ messages, signal: context.signal });
+        const result = await context.provider.textToText({ messages: context.messages, signal: context.signal });
         return !context.aborted ? result : null;
     }
 

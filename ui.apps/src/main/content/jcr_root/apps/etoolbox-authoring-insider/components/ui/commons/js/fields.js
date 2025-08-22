@@ -49,6 +49,31 @@
         },
 
         /**
+         * Returns the {@code name} attribute related to the specified input field or field facade
+         * @param {*|Element} field - The target field
+         * @returns {string}
+         */
+        getName: function (field) {
+            if (!field) {
+                return '';
+            }
+            if (field.name !== undefined) {
+                return field.name;
+            }
+            const coralField = field.closest('.coral-Form-field');
+            if (!coralField) {
+                return '';
+            }
+            const namedTags = coralField.querySelectorAll('[name]');
+            if (namedTags.length > 0) {
+                return Array.from(namedTags)
+                    .map((tag) => tag.name)
+                    .find((name) => name && !name.includes('@'));
+            }
+            return '';
+        },
+
+        /**
          * Returns the selected content of the specified input field or field facade
          * @param {*|Element} field - The target field
          * @param {boolean=} isHtml - Indicates whether the content should be returned as HTML when possible
@@ -154,6 +179,19 @@
                 } else if (this.isJquery(field)) {
                     this.setValue(field.find(selectorOrValue)[0], value);
                     return;
+                }
+            }
+            if (Array.isArray(selectorOrValue)) {
+                if (ns.utils.isFunction(field.setValues)) {
+                    field.setValues(selectorOrValue);
+                    return;
+                } else {
+                    const foundationField = $(field).adaptTo('foundation-field');
+                    if (foundationField) {
+                        foundationField.setValues(selectorOrValue);
+                        emitInputEvent(field);
+                        return;
+                    }
                 }
             }
             if (ns.utils.isFunction(field.setValue)) {

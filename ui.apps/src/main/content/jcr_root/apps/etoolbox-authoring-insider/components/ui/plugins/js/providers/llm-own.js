@@ -15,6 +15,7 @@
     'use strict';
 
     const DEFAULT_MODEL = 'llava-llama3';
+    const DEFAULT_TEMPERATURE = 0.6;
 
     ns.providers.register({
         icon: 'llama',
@@ -25,7 +26,8 @@
         settings: [
             { name: 'url', title: 'Endpoint (URL)', required: true },
             { name: 'llm', title: 'Model', required: true },
-            { name: 'systemPrompt', type: 'text', title: 'System Prompt' },
+            { name: 'think', type: 'checkbox', title: 'Enable thinking (when applicable)', defaultValue: true },
+            { name: 'systemPrompt', type: 'text', title: 'System prompt' },
             { name: 'supports', title: 'Support constraints', multi: true }
         ],
 
@@ -55,6 +57,7 @@
         options.llm = this.llm || DEFAULT_MODEL;
         options.systemPrompt = this.systemPrompt;
         options.title = this.title;
+        options.disableThinking = !this.think;
         return options;
     }
 
@@ -78,7 +81,9 @@
         }
 
         if (response.content) {
-            return response.content.trim().replace(/<\|\w+\|>/g, '');
+            return response.content.trim()
+                .replace(/<\|\w+\|>/g, '')
+                .replace(/<think>[\s\S]*?<\/think>/g, '');
         } else if (response.message) {
             const result = response.message.content || response.message.toString() || '';
             return result.trim();
@@ -92,12 +97,12 @@
             messages.push({ role: 'system', text: options.systemPrompt });
         }
         for (let i = 0; i < options.messages.length; i++) {
-            const source = ns.utils.isObject(options.messages[i]) ? options.messages[i].text : options.messages[i].toString();
+            const source = options.messages[i];
             if (!source) {
                 continue;
             }
             let role = source.role || source.type || 'user';
-            if (role === 'local') {
+            if (role === 'local' || (role === 'system' && options.systemPrompt)) {
                 role = 'user';
             } else if (role === 'remote') {
                 role = 'assistant';
@@ -115,12 +120,16 @@
             }
             messages.push(newMessage);
         }
-        return {
+        const result = {
             stream: false,
             model: options.llm,
-            temperature: 0.6,
+            temperature: DEFAULT_TEMPERATURE,
             messages,
         };
+        if (options.disableThinking) {
+            result.think = false;
+        }
+        return result;
     }
 
 })(window.eai = window.eai || {});

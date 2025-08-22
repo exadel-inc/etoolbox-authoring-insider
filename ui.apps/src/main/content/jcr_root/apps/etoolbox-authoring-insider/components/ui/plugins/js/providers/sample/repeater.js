@@ -14,13 +14,14 @@
 (function ($, ns) {
     'use strict';
 
-    let index = 0;
     const IMAGE_DESCRIPTIONS = [
         'A colorful image',
         'A picture with many details',
         'A beautiful photo of an object or a person'
     ];
+    const TIMEOUT = 500;
 
+    let index = 0;
     ns.providers.register({
         icon: ns.icons.getHtml('(1)'),
         id: 'repeater.1',
@@ -47,7 +48,7 @@
         return new Promise((resolve) => {
             setTimeout(() => {
                 resolve(IMAGE_DESCRIPTIONS[index++ % IMAGE_DESCRIPTIONS.length]);
-            }, 1000);
+            }, TIMEOUT);
         });
     }
 
@@ -69,7 +70,7 @@
                 } else {
                     resolve(getTextAccordingToPrompt(prompt.text, userMessage.text));
                 }
-            }, 500);
+            }, TIMEOUT);
         });
     }
 

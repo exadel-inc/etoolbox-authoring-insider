@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-(function (ns) {
+(function ($, ns) {
     'use strict';
 
     const ID = 'image.caption';
@@ -19,19 +19,22 @@
     const DEFAULT_PROMPT = 'Provide the phrase that can be used as the title and/or alt text for the given image';
     const DEFAULT_REPEAT_PROMPT = DEFAULT_PROMPT.replace('Provide', 'Provide another variant of');
 
+    const TITLE = 'Image caption (alt text)';
+
     ns.tools.register({
         icon: 'imageText',
         id: ID,
-        title: 'Image caption (alt text)',
+        title: TITLE,
 
         requires: [
             ID,
             'imageToText'
         ],
         settings: [
-            { name: 'selectors', type: 'text', title: 'Field selection (if not specified, default will apply)', multi: true },
+            { name: 'selectors', type: 'textfield', title: 'Field selection (if not specified, default will apply)', multi: true },
             { name: 'imageSize', type: 'textfield', title: 'Image size filter (if not specified, default will apply)', placeholder: 'E.g.: 100x100 - 600x600' },
             { name: 'imageDetail', type: 'select', title: 'Image detail', options: ['low', 'high'] },
+            { name: 'save', type: 'checkbox', title: 'Save the caption to image metadata?', defaultValue: true },
             { name: 'prompt', type: 'text', title: 'Prompt', defaultValue: DEFAULT_PROMPT },
             { name: 'repeatPrompt', type: 'text', title: 'Repetition Prompt', defaultValue: DEFAULT_REPEAT_PROMPT }
         ],
@@ -41,9 +44,6 @@
     });
 
     function isMatch(field) {
-        if (this.selectors && this.selectors.length) {
-            return this.selectors.some(selector => field.matches(selector));
-        }
         const fieldName = (field.getAttribute('name') || '').toLowerCase();
         if (fieldName.includes('alttext') || fieldName === './alt') {
             return true;
@@ -55,16 +55,16 @@
     }
 
     async function handle(field, providerId) {
-        const sourceValue = findImageSource(this, field);
+        // Arguments validation
+        const sourceValue = findImageSource(field);
         if (!sourceValue) {
             return ns.ui.alert(this.title, 'Could not find an image to create caption for', 'error');
         }
-
-        const provider = ns.providers.getInstance(providerId);
-        if (!provider) {
-            return ns.ui.alert(this.title, `Could not find a provider for action ${providerId}`, 'error');
+        if (!ns.providers.getInstance(providerId)) {
+            return ns.ui.alert(this.title, `Could not find a provider with ID ${providerId}`, 'error');
         }
 
+        // Initialization
         let encodedImage;
         try {
             encodedImage = await ns.http.getText(sourceValue + '.base64?size=' + (this.imageSize || ''));
@@ -75,6 +75,7 @@
         const prompt = this.prompt || DEFAULT_PROMPT;
         const repeatPrompt = this.repeatPrompt || DEFAULT_REPEAT_PROMPT;
 
+        // Chat dialog
         ns.ui.chatDialog({
             id: 'image.caption.dialog',
             title: this.title,
@@ -101,33 +102,59 @@
                     style: 'icon'
                 }
             ],
-            onStart: async(context) => provider.imageToText({
+
+            onStartup: async(context) => handleDialogContext(context.withData({
                 image: encodedImage,
+                imageAddress: this.save ? sourceValue : null,
                 imageDetail: this.imageDetail,
-                messages: [
-                    { type: 'user', text: prompt }
-                ],
+                prompt
+            })),
+
+            onInput: async(msg, context) => context.provider.imageToText({
+                image: context.data.image,
+                imageDetail: context.data.imageDetail,
+                messages: context.messages,
                 signal: context.signal
             }),
-            onInput: async(msg, context) => provider.imageToText({
-                image: encodedImage,
-                imageDetail: this.imageDetail,
-                messages: context.getHistory().messages,
-                signal: context.signal
-            }),
-            onReload: (newProviderId) => this.handle(field, newProviderId || providerId),
+
             onResponse: (response) => ns.text.stripSpacesAndPunctuation(response),
-            onAccept: (result) => storeMetadata(field, result, sourceValue),
+
+            onAccept: (result, context) => storeCaption(field, result, !!context.data.imageAddress),
         });
     }
 
-    function findImageSource(tool, field, dir) {
+    async function handleDialogContext(context) {
+        if (context.data.imageAddress) {
+            try {
+                const metadata = await ns.http.getJson(context.data.imageAddress + '.metadata');
+                if (metadata && metadata['eai.caption']) {
+                    return {
+                        type: 'text',
+                        text: metadata['eai.caption'],
+                        note: '* Loaded from image metadata',
+                    };
+                }
+            } catch (error) {
+                console.error('Failed to load image metadata: ' + error.message);
+            }
+        }
+        return context.provider.imageToText({
+            image: context.data.image,
+            imageDetail: context.data.imageDetail,
+            messages: [
+                { type: 'user', text: context.data.prompt }
+            ],
+            signal: context.signal
+        });
+    }
+
+    function findImageSource(field, dir) {
         if (!field) {
-            return ns.ui.alert(tool.title, 'Target field is invalid', 'error');
+            return ns.ui.alert(TITLE, 'Target field is invalid', 'error');
         }
         if (!dir) {
             const closestFieldWrapper = field.closest('.coral-Form-fieldwrapper');
-            return findImageSource(tool, closestFieldWrapper, 'backward') || findImageSource(tool, closestFieldWrapper, 'forward');
+            return findImageSource(closestFieldWrapper, 'backward') || findImageSource(closestFieldWrapper, 'forward');
         }
         let other = dir === 'backward' ? field.previousSibling : field.nextSibling;
         while (other) {
@@ -140,11 +167,35 @@
         if (!field.parentElement) {
             return null;
         }
-        return findImageSource(tool, field.parentElement, dir);
+        return findImageSource(field.parentElement, dir);
     }
 
-    async function storeMetadata(field, value) {
+    async function storeCaption(field, value, saveToMetadata) {
         ns.fields.setValue(field, value);
+        if (!saveToMetadata) {
+            return;
+        }
+        const $form = $(field).closest('form');
+        const captionSources = $form.get(0).captionSources || ($form.get(0).captionSources = new Set());
+        captionSources.add(field);
+        $form.off('.eai').one('submit.eai', async function submitCaptions() {
+            for (const captionSource of captionSources) {
+                const caption = ns.fields.getValue(captionSource);
+                if (ns.text.isBlank(caption)) {
+                    continue;
+                }
+                const imageAddress = findImageSource(captionSource);
+                if (!imageAddress) {
+                    console.error('Could not find image address for ', captionSource.name);
+                    continue;
+                }
+                try {
+                    await ns.http.post(imageAddress + '.metadata', { data: { 'eai.caption': caption } });
+                } catch (error) {
+                    ns.ui.alert(TITLE, 'Could not save the caption to image metadata: ' + error.message, 'error');
+                }
+            }
+        });
     }
 
-})(window.eai = window.eai || {});
+})(Granite.$, window.eai = window.eai || {});
