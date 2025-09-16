@@ -199,9 +199,8 @@
         const responses = responsesDefs
             .map((item) => createActionButton(Object.assign(item, { class: 'response no-outline ' + item.class })));
 
-        let providerSelection;
-        if (Array.isArray(options.providers) && options.providers.length > 1) {
-            const providerItems = [];
+        const providerItems = [];
+        if (Array.isArray(options.providers)) {
             for (const prov of options.providers) {
                 const iconHtml = ns.icons.getHtml(prov.icon, prov.title);
                 providerItems.push(ns.ui.createElement({
@@ -211,13 +210,13 @@
                     innerHtml: iconHtml + prov.title
                 }));
             }
-            providerSelection = ns.ui.createElement({
-                tag: 'coral-select',
-                class: 'providers',
-                title: 'Providers',
-                children: providerItems
-            });
         }
+        const providerSelection = ns.ui.createElement({
+            tag: 'coral-select',
+            class: 'providers ' + (providerItems.length <= 1 ? 'hidden' : ''),
+            title: 'Providers',
+            children: providerItems
+        });
 
         const frames = ns.ui.createElement({
             tag: 'coral-panelstack',
