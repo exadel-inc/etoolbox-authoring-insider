@@ -159,6 +159,14 @@ coral-dialog-footer {
   }
 }
 
+[data-noitems]:not(:has(.item)):after {
+    content: attr(data-noitems);
+    display: inline-block;
+    font-size: 0.9rem;
+    padding: 0.5rem 0;
+    width: 100%;
+}
+
 // Typography
 
 .center-icon {
