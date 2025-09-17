@@ -80,7 +80,12 @@
                 excludedElements: this.excludedElements
             })),
 
-            onAccept: (result) => ns.fields.setSelectedContent(field, result.split('<br>')),
+            onAccept: (result, context) => {
+                const tagIds = result.split('<br>')
+                    .map((tag) => findMatchingTagId(context.data.tagList, tag))
+                    .filter(Boolean);
+                ns.fields.setSelectedContent(field, tagIds);
+            },
         });
     }
 
@@ -89,8 +94,8 @@
         if (!tagList) {
             context.wait('Loading tags...');
             try {
-                const tagsJson = await ns.http.getJson(context.data.tagFolder + '.1.json');
-                tagList = (context.data.tagList = await prepareTagList(context.data.tagFolder, tagsJson));
+                const tagData = await loadTagData(context);
+                tagList = (context.data.tagList = await prepareTagList(context.data.tagFolder, tagData));
             } catch (error) {
                 context.addError('Failed to load tags from ' + context.data.tagFolder);
             }
@@ -130,7 +135,6 @@
         const tags = ns.text.stripSpacesAndPunctuation(response)
             .split(/[;,]/)
             .map((tag) => tag.trim())
-            .map((tag) => findMatchingTagId(tagList, tag))
             .filter(Boolean)
             .reduce((set, tagId) => set.add(tagId), new Set());
 
@@ -141,27 +145,64 @@
         return { type: 'html', html: Array.from(tags).slice(0, context.data.count).sort().join('<br>') };
     }
 
+    async function loadTagData(context) {
+        let tagData = await ns.http.getJson(context.data.tagFolder + '.-1.json', {
+            validStatuses: [300],
+            signal: context.signal,
+        });
+        // The above request may return an array of available depths. In this case, pick the largest depth
+        if (Array.isArray(tagData) && tagData.every((item) => ns.utils.isString(item) && item.endsWith('.json'))) {
+            tagData = tagData.sort((a, b) => {
+                const aName = a.replace(/\.json$/, '');
+                const aIndex = /\.\d+$/.test(aName) ? parseInt(aName.split('.').pop(), 10) : 0;
+                const bName = b.replace(/\.json$/, '');
+                const bIndex = /\.\d+$/.test(bName) ? parseInt(bName.split('.').pop(), 10) : 0;
+                return aIndex - bIndex;
+            });
+            return await ns.http.getJson(tagData.pop());
+        }
+        return tagData;
+    }
+
     function prepareTagList(sourcePath, sourceObject) {
         if (!ns.utils.isObject(sourceObject)) {
             return [];
         }
-        const indexOfCqTags = sourcePath.indexOf('/cq:tags/');
-        let tagRelativePath = indexOfCqTags >= 0 ?
-            sourcePath.substring(indexOfCqTags + 9) :
-            sourcePath.replace(/^\//, '');
-        const tagPrefix = tagRelativePath.includes('/') ?
-            tagRelativePath.substring(0, tagRelativePath.indexOf('/')) :
-            tagRelativePath;
-        tagRelativePath = tagRelativePath.substring(tagPrefix.length).replace(/^\//, '');
-        return Object.keys(sourceObject)
-            .filter((k) => !/^\w+:/.test(k))
-            .filter((k) => ns.utils.isObject(sourceObject[k]))
-            .map((k) => {
-                return {
-                    id: `${tagPrefix}:${tagRelativePath}${tagRelativePath.length > 0 ? '/' : ''}${k}`,
-                    title: sourceObject[k]['jcr:title'] || k,
-                };
+
+        const tags = [];
+        extractTagsRecursively(sourceObject, sourcePath, tags);
+        tags.forEach((tag) => {
+            const pathChunks = tag.id.split('/').filter(Boolean);
+            const indexOfCqTags = pathChunks.indexOf('cq:tags');
+            let relativePathChunks = indexOfCqTags >= 0 ?
+                pathChunks.slice(indexOfCqTags + 1) :
+                pathChunks;
+            let tagPrefix = '';
+            if (relativePathChunks.length > 0) {
+                tagPrefix = relativePathChunks[0] + ':';
+                relativePathChunks = relativePathChunks.slice(1);
+            }
+            tag.id = tagPrefix + relativePathChunks.join('/');
+            if (tag.id.length && !tag.id.includes(':')) {
+                tag.id += ':';
+            }
+        });
+        return tags.filter((tag) => tag.id.length && tag.title.length);
+    }
+
+    function extractTagsRecursively(obj, currentPath, collection) {
+        Object.keys(obj).forEach((key) => {
+            const value = obj[key];
+            if (!ns.utils.isObject(value) || value['jcr:primaryType'] !== 'cq:Tag' || !value['jcr:title']) {
+                return;
+            }
+            const nestedPath = currentPath ? `${currentPath}/${key}` : key;
+            collection.push({
+                id: nestedPath,
+                title: value['jcr:title']
             });
+            extractTagsRecursively(value, nestedPath, collection);
+        });
     }
 
     function findMatchingTagId(tagList, tag) {
