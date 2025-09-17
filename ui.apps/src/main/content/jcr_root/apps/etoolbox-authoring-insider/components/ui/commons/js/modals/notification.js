@@ -35,27 +35,42 @@
      * {@code false}
      * @param {string} title - The prompt dialog title
      * @param {string} message - The prompt dialog message
-     * @param {string} type - The prompt dialog type (default|error|info)
+     * @param {array|string} variantsOrType - The user answer variants or type (if passed as string)
+     * @param {string} type - The prompt dialog type (default|error|notice|success|help|info)
      * @returns {Promise<boolean>}
      */
-    ns.ui.prompt = async function (title, message, type = 'default') {
+    ns.ui.prompt = async function (title, message, variantsOrType, type = 'default') {
         return new Promise((resolve) => {
+            let actions = [
+                {
+                    text: 'OK',
+                    primary: true,
+                    handler: () => resolve(true)
+                },
+                {
+                    text: 'Cancel',
+                    primary: false,
+                    handler: () => resolve(false)
+                }
+            ];
+            if (Array.isArray(variantsOrType)) {
+                actions = variantsOrType
+                    .filter(Boolean)
+                    .map((variant, index) => {
+                        return {
+                            text: variant,
+                            primary: index === 0,
+                            handler: () => resolve(variant.toString().toLowerCase().replace(/\W+/g, '-'))
+                        }
+                    });
+            } else {
+                type = variantsOrType;
+            }
             foundationUI.prompt(
                 title,
                 `<div class="notification">${message}</div>`,
                 type,
-                [
-                    {
-                        text: 'OK',
-                        primary: true,
-                        handler: () => resolve(true)
-                    },
-                    {
-                        text: 'Cancel',
-                        primary: false,
-                        handler: () => resolve(false)
-                    }
-                ]);
+                actions);
         });
     };
 
