@@ -75,21 +75,16 @@
                 }
             };
             ajaxOptions.success = function (data) {
-                if (ns.utils.isString(data) && !ns.text.isBlank(data) && format === CONTENT_TYPE_JSON) {
-                    try {
-                        resolve(JSON.parse(data));
-                    } catch (e) {
-                        reject(new Error('The output is not a valid JSON. Probably the service returned an error message.'));
-                    }
-                } else {
-                    resolve(data);
-                }
+                tryResolve(data, format, resolve, reject);
             };
             ajaxOptions.error = function (xhr, status, error) {
                 if (status === 'abort') {
                     console.warn(`Request to ${url} was aborted`);
                     resolve(null);
                     return;
+                }
+                if (Array.isArray(options.validStatuses) && options.validStatuses.includes(xhr.status)) {
+                    return tryResolve(xhr.responseText, format, resolve, reject);
                 }
                 let message = `with status "${error.message || error || status}"`;
                 if (xhr.responseText) {
@@ -108,6 +103,18 @@
     function truncate(str, maxLength) {
         const result = (str || '').trim();
         return result.length > maxLength ? result.substring(0, maxLength).trim() + '...' : result;
+    }
+
+    function tryResolve(value, format, resolve, reject) {
+        if (ns.utils.isString(value) && !ns.text.isBlank(value) && format === CONTENT_TYPE_JSON) {
+            try {
+                resolve(JSON.parse(value));
+            } catch (e) {
+                reject(new Error('The output is not a valid JSON. Probably the service returned an error message.'));
+            }
+        } else {
+            resolve(value);
+        }
     }
 
 })(document, Granite.$, window.eai = window.eai || {});
