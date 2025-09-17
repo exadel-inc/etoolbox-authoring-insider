@@ -164,8 +164,8 @@
          * Sets the value of the specified input field or field facade, or else the value of a descendant element
          * specified by the selector
          * @param {*|Element} field - The target field
-         * @param {string} selectorOrValue - The selector to use to find the descendant element
-         * @param {string=} value - The value to set
+         * @param {string|string[]} selectorOrValue - The selector to use to find the descendant element
+         * @param {string|string[]=} value - The value to set
          * @returns {*|string}
          */
         setValue: function (field, selectorOrValue, value) {
