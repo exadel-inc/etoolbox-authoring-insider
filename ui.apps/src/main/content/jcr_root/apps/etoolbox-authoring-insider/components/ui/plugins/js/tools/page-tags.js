@@ -80,7 +80,7 @@
                 excludedElements: this.excludedElements
             })),
 
-            onAccept: async (result, context) => {
+            onAccept: async(result, context) => {
                 const tags = result.split('<br>')
                     .map((tag) => findMatchingTagId(context.data.tagList, tag))
                     .filter(Boolean);

@@ -61,7 +61,7 @@
                             text: variant,
                             primary: index === 0,
                             handler: () => resolve(variant.toString().toLowerCase().replace(/\W+/g, '-'))
-                        }
+                        };
                     });
             } else {
                 type = variantsOrType;
