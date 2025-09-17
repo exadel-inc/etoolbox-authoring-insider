@@ -80,12 +80,28 @@
                 excludedElements: this.excludedElements
             })),
 
-            onAccept: (result, context) => {
-                const tagIds = result.split('<br>')
+            onAccept: async (result, context) => {
+                const tags = result.split('<br>')
                     .map((tag) => findMatchingTagId(context.data.tagList, tag))
                     .filter(Boolean);
-                ns.fields.setSelectedContent(field, tagIds);
-            },
+                const existingValue = 'values' in field ? field.values : field.value;
+                let action = 'replace';
+                if (Array.isArray(existingValue) && existingValue.length > 0) {
+                    action = await ns.ui.prompt(
+                        'Merge tags?',
+                        'There are existing tags. Do you want to merge new tags with existing ones or replace them?',
+                        ['Merge', 'Replace']);
+
+                }
+                if (action === 'replace') {
+                    ns.fields.setValue(field, tags);
+                    return;
+                }
+                const mergedTags = new Set();
+                existingValue.forEach((tag) => mergedTags.add(tag));
+                tags.forEach((tag) => mergedTags.add(tag));
+                ns.fields.setValue(field, Array.from(mergedTags));
+            }
         });
     }
 
