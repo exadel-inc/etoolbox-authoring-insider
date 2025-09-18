@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <workspaceFilter version="1.0">
+    <!-- Servlet resources -->
     <filter root="/content/etoolbox/authoring-insider/servlet/config" mode="merge"/>
     <filter root="/content/etoolbox/authoring-insider/servlet/relay" mode="merge"/>
+    <!-- Configuration resources -->
     <filter root="/conf/etoolbox/authoring-insider" mode="merge"/>
     <filter root="/conf/etoolbox/authoring-insider/tools" mode="merge"/>
     <filter root="/conf/etoolbox/authoring-insider/providers" mode="merge"/>
+    <!-- DAM metadata overlay -->
+    <filter root="/conf/global/settings/dam/adminui-extension/metadataschema/default/image/items/tabs/items/tab1/items/col2/items/eai"/>
 </workspaceFilter>
