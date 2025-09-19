@@ -7,6 +7,4 @@
     <filter root="/conf/etoolbox/authoring-insider" mode="merge"/>
     <filter root="/conf/etoolbox/authoring-insider/tools" mode="merge"/>
     <filter root="/conf/etoolbox/authoring-insider/providers" mode="merge"/>
-    <!-- DAM metadata overlay -->
-    <filter root="/conf/global/settings/dam/adminui-extension/metadataschema/default/image/items/tabs/items/tab1/items/col2/items/eai"/>
 </workspaceFilter>
