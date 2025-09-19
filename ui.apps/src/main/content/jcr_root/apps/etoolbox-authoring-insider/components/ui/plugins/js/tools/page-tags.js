@@ -209,7 +209,12 @@
     function extractTagsRecursively(obj, currentPath, collection) {
         Object.keys(obj).forEach((key) => {
             const value = obj[key];
-            if (!ns.utils.isObject(value) || value['jcr:primaryType'] !== 'cq:Tag' || !value['jcr:title']) {
+            if (
+                !ns.utils.isObject(value) ||
+                value['jcr:primaryType'] !== 'cq:Tag' ||
+                !value['jcr:title'] ||
+                value['cq:movedTo'] /* Skip "redirected" tags */
+            ) {
                 return;
             }
             const nestedPath = currentPath ? `${currentPath}/${key}` : key;
