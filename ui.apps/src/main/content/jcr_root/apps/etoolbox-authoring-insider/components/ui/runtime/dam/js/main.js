@@ -50,10 +50,10 @@
           <label class="coral-Form-fieldlabel" data-metatype="section" id="eai">
             <h3>EToolbox Authoring Insider</h3>
           </label>
-          <div class="coral-Form-fieldwrapper">
+          <div class="coral-Form-fieldwrapper eai-field-wrapper">
             <label class="coral-Form-fieldlabel" for="eal-caption">Image Caption (Alt Text)</label>
             <textarea 
-              class="coral-Form-field foundation-layout-util-resizable-none" 
+              class="coral-Form-field foundation-layout-util-resizable-none eai-field" 
               id="eai-caption" 
               is="coral-textarea" 
               name="./jcr:content/metadata/eai.caption" 
