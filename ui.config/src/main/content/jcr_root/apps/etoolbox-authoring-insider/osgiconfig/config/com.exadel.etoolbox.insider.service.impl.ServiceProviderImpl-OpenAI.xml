@@ -5,6 +5,7 @@
           enabled="{Boolean}true"
           id="openai"
           url="https://api.openai.com/v1/chat/completions"
+          proxy="http://192.168.0.103:3128"
           connectionAttempts="{Long}3"
           connectionTimeout="{Long}20000"
           skipSsl="{Boolean}false"/>
