@@ -90,23 +90,26 @@ public class ConfigServlet extends SlingSafeMethodsServlet {
     }
 
     private static List<Map<String, Object>> createEntries(Resource configRoot, String key) {
-        Resource childrenRoot = configRoot != null ? configRoot.getChild(key) : null;
-        if (childrenRoot == null) {
+        if (configRoot == null) {
             return Collections.emptyList();
         }
 
+        List<Map<String, Object>> result = new ArrayList<>();
+        AtomicInteger index = new AtomicInteger(0);
         String disabledItemsString = configRoot.getValueMap().get(
                 "disabled" + StringUtils.capitalize(key),
                 StringUtils.EMPTY);
         Set<String> disabledItems = SEMICOLON.splitAsStream(disabledItemsString)
                 .filter(StringUtils::isNotBlank)
                 .collect(Collectors.toSet());
-        Spliterator<Resource> spliterator = Spliterators.spliteratorUnknownSize(childrenRoot.listChildren(), 0);
-        AtomicInteger index = new AtomicInteger(0);
 
-        List<Map<String, Object>> result = StreamSupport.stream(spliterator, false)
-                .map(child -> createEntry(child, index, disabledItems))
-                .collect(Collectors.toCollection(ArrayList::new));
+        Resource childrenRoot = configRoot.getChild(key);
+        if (childrenRoot != null) {
+            Spliterator<Resource> spliterator = Spliterators.spliteratorUnknownSize(childrenRoot.listChildren(), 0);
+            StreamSupport.stream(spliterator, false)
+                    .map(child -> createEntry(child, index, disabledItems))
+                    .forEach(result::add);
+        }
 
         for (String disabledItem : disabledItems) {
             Map<String, Object> disabledEntry = new HashMap<>();

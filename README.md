@@ -1,7 +1,7 @@
 # EToolbox Authoring Insider
 ![Project logo](docs/img/logo.png)
 
-![Version](https://img.shields.io/badge/version-1.0.1-blue)
+![Version](https://img.shields.io/badge/version-1.0.2-blue)
 ![Platform](https://img.shields.io/badge/AEM-6.5+-orange)
 ![License](https://img.shields.io/github/license/exadel-inc/etoolbox-authoring-insider)
 

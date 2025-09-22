@@ -101,10 +101,10 @@
         } else if (response.message) {
             message = response.message;
         }
-        if (message && message.content) {
+        if (message && ('content' in message)) {
             return message.content.toString();
-        } else if (message) {
-            return message.toString();
+        } else if (ns.utils.isString(message)) {
+            return message;
         }
 
         if (response.error) {
